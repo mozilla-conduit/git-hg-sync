@@ -1,0 +1,2 @@
+kombu
+git+https://github.com/mozilla-services/mozillapulse

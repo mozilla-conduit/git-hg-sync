@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling>=1.5.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "git-hg-sync"
+readme = "README.md"
+requires-python = ">=3.10"
+version = "0.1"
+dependencies = ['kombu', 'mozillapulse']
+
+[tool.ruff]
+line-length = 100
