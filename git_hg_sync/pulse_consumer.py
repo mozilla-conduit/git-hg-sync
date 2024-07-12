@@ -4,7 +4,10 @@ from dataclasses import dataclass
 
 from kombu import Connection, Exchange, Queue
 
+from git_hg_sync import config
+
 logger = logging.getLogger()
+pulse_conf = config.get_config()["pulse"]
 
 
 @dataclass
@@ -32,7 +35,7 @@ class Tag:
 
 
 def callback(body, message):
-    logger.info("Received message: %s" % body)
+    print("Received message: %s" % body)
     payload = body["payload"]
     if payload["type"] == "push":
         push = Push(**payload)
@@ -47,23 +50,23 @@ def callback(body, message):
 
 def get_connection():
     return Connection(
-        hostname="pulse.mozilla.org",
-        port=5671,
-        userid="ogiorgis",
+        hostname=pulse_conf["host"],
+        port=pulse_conf["port"],
+        userid=pulse_conf["userid"],
         password=os.environ["PULSE_PASSWORD"],
         ssl=True,
     )
 
 
 def get_consumer(connection):
-    exchange = "exchange/ogiorgis/test"
+    exchange = pulse_conf["exchange"]
     exchange = Exchange(exchange, type="topic")
     exchange(connection).declare(passive=True)  # raise an error if exchange doesn't exist
 
     queue = Queue(
-        name="queue/ogiorgis/test",
+        name=pulse_conf["queue"],
         exchange=exchange,
-        routing_key="#",
+        routing_key=pulse_conf["routing_key"],
         durable=True,
         exclusive=False,
         auto_delete=False,
