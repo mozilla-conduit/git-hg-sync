@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 from dataclasses import dataclass
 
 from kombu import Connection, Exchange, Queue
@@ -32,16 +32,16 @@ class Tag:
 
 
 def callback(body, message):
-    print("Received message: %s" % body)
+    logger.info("Received message: %s" % body)
     payload = body["payload"]
     if payload["type"] == "push":
         push = Push(**payload)
-        print(push)
+        logger.info(push)
     elif payload["type"] == "tag":
         tag = Tag(**payload)
-        print(tag)
+        logger.debug(tag)
     else:
-        logger.error(f"unsupported type message {payload['type']}")
+        raise Exception(f"unsupported type message {payload['type']}")
     message.ack()
 
 

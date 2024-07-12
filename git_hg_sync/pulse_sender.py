@@ -1,8 +1,8 @@
-from datetime import datetime
+import logging
 import os
+from datetime import datetime
 
 import kombu
-import logging
 
 logger = logging.getLogger()
 
@@ -18,7 +18,7 @@ def send_pulse_message(userid, password, exchange, host, payload, queue=None):
     routing_key = "test"
     port = 5671
 
-    logger.warning(f"connecting to pulse at {host}:{port} as {userid}")
+    logger.info(f"connecting to pulse at {host}:{port} as {userid}")
 
     connection = kombu.Connection(
         hostname=host,
@@ -55,8 +55,8 @@ def send_pulse_message(userid, password, exchange, host, payload, queue=None):
             },
         }
 
-        logger.warning("publishing message to %s#%s" % (exchange, routing_key))
-        logger.warning("payload: %s" % payload)
+        logger.info("publishing message to %s#%s" % (exchange, routing_key))
+        logger.debug("payload: %s" % payload)
         producer.publish(data)
 
 
