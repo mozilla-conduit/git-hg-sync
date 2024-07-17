@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from git_hg_sync.git_cinnabar import git_cinnabar_process
 from git_hg_sync.pulse_consumer import get_connection, get_consumer
 
 DELAY = 6
@@ -33,14 +34,13 @@ def callback(body, message):
     print("Received message: %s" % body)
     payload = body["payload"]
     if payload["type"] == "push":
-        push = Push(**payload)
-        print(push)
+        entity = Push(**payload)
     elif payload["type"] == "tag":
-        tag = Tag(**payload)
-        print(tag)
+        entity = Tag(**payload)
     else:
         raise Exception(f"unsupported type message {payload['type']}")
     message.ack()
+    git_cinnabar_process(entity)
 
 
 def main(one_time=False):

@@ -7,7 +7,7 @@ name = "git-hg-sync"
 readme = "README.md"
 requires-python = ">=3.10"
 version = "0.1"
-dependencies = ['kombu', 'mozillapulse']
+dependencies = ['kombu', 'mozillapulse', 'GitPython']
 
 [tool.ruff]
 line-length = 100

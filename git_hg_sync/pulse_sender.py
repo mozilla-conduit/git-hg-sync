@@ -69,9 +69,9 @@ def send_pulse_message(payload, queue=None):
 if __name__ == "__main__":
     payload = {
         "type": "push",
-        "repo_url": "repo_url",
+        "repo_url": "git_chatzilla",
         "heads": ["head"],
-        "commits": ["commit"],
+        "commits": ["a5d101abb543d8360ad1b4c532bab6863c96827d"],
         "time": 0,
         "pushid": 0,
         "user": "user",
