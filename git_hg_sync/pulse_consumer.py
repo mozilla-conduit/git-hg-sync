@@ -1,8 +1,4 @@
-import logging
-
 from kombu import Connection, Exchange, Queue
-
-logger = logging.getLogger()
 
 
 def get_connection(pulse_conf):

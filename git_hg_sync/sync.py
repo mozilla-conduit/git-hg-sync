@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 from git_hg_sync import config
@@ -5,6 +6,7 @@ from git_hg_sync.git_cinnabar import git_cinnabar_process
 from git_hg_sync.pulse_consumer import get_connection, get_consumer
 
 PULSE_TIMEOUT = 6
+logger = logging.getLogger()
 
 
 @dataclass
@@ -42,7 +44,7 @@ def parse_entity(raw_entity):
 
 
 def callback(body, message):
-    print("Received message: %s" % body)
+    logger.debug(f"Received message: {body}")
     raw_entity = body["payload"]
     entity = parse_entity(raw_entity)
     message.ack()
@@ -50,6 +52,7 @@ def callback(body, message):
 
 
 def main(pulse_conf, one_time=False):
+    logging.basicConfig(level=logging.INFO)
     with get_connection(pulse_conf) as connection:
         with get_consumer(pulse_conf, connection, [callback]):
             while True:
@@ -58,7 +61,7 @@ def main(pulse_conf, one_time=False):
                 except TimeoutError:
                     if one_time:
                         break
-                    print("waiting for messages")
+                    logger.info("waiting for messages")
 
 
 if __name__ == "__main__":
