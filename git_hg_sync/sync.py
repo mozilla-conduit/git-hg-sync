@@ -24,22 +24,27 @@ class Tag:
     type: str
     repo_url: str
     tag: str
-    commits: str
+    commit: str
     time: int
     pushid: int
     user: str
     push_json_url: str
 
 
+def parse_entity(raw_entity):
+    if raw_entity["type"] == "push":
+        entity = Push(**raw_entity)
+    elif raw_entity["type"] == "tag":
+        entity = Tag(**raw_entity)
+    else:
+        raise Exception(f"unsupported type message {raw_entity['type']}")
+    return entity
+
+
 def callback(body, message):
     print("Received message: %s" % body)
-    payload = body["payload"]
-    if payload["type"] == "push":
-        entity = Push(**payload)
-    elif payload["type"] == "tag":
-        entity = Tag(**payload)
-    else:
-        raise Exception(f"unsupported type message {payload['type']}")
+    raw_entity = body["payload"]
+    entity = parse_entity(raw_entity)
     message.ack()
     git_cinnabar_process(entity)
 
