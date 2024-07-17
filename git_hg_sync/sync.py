@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 
+from git_hg_sync import config
 from git_hg_sync.git_cinnabar import git_cinnabar_process
 from git_hg_sync.pulse_consumer import get_connection, get_consumer
 
-DELAY = 6
+PULSE_TIMEOUT = 6
 
 
 @dataclass
@@ -43,12 +44,12 @@ def callback(body, message):
     git_cinnabar_process(entity)
 
 
-def main(one_time=False):
-    with get_connection() as connection:
-        with get_consumer(connection, [callback]):
+def main(pulse_conf, one_time=False):
+    with get_connection(pulse_conf) as connection:
+        with get_consumer(pulse_conf, connection, [callback]):
             while True:
                 try:
-                    connection.drain_events(timeout=DELAY)
+                    connection.drain_events(timeout=PULSE_TIMEOUT)
                 except TimeoutError:
                     if one_time:
                         break
@@ -56,4 +57,5 @@ def main(one_time=False):
 
 
 if __name__ == "__main__":
-    main()
+    pulse_conf = config.get_config()["pulse"]
+    main(pulse_conf)

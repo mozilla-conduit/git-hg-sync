@@ -1,5 +1,4 @@
 import logging
-import os
 from datetime import datetime
 
 import kombu
@@ -9,21 +8,19 @@ from git_hg_sync import config
 logger = logging.getLogger()
 
 
-def send_pulse_message(payload, queue=None):
+def send_pulse_message(pulse_config, payload, queue=None):
     """Send a pulse message
     The routing key will be constructed from the repository URL.
     The Pulse message will be constructed from the specified payload
     and sent to the requested exchange.
     if queue is not None, create queue
     """
-    pulse_conf = config.get_config()["pulse"]
-    userid = pulse_conf["userid"]
-    password = os.environ["PULSE_PASSWORD"]
-    routing_key = pulse_conf["routing_key"]
-    host = pulse_conf["host"]
-    port = pulse_conf["port"]
-    exchange = pulse_conf["exchange"]
-
+    userid = pulse_config["userid"]
+    password = pulse_config["password"]
+    routing_key = pulse_config["routing_key"]
+    host = pulse_config["host"]
+    port = pulse_config["port"]
+    exchange = pulse_config["exchange"]
     print(f"connecting to pulse at {host}:{port} as {userid}")
 
     connection = kombu.Connection(
@@ -69,12 +66,13 @@ def send_pulse_message(payload, queue=None):
 if __name__ == "__main__":
     payload = {
         "type": "push",
-        "repo_url": "git_chatzilla",
+        "repo_url": "git_repo",
         "heads": ["head"],
-        "commits": ["a5d101abb543d8360ad1b4c532bab6863c96827d"],
+        "commits": ["commit_sha_1", "commit_sha_2"],
         "time": 0,
         "pushid": 0,
         "user": "user",
         "push_json_url": "push_json_url",
     }
-    send_pulse_message(payload)
+    pulse_conf = config.get_config()["pulse"]
+    send_pulse_message(pulse_conf, payload)

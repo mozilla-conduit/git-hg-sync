@@ -6,7 +6,7 @@ HERE = Path(__file__).parent
 
 def get_config():
     config = configparser.ConfigParser()
-    config.read(HERE / "config.ini")
+    config.read(HERE.parent / "config.ini")
     return config
 
 

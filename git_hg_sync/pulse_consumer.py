@@ -1,25 +1,21 @@
 import logging
-import os
 
 from kombu import Connection, Exchange, Queue
 
-from git_hg_sync import config
-
 logger = logging.getLogger()
-pulse_conf = config.get_config()["pulse"]
 
 
-def get_connection():
+def get_connection(pulse_conf):
     return Connection(
         hostname=pulse_conf["host"],
         port=pulse_conf["port"],
         userid=pulse_conf["userid"],
-        password=os.environ["PULSE_PASSWORD"],
+        password=pulse_conf["password"],
         ssl=True,
     )
 
 
-def get_consumer(connection, callbacks):
+def get_consumer(pulse_conf, connection, callbacks):
     exchange = pulse_conf["exchange"]
     exchange = Exchange(exchange, type="topic")
     exchange(connection).declare(passive=True)  # raise an error if exchange doesn't exist
