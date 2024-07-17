@@ -8,12 +8,11 @@ from git_hg_sync import config
 logger = logging.getLogger()
 
 
-def send_pulse_message(pulse_config, payload, queue=None):
+def send_pulse_message(pulse_config, payload):
     """Send a pulse message
     The routing key will be constructed from the repository URL.
     The Pulse message will be constructed from the specified payload
     and sent to the requested exchange.
-    if queue is not None, create queue
     """
     userid = pulse_config["userid"]
     password = pulse_config["password"]
@@ -21,6 +20,7 @@ def send_pulse_message(pulse_config, payload, queue=None):
     host = pulse_config["host"]
     port = pulse_config["port"]
     exchange = pulse_config["exchange"]
+    queue = pulse_config["queue"]
     print(f"connecting to pulse at {host}:{port} as {userid}")
 
     connection = kombu.Connection(
@@ -35,16 +35,15 @@ def send_pulse_message(pulse_config, payload, queue=None):
 
     with connection:
         ex = kombu.Exchange(exchange, type="direct")
-        if queue:
-            queue = kombu.Queue(
-                name=queue,
-                exchange=exchange,
-                routing_key=routing_key,
-                durable=True,
-                exclusive=False,
-                auto_delete=False,
-            )
-            queue(connection).declare()
+        queue = kombu.Queue(
+            name=queue,
+            exchange=exchange,
+            routing_key=routing_key,
+            durable=True,
+            exclusive=False,
+            auto_delete=False,
+        )
+        queue(connection).declare()
 
         producer = connection.Producer(exchange=ex, routing_key=routing_key, serializer="json")
 
