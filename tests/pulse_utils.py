@@ -74,5 +74,5 @@ if __name__ == "__main__":
         "user": "user",
         "push_json_url": "push_json_url",
     }
-    pulse_conf = config.get_config()["pulse"]
+    pulse_conf = config.get_pulse_config()["pulse"]
     send_pulse_message(pulse_conf, payload)

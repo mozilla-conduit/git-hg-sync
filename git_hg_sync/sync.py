@@ -44,17 +44,17 @@ def parse_entity(raw_entity):
 
 
 def callback(body, message):
-    logger.debug(f"Received message: {body}")
+    logger.info(f"Received message: {body}")
     raw_entity = body["payload"]
     entity = parse_entity(raw_entity)
     message.ack()
     git_cinnabar_process(entity)
 
 
-def main(pulse_conf, one_time=False):
+def main(pulse_config, one_time=False):
     logging.basicConfig(level=logging.INFO)
-    with get_connection(pulse_conf) as connection:
-        with get_consumer(pulse_conf, connection, [callback]):
+    with get_connection(pulse_config) as connection:
+        with get_consumer(pulse_config, connection, [callback]):
             while True:
                 try:
                     connection.drain_events(timeout=PULSE_TIMEOUT)
@@ -65,5 +65,5 @@ def main(pulse_conf, one_time=False):
 
 
 if __name__ == "__main__":
-    pulse_conf = config.get_config()["pulse"]
-    main(pulse_conf)
+    pulse_config = config.get_pulse_config()["pulse"]
+    main(pulse_config)
