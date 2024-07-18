@@ -14,7 +14,9 @@ def get_connection(pulse_conf):
 def get_consumer(pulse_conf, connection, callbacks):
     exchange = pulse_conf["exchange"]
     exchange = Exchange(exchange, type="topic")
-    exchange(connection).declare(passive=True)  # raise an error if exchange doesn't exist
+    exchange(connection).declare(
+        passive=True
+    )  # raise an error if exchange doesn't exist
 
     queue = Queue(
         name=pulse_conf["queue"],

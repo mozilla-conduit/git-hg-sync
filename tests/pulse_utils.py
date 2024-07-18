@@ -45,7 +45,9 @@ def send_pulse_message(pulse_config, payload):
         )
         queue(connection).declare()
 
-        producer = connection.Producer(exchange=ex, routing_key=routing_key, serializer="json")
+        producer = connection.Producer(
+            exchange=ex, routing_key=routing_key, serializer="json"
+        )
 
         data = {
             "payload": payload,
