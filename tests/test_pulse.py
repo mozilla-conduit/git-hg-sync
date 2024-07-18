@@ -5,6 +5,8 @@ from pulse_utils import send_pulse_message
 
 from git_hg_sync import sync
 
+IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
+
 
 @pytest.fixture
 def pulse_config():
@@ -42,6 +44,7 @@ raw_tag_entity = {
 }
 
 
+@pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
 def test_pulse(pulse_config):
     def mocked_callback(body, message):
         message.ack()
