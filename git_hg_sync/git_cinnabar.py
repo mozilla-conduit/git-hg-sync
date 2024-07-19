@@ -15,10 +15,13 @@ def git_cinnabar_process(entity):
         logger.warning(f"repo {entity.repo_url} is not supported yet")
     else:
         repo = Repo(repo_config["clone"])
-        for commit in reversed(entity.commits):
-            logger.debug(commit)
-            remote = repo.remote(entity.repo_url)
-            remote.fetch(commit)
-            repo.git.cherry_pick(commit)
-            remote = repo.remote(repo_config["remote"])
-            remote.push()
+        # fetch new commits
+        remote = repo.remote(repo_config["remote"])
+        remote.fetch()
+        # add commits to the good branch
+        for commit_sha in entity.commits:
+            logger.info(f"handle commit {commit_sha}")
+            repo.git.cherry_pick(commit_sha)
+        # push on good repo/branch
+        remote = repo.remote(repo_config["target"])
+        remote.push()
