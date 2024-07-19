@@ -1,0 +1,6 @@
+services:
+  sync:
+    build: .
+    environment:
+      GITHUB_ACTIONS: "true"
+    command: ['pytest', 'tests']
