@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from git_hg_sync import config, service, sync_repos
+from git_hg_sync import service, sync_repos
 
 HERE = Path(__file__).parent
 
@@ -11,12 +11,12 @@ HERE = Path(__file__).parent
 @pytest.fixture
 def pulse_config():
     return {
-        "userid": "ogiorgis",
+        "userid": "test_user",
         "host": "pulse.mozilla.org",
         "port": 5671,
-        "exchange": "exchange/ogiorgis/test",
+        "exchange": "exchange/test_user/test",
         "routing_key": "#",
-        "queue": "queue/ogiorgis/test",
+        "queue": "queue/test_user/test",
         "password": os.environ["PULSE_PASSWORD"],
     }
 
@@ -56,10 +56,9 @@ def test_sync_process_with_bad_type():
         sync_repos.process({"type": "badType"})
 
 
-def test_get_connection_and_queue():
-    pulse_conf = config.get_pulse_config(HERE / "config_test.ini")["pulse"]
-    connection = service.get_connection(pulse_conf)
-    queue = service.get_queue(pulse_conf)
-    assert connection.userid == pulse_conf["userid"]
-    assert connection.host == f"{pulse_conf['host']}:{pulse_conf['port']}"
-    assert queue.name == pulse_conf["queue"]
+def test_get_connection_and_queue(pulse_config):
+    connection = service.get_connection(pulse_config)
+    queue = service.get_queue(pulse_config)
+    assert connection.userid == pulse_config["userid"]
+    assert connection.host == f"{pulse_config['host']}:{pulse_config['port']}"
+    assert queue.name == pulse_config["queue"]
