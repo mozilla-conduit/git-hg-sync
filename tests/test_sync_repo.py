@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import mozlog
@@ -18,7 +17,7 @@ def pulse_config():
         "exchange": "exchange/test_user/test",
         "routing_key": "#",
         "queue": "queue/test_user/test",
-        "password": os.environ["PULSE_PASSWORD"],
+        "password": "PULSE_PASSWORD",
     }
 
 
