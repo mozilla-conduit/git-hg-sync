@@ -10,6 +10,10 @@ logger = get_proxy_logger("sync_repo")
 HERE = Path(__file__).parent
 
 
+class EntityTypeError(Exception):
+    pass
+
+
 @dataclass
 class Push:
     type: str
@@ -40,7 +44,7 @@ def parse_entity(raw_entity):
     elif raw_entity["type"] == "tag":
         entity = Tag(**raw_entity)
     else:
-        raise AttributeError(f"unsupported type {raw_entity['type']}")
+        raise EntityTypeError(f"unsupported type {raw_entity['type']}")
     return entity
 
 

@@ -52,7 +52,7 @@ def test_parse_entity():
 
 
 def test_sync_process_with_bad_type():
-    with pytest.raises(AttributeError):
+    with pytest.raises(sync_repos.EntityTypeError):
         sync_repos.process({"type": "badType"})
 
 
