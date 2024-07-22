@@ -49,6 +49,16 @@ def parse_entity(raw_entity):
     return entity
 
 
+def handle_push_commit(repo, commit_sha):
+    logger.info(f"handle commit {commit_sha}")
+    repo.git.cherry_pick(commit_sha)
+    # add extra informations
+    branch = repo.head.reference
+    commit = repo.head.commit
+    branch.commit = commit.parents[0]
+    repo.index.commit(f"{commit.message}\nGit-Commit: {commit_sha}")
+
+
 def handle_commits(entity, clone_dir, remote_src, remote_target):
     logger.info(f"Handle entity {entity.pushid}")
     repo = Repo(clone_dir)
@@ -58,13 +68,7 @@ def handle_commits(entity, clone_dir, remote_src, remote_target):
         remote.fetch()
         # add commits to the good branch
         for commit_sha in entity.commits:
-            logger.info(f"handle commit {commit_sha}")
-            repo.git.cherry_pick(commit_sha)
-            # add extra informations
-            branch = repo.head.reference
-            commit = repo.head.commit
-            branch.commit = commit.parents[0]
-            repo.index.commit(f"{commit.message}\nGit-Commit: {commit_sha}")
+            handle_push_commit(repo, commit_sha)
         # push on good repo/branch
         remote = repo.remote(remote_target)
         remote.push()
