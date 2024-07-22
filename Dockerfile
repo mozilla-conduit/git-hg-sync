@@ -12,7 +12,7 @@ RUN apt-get update && \
     rm -rf /root/.cache
 
 # install test dependencies
-RUN pip install -U pip pytest
+RUN pip install -U pip pytest pytest-mock
 
 # Copy local code to the container image.
 COPY . /app

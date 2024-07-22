@@ -61,6 +61,7 @@ def handle_push_commit(repo, commit_sha):
 
 def handle_commits(entity, clone_dir, remote_src, remote_target):
     logger.info(f"Handle entity {entity.pushid}")
+    assert Path(clone_dir).exists(), f"clone {clone_dir} doesn't exists"
     repo = Repo(clone_dir)
     remote = repo.remote(remote_src)
     if entity.type == "push":
