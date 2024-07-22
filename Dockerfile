@@ -11,9 +11,11 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /root/.cache
 
+# install test dependencies
+RUN pip install -U pip pytest
+
 # Copy local code to the container image.
 COPY . /app
 
-RUN pip install -U pip pytest
 USER app
 RUN pip install -e .
