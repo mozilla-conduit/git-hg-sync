@@ -1,11 +1,13 @@
 import logging
 from datetime import datetime
+from pathlib import Path
 
 import kombu
 
 from git_hg_sync import config
 
 logger = logging.getLogger()
+HERE = Path(__file__).parent
 
 
 def send_pulse_message(pulse_config, payload):
@@ -76,5 +78,5 @@ if __name__ == "__main__":
         "user": "user",
         "push_json_url": "push_json_url",
     }
-    pulse_conf = config.get_pulse_config()["pulse"]
+    pulse_conf = config.get_pulse_config(HERE.parent / "config.ini")["pulse"]
     send_pulse_message(pulse_conf, payload)
