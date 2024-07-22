@@ -6,6 +6,7 @@ This synchronisation must allow infrastructure teams to incrementally migrate ta
 using Mercurial to using Git.
 
 ## Principle
+
 This service (sync rather than async) receives messages from RabbitMQ. These messages are lists
 of pushed commits (the unit of work being a push, not a commit, not a pull request, not a branch,
 etc).
@@ -16,3 +17,10 @@ to produce the equivalent mercurial commits to the right repo (depending on the 
 
 It finally pushes the changes to the remote mercurial repository… then goes back to step one to
 process the next message in the queue.
+
+## build and test
+
+```console
+$ docker-compose build
+$ docker-compose run sync
+```
