@@ -61,6 +61,11 @@ def process(raw_entity):
         for commit_sha in entity.commits:
             logger.info(f"handle commit {commit_sha}")
             repo.git.cherry_pick(commit_sha)
+            # add extra informations
+            branch = repo.head.reference
+            commit = repo.head.commit
+            branch.commit = commit.parents[0]
+            repo.index.commit(f"{commit.message}\nGit-Commit:{commit_sha}")
         # push on good repo/branch
         remote = repo.remote(repo_config["target"])
         remote.push()
