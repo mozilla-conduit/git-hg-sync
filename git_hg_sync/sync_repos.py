@@ -45,6 +45,7 @@ def parse_entity(raw_entity):
 
 
 def handle_commits(entity, clone_dir, remote_src, remote_target):
+    logger.info(f"Handle entity {entity.pushid}")
     repo = Repo(clone_dir)
     remote = repo.remote(remote_src)
     if entity.type == "push":
@@ -58,12 +59,13 @@ def handle_commits(entity, clone_dir, remote_src, remote_target):
             branch = repo.head.reference
             commit = repo.head.commit
             branch.commit = commit.parents[0]
-            repo.index.commit(f"{commit.message}\nGit-Commit:{commit_sha}")
+            repo.index.commit(f"{commit.message}\nGit-Commit: {commit_sha}")
         # push on good repo/branch
         remote = repo.remote(remote_target)
         remote.push()
     elif entity.type == "tag":
         pass  # TODO
+    logger.info(f"Done for entity {entity.pushid}")
 
 
 def process(raw_entity):
