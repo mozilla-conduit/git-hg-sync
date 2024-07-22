@@ -1,10 +1,9 @@
-import logging
-
 from kombu.mixins import ConsumerMixin
+from mozlog import get_proxy_logger
 
 from git_hg_sync import sync_repos
 
-logger = logging.getLogger()
+logger = get_proxy_logger("pluse_consumer")
 
 
 class Worker(ConsumerMixin):

@@ -1,12 +1,12 @@
-import logging
 from dataclasses import dataclass
 from pathlib import Path
 
 from git import Repo
+from mozlog import get_proxy_logger
 
 from git_hg_sync import config
 
-logger = logging.getLogger()
+logger = get_proxy_logger("sync_repo")
 HERE = Path(__file__).parent
 
 
@@ -51,6 +51,7 @@ def process(raw_entity):
     )
     if not repo_config:
         logger.warning(f"repo {entity.repo_url} is not supported yet")
+        return
     repo = Repo(repo_config["clone"])
     remote = repo.remote(repo_config["remote"])
     if entity.type == "push":
