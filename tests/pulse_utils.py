@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -6,7 +5,6 @@ import kombu
 
 from git_hg_sync import config
 
-logger = logging.getLogger()
 HERE = Path(__file__).parent
 
 
@@ -23,7 +21,7 @@ def send_pulse_message(pulse_config, payload):
     port = pulse_config["port"]
     exchange = pulse_config["exchange"]
     queue = pulse_config["queue"]
-    logger.info(f"connecting to pulse at {host}:{port} as {userid}")
+    print(f"connecting to pulse at {host}:{port} as {userid}")
 
     connection = kombu.Connection(
         hostname=host,
@@ -61,13 +59,11 @@ def send_pulse_message(pulse_config, payload):
             },
         }
 
-        logger.info(f"publishing message to {exchange}")
-        logger.debug(f"payload: {payload}")
+        print(f"publishing message to {exchange}")
         producer.publish(data)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
     payload = {
         "type": "push",
         "repo_url": "git_repo",
