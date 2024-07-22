@@ -44,16 +44,9 @@ def parse_entity(raw_entity):
     return entity
 
 
-def process(raw_entity):
-    entity = parse_entity(raw_entity)
-    repo_config = config.get_repos_config(HERE.parent / "repos.json").get(
-        entity.repo_url
-    )
-    if not repo_config:
-        logger.warning(f"repo {entity.repo_url} is not supported yet")
-        return
-    repo = Repo(repo_config["clone"])
-    remote = repo.remote(repo_config["remote"])
+def handle_commits(entity, clone_dir, remote_src, remote_target):
+    repo = Repo(clone_dir)
+    remote = repo.remote(remote_src)
     if entity.type == "push":
         # fetch new commits
         remote.fetch()
@@ -67,7 +60,20 @@ def process(raw_entity):
             branch.commit = commit.parents[0]
             repo.index.commit(f"{commit.message}\nGit-Commit:{commit_sha}")
         # push on good repo/branch
-        remote = repo.remote(repo_config["target"])
+        remote = repo.remote(remote_target)
         remote.push()
     elif entity.type == "tag":
         pass  # TODO
+
+
+def process(raw_entity):
+    entity = parse_entity(raw_entity)
+    repo_config = config.get_repos_config(HERE.parent / "repos.json").get(
+        entity.repo_url
+    )
+    if not repo_config:
+        logger.warning(f"repo {entity.repo_url} is not supported yet")
+        return
+    handle_commits(
+        entity, repo_config["clone"], repo_config["remote"], repo_config["target"]
+    )
