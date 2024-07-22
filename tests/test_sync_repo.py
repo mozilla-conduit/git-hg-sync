@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import mozlog
 import pytest
 
 from git_hg_sync import service, sync_repos
@@ -42,6 +43,11 @@ raw_tag_entity = {
     "user": "user",
     "push_json_url": "push_json_url",
 }
+
+
+def setup_module():
+    logger = mozlog.structuredlog.StructuredLogger("tests")
+    mozlog.structuredlog.set_default_logger(logger)
 
 
 def test_parse_entity():

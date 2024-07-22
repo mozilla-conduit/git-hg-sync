@@ -39,6 +39,7 @@ class Tag:
 
 
 def parse_entity(raw_entity):
+    logger.debug(f"parse_entity: {raw_entity}")
     if raw_entity["type"] == "push":
         entity = Push(**raw_entity)
     elif raw_entity["type"] == "tag":
