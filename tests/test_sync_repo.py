@@ -3,7 +3,7 @@ from pathlib import Path
 import mozlog
 import pytest
 
-from git_hg_sync import service, sync_repos
+from git_hg_sync import __main__, sync_repos
 
 HERE = Path(__file__).parent
 
@@ -82,8 +82,8 @@ def test_sync_process_with_bad_repo(repos_config, mocker):
 
 
 def test_get_connection_and_queue(pulse_config):
-    connection = service.get_connection(pulse_config)
-    queue = service.get_queue(pulse_config)
+    connection = __main__.get_connection(pulse_config)
+    queue = __main__.get_queue(pulse_config)
     assert connection.userid == pulse_config["userid"]
     assert connection.host == f"{pulse_config['host']}:{pulse_config['port']}"
     assert queue.name == pulse_config["queue"]
