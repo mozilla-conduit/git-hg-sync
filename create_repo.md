@@ -6,7 +6,7 @@ $ git clone hg::ssh://git@forge.extranet.logilab.fr/ogiorgis/chatzilla chatzilla
 $ cd chatzilla_cinnabar
 $ # for git-cinnabar to be happier:
 $ git config fetch.prune true
-$ make git status and friends faster:
+$ # make git status and friends faster:
 $ mv .git/hooks/fsmonitor-watchman.sample .git/hooks/query-watchman
 $ git config core.fsmonitor .git/hooks/query-watchman
 $ # add git origin

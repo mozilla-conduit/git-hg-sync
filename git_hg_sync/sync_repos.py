@@ -49,27 +49,29 @@ def parse_entity(raw_entity):
     return entity
 
 
-def handle_push_commit(repo, commit_sha):
-    logger.info(f"handle commit {commit_sha}")
-    repo.git.cherry_pick(commit_sha)
-    # add extra informations
-    branch = repo.head.reference
-    commit = repo.head.commit
-    branch.commit = commit.parents[0]
-    repo.index.commit(f"{commit.message}\nGit-Commit: {commit_sha}")
+def get_remote(repo, remote_url):
+    """
+    get the repo if it exists, create it otherwise
+    the repo name is the last part of the url
+    """
+    remote_name = remote_url.split("/")[-1]
+    for rem in repo.remotes:
+        if rem.name == remote_name:
+            return repo.remote(remote_name)
+            break
+    else:
+        return repo.create_remote(remote_name, remote_url)
 
 
-def handle_commits(entity, clone_dir, remote_src, remote_target):
+def handle_commits(entity, clone_dir, remote_url, remote_target):
     logger.info(f"Handle entity {entity.pushid}")
     assert Path(clone_dir).exists(), f"clone {clone_dir} doesn't exists"
     repo = Repo(clone_dir)
-    remote = repo.remote(remote_src)
+    remote = get_remote(repo, remote_url)
     # fetch new commits
     remote.fetch()
     if entity.type == "push":
-        # add commits to the good branch
-        for commit_sha in entity.commits:
-            handle_push_commit(repo, commit_sha)
+        remote.pull("branches/default/tip")
     elif entity.type == "tag":
         repo.commit(entity.commit)
         repo.create_tag(entity.tag)
@@ -87,6 +89,4 @@ def process(raw_entity):
     if not repo_config:
         logger.warning(f"repo {entity.repo_url} is not supported yet")
         return
-    handle_commits(
-        entity, repo_config["clone"], repo_config["remote"], repo_config["target"]
-    )
+    handle_commits(entity, repo_config["clone"], entity.repo_url, repo_config["target"])
