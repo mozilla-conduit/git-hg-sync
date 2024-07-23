@@ -64,17 +64,18 @@ def handle_commits(entity, clone_dir, remote_src, remote_target):
     assert Path(clone_dir).exists(), f"clone {clone_dir} doesn't exists"
     repo = Repo(clone_dir)
     remote = repo.remote(remote_src)
+    # fetch new commits
+    remote.fetch()
     if entity.type == "push":
-        # fetch new commits
-        remote.fetch()
         # add commits to the good branch
         for commit_sha in entity.commits:
             handle_push_commit(repo, commit_sha)
-        # push on good repo/branch
-        remote = repo.remote(remote_target)
-        remote.push()
     elif entity.type == "tag":
-        pass  # TODO
+        repo.commit(entity.commit)
+        repo.create_tag(entity.tag)
+    # push on good repo/branch
+    remote = repo.remote(remote_target)
+    remote.push()
     logger.info(f"Done for entity {entity.pushid}")
 
 
