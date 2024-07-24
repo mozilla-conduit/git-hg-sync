@@ -5,6 +5,7 @@ import pytest
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.repo_synchronizer import RepoSynchronyzer, Push
 
+
 @pytest.fixture
 def pulse_config():
     return {
@@ -32,7 +33,17 @@ def repos_config():
 def test_sync_process_with_bad_repo(repos_config):
     syncrepos = RepoSynchronyzer(repos_config=repos_config)
     with pytest.raises(AssertionError) as e:
-        syncrepos.sync(Push(repo_url="repo_url", heads=["head"], commits=["commits"], time=0, pushid=0, user="user", push_json_url="push_json_url"))
+        syncrepos.sync(
+            Push(
+                repo_url="repo_url",
+                heads=["head"],
+                commits=["commits"],
+                time=0,
+                pushid=0,
+                user="user",
+                push_json_url="push_json_url",
+            )
+        )
     assert str(e.value) == f"clone {repos_config['repo_url']['clone']} doesn't exists"
 
 

@@ -1,7 +1,8 @@
 import pytest
 
 from git_hg_sync.pulse_worker import PulseWorker, EntityTypeError
-from git_hg_sync.repo_synchronizer import Push, Tag 
+from git_hg_sync.repo_synchronizer import Push, Tag
+
 
 def raw_push_entity():
     return {
@@ -27,6 +28,7 @@ def raw_tag_entity():
         "user": "user",
         "push_json_url": "push_json_url",
     }
+
 
 def test_parse_entity_valid():
     push_entity = PulseWorker.parse_entity(raw_push_entity())
