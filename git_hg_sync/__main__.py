@@ -6,7 +6,7 @@ from kombu import Connection, Exchange, Queue
 from mozlog import commandline
 
 from git_hg_sync import config
-from git_hg_sync.pulse_consumer import Worker
+from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronyzer
 
 HERE = Path(__file__).parent
@@ -52,7 +52,7 @@ def main():
     repo_synchronyzer = RepoSynchronyzer(repos_config=repos_config)
     with connection as conn:
         logger.info(f"connected to {conn.host}")
-        worker = Worker(conn, queue, repo_synchronyzer=repo_synchronyzer)
+        worker = PulseWorker(conn, queue, repo_synchronyzer=repo_synchronyzer)
         worker.run()
 
 

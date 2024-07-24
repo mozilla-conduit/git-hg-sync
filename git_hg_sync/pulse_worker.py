@@ -4,7 +4,7 @@ from mozlog import get_proxy_logger
 logger = get_proxy_logger("pluse_consumer")
 
 
-class Worker(ConsumerMixin):
+class PulseWorker(ConsumerMixin):
 
     def __init__(self, connection, queue, *, repo_synchronyzer):
         self.connection = connection
