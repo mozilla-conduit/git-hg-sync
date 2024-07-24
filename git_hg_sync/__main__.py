@@ -7,7 +7,7 @@ from mozlog import commandline
 
 from git_hg_sync import config
 from git_hg_sync.pulse_consumer import Worker
-from git_hg_sync.sync_repos import RepoSynchronyzer
+from git_hg_sync.repo_synchronizer import RepoSynchronyzer
 
 HERE = Path(__file__).parent
 
