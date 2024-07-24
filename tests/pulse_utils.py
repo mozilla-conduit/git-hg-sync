@@ -65,10 +65,10 @@ def send_pulse_message(pulse_config, payload):
 
 if __name__ == "__main__":
     payload = {
-        "type": "push",
-        "repo_url": "git_repo",
-        "heads": ["head"],
-        "commits": ["commit_sha_1", "commit_sha_2"],
+        "type": "tag",
+        "repo_url": "https://github.com/djangoliv/chatzilla.git",
+        "tag": "truc",
+        "commit": "88949ac3ad633e92cf52354d91857074e264ad12",
         "time": 0,
         "pushid": 0,
         "user": "user",

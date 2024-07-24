@@ -1,16 +1,15 @@
 from kombu.mixins import ConsumerMixin
 from mozlog import get_proxy_logger
 
-from git_hg_sync import sync_repos
-
 logger = get_proxy_logger("pluse_consumer")
 
 
 class Worker(ConsumerMixin):
 
-    def __init__(self, connection, queue):
+    def __init__(self, connection, queue, *, repo_synchronyzer):
         self.connection = connection
         self.task_queue = queue
+        self.repo_synchronyzer = repo_synchronyzer
 
     def get_consumers(self, Consumer, channel):
         consumer = Consumer(
@@ -22,4 +21,4 @@ class Worker(ConsumerMixin):
         logger.info(f"Received message: {body}")
         message.ack()
         raw_entity = body["payload"]
-        sync_repos.process(raw_entity)
+        self.repo_synchronyzer.sync(raw_entity)

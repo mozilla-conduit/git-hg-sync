@@ -7,6 +7,7 @@ from mozlog import commandline
 
 from git_hg_sync import config
 from git_hg_sync.pulse_consumer import Worker
+from git_hg_sync.sync_repos import RepoSynchronyzer
 
 HERE = Path(__file__).parent
 
@@ -44,10 +45,14 @@ def main():
     logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
     pulse_config = config.get_pulse_config(HERE.parent / "config.ini")["pulse"]
     connection = get_connection(pulse_config)
+
+    repos_config = config.get_repos_config(HERE.parent / "repos.json")
+
     queue = get_queue(pulse_config)
+    repo_synchronyzer = RepoSynchronyzer(repos_config=repos_config)
     with connection as conn:
         logger.info(f"connected to {conn.host}")
-        worker = Worker(conn, queue)
+        worker = Worker(conn, queue, repo_synchronyzer=repo_synchronyzer)
         worker.run()
 
 

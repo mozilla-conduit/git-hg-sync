@@ -61,23 +61,23 @@ def setup_module():
 
 
 def test_parse_entity():
-    push_entity = sync_repos.parse_entity(raw_push_entity)
+    syncrepos = sync_repos.RepoSynchronyzer(None)
+    push_entity = syncrepos.parse_entity(raw_push_entity)
     assert isinstance(push_entity, sync_repos.Push)
-    tag_entity = sync_repos.parse_entity(raw_tag_entity)
+    tag_entity = syncrepos.parse_entity(raw_tag_entity)
     assert isinstance(tag_entity, sync_repos.Tag)
 
 
 def test_sync_process_with_bad_type():
+    syncrepos = sync_repos.RepoSynchronyzer(None)
     with pytest.raises(sync_repos.EntityTypeError):
-        sync_repos.process({"type": "badType"})
+        syncrepos.sync({"type": "badType"})
 
 
-def test_sync_process_with_bad_repo(repos_config, mocker):
-    get_repo_config_mock = mocker.patch("git_hg_sync.config.get_repos_config")
-    get_repo_config_mock.return_value = repos_config
+def test_sync_process_with_bad_repo(repos_config):
+    syncrepos = sync_repos.RepoSynchronyzer(repos_config=repos_config)
     with pytest.raises(AssertionError) as e:
-        sync_repos.process(raw_push_entity)
-    assert get_repo_config_mock.called
+        syncrepos.sync(raw_push_entity)
     assert str(e.value) == f"clone {repos_config['repo_url']['clone']} doesn't exists"
 
 
