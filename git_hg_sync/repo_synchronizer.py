@@ -7,10 +7,6 @@ from mozlog import get_proxy_logger
 logger = get_proxy_logger("sync_repo")
 
 
-class EntityTypeError(Exception):
-    pass
-
-
 @dataclass
 class Push:
     repo_url: str
@@ -37,17 +33,6 @@ class RepoSynchronyzer:
 
     def __init__(self, repos_config):
         self._repos_config = repos_config
-
-    def parse_entity(self, raw_entity):
-        logger.debug(f"parse_entity: {raw_entity}")
-        message_type = raw_entity.pop("type")
-        match message_type:
-            case "push":
-                return Push(**raw_entity)
-            case "tag":
-                return Tag(**raw_entity)
-            case _:
-                raise EntityTypeError(f"unsupported type {message_type}")
 
     def get_remote(self, repo, remote_url):
         """
@@ -79,8 +64,7 @@ class RepoSynchronyzer:
         remote.push()
         logger.info(f"Done for entity {entity.pushid}")
 
-    def sync(self, raw_entity):
-        entity = self.parse_entity(raw_entity)
+    def sync(self, entity: Push | Tag) -> None:
         repo_config = self._repos_config.get(entity.repo_url)
         if not repo_config:
             logger.warning(f"repo {entity.repo_url} is not supported yet")
