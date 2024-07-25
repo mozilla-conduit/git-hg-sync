@@ -7,13 +7,8 @@ from mozlog import get_proxy_logger
 logger = get_proxy_logger("sync_repo")
 
 
-class EntityTypeError(Exception):
-    pass
-
-
 @dataclass
 class Push:
-    type: str
     repo_url: str
     heads: list[str]
     commits: list[str]
@@ -25,7 +20,6 @@ class Push:
 
 @dataclass
 class Tag:
-    type: str
     repo_url: str
     tag: str
     commit: str
@@ -39,16 +33,6 @@ class RepoSynchronyzer:
 
     def __init__(self, repos_config):
         self._repos_config = repos_config
-
-    def parse_entity(self, raw_entity):
-        logger.debug(f"parse_entity: {raw_entity}")
-        if raw_entity["type"] == "push":
-            entity = Push(**raw_entity)
-        elif raw_entity["type"] == "tag":
-            entity = Tag(**raw_entity)
-        else:
-            raise EntityTypeError(f"unsupported type {raw_entity['type']}")
-        return entity
 
     def get_remote(self, repo, remote_url):
         """
@@ -70,17 +54,17 @@ class RepoSynchronyzer:
         remote = self.get_remote(repo, remote_url)
         # fetch new commits
         remote.fetch()
-        if entity.type == "push":
-            remote.pull("branches/default/tip")
-        elif entity.type == "tag":
-            pass  # TODO
+        match entity:
+            case Push():
+                remote.pull("branches/default/tip")
+            case _:
+                pass  # TODO
         # push on good repo/branch
         remote = repo.remote(remote_target)
         remote.push()
         logger.info(f"Done for entity {entity.pushid}")
 
-    def sync(self, raw_entity):
-        entity = self.parse_entity(raw_entity)
+    def sync(self, entity: Push | Tag) -> None:
         repo_config = self._repos_config.get(entity.repo_url)
         if not repo_config:
             logger.warning(f"repo {entity.repo_url} is not supported yet")
