@@ -1,0 +1,8 @@
+[pulse]
+userid = "<username>"
+host = "pulse.mozilla.org"
+port = 5671
+exchange = "exchange/<username>/test"
+routing_key = ""
+queue = "queue/<username>/test"
+password = "<pulse-password>"

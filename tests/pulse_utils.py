@@ -3,7 +3,7 @@ from pathlib import Path
 
 import kombu
 
-from git_hg_sync import config
+from git_hg_sync.config import Config 
 
 HERE = Path(__file__).parent
 
@@ -14,13 +14,13 @@ def send_pulse_message(pulse_config, payload):
     The Pulse message will be constructed from the specified payload
     and sent to the requested exchange.
     """
-    userid = pulse_config["userid"]
-    password = pulse_config["password"]
-    routing_key = pulse_config["routing_key"]
-    host = pulse_config["host"]
-    port = pulse_config["port"]
-    exchange = pulse_config["exchange"]
-    queue = pulse_config["queue"]
+    userid = pulse_config.userid
+    password = pulse_config.password
+    routing_key = pulse_config.routing_key
+    host = pulse_config.host
+    port = pulse_config.port
+    exchange = pulse_config.exchange
+    queue = pulse_config.queue
     print(f"connecting to pulse at {host}:{port} as {userid}")
 
     connection = kombu.Connection(
@@ -74,5 +74,5 @@ if __name__ == "__main__":
         "user": "user",
         "push_json_url": "push_json_url",
     }
-    pulse_conf = config.get_pulse_config(HERE.parent / "config.ini")["pulse"]
-    send_pulse_message(pulse_conf, payload)
+    config = Config.from_file(HERE.parent / "config.toml")
+    send_pulse_message(config.pulse, payload)
