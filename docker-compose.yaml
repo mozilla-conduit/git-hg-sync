@@ -1,4 +1,4 @@
 services:
   sync:
     build: .
-    command: ['pytest', 'tests']
+    command: ['pytest', 'tests', '-p', 'no:cacheprovider']
