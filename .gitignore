@@ -1,5 +1,5 @@
 clones
 .tox
 **/__pycache__/
-config.ini
+config.toml
 .coverage

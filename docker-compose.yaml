@@ -2,3 +2,26 @@ services:
   sync:
     build: .
     command: ['pytest', 'tests', '-p', 'no:cacheprovider']
+    environment:
+      - RABBITMQ=true
+    depends_on:
+      pulse:
+        condition: service_healthy
+    networks:
+      - pulse_network
+
+  pulse:
+    image: rabbitmq:3-management-alpine
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 5s
+      timeout: 2s
+      retries: 1
+    ports:
+      - 15672:15672
+    networks:
+      - pulse_network
+
+networks:
+  pulse_network:
+    driver: bridge

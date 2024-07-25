@@ -1,7 +1,7 @@
 import pytest
 
-from git_hg_sync.config import PulseConfig, MappingConfig
 from git_hg_sync.__main__ import get_connection, get_queue
+from git_hg_sync.config import MappingConfig, PulseConfig
 from git_hg_sync.repo_synchronizer import Push, RepoSynchronyzer
 
 
