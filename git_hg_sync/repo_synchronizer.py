@@ -56,7 +56,8 @@ class RepoSynchronyzer:
         remote.fetch()
         match entity:
             case Push():
-                remote.pull("branches/default/tip")
+                for head in entity.heads:
+                    remote.pull(head)
             case _:
                 pass  # TODO
         # push on good repo/branch
