@@ -1,9 +1,7 @@
-from pathlib import Path
-
 import pytest
 
 from git_hg_sync.__main__ import get_connection, get_queue
-from git_hg_sync.repo_synchronizer import RepoSynchronyzer, Push
+from git_hg_sync.repo_synchronizer import Push, RepoSynchronyzer
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
-import pytest
 import mozlog
+import pytest
 
 
 @pytest.fixture(autouse=True)
