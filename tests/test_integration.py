@@ -4,6 +4,7 @@ import pulse_utils
 import pytest
 
 from git_hg_sync.config import PulseConfig
+from git_hg_sync.__main__ import get_connection, get_queue
 
 NO_RABBITMQ = not (os.getenv("RABBITMQ") == "true")
 
@@ -23,8 +24,9 @@ def pulse_config():
     )
 
 
-@pytest.mark.skipif(NO_RABBITMQ, reason="Test doesn't work without rabbitMq")
-def test_send(pulse_config):
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
+def test_send_and_receive(pulse_config):
+
     payload = {
         "type": "tag",
         "repo_url": "repo.git",
@@ -35,4 +37,13 @@ def test_send(pulse_config):
         "user": "user",
         "push_json_url": "push_json_url",
     }
+
+    def callback(body, message):
+        message.ack()
+        assert body["payload"] == payload
+
     pulse_utils.send_pulse_message(pulse_config, payload, ssl=False)
+    connection = get_connection(pulse_config, ssl=False)
+    queue = get_queue(pulse_config)
+    with connection.Consumer(queue, auto_declare=False, callbacks=[callback]):
+        connection.drain_events(timeout=2)

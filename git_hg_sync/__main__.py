@@ -17,14 +17,14 @@ def get_parser():
     return parser
 
 
-def get_connection(config):
+def get_connection(config, ssl=True):
     return Connection(
         hostname=config.host,
         port=config.port,
         userid=config.userid,
         password=config.password,
         heartbeat=10,
-        ssl=True,
+        ssl=ssl,
     )
 
 
