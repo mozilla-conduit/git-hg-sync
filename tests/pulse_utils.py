@@ -1,6 +1,6 @@
+import sys
 from datetime import datetime
 from pathlib import Path
-import sys
 
 import kombu
 
@@ -9,7 +9,7 @@ from git_hg_sync.config import Config
 HERE = Path(__file__).parent
 
 
-def send_pulse_message(pulse_config, payload):
+def send_pulse_message(pulse_config, payload, ssl=True):
     """Send a pulse message
     The routing key will be constructed from the repository URL.
     The Pulse message will be constructed from the specified payload
@@ -30,7 +30,7 @@ def send_pulse_message(pulse_config, payload):
         userid=userid,
         password=password,
         connect_timeout=100,
-        ssl=True,
+        ssl=ssl,
     )
     connection.connect()
 
@@ -56,7 +56,7 @@ def send_pulse_message(pulse_config, payload):
                 "exchange": exchange,
                 "routing_key": routing_key,
                 "serializer": "json",
-                "sent": datetime.utcnow().isoformat(),
+                "sent": datetime.now(),
             },
         }
 
