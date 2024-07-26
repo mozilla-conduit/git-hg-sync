@@ -8,8 +8,7 @@ def raw_push_entity():
     return {
         "type": "push",
         "repo_url": "repo_url",
-        "heads": ["head"],
-        "commits": ["commit"],
+        "branches": {"mybranch": "acommitsha"},
         "time": 0,
         "pushid": 0,
         "user": "user",

@@ -1,6 +1,0 @@
-{
-  "https://github.com/djangoliv/chatzilla.git": {
-    "clone": "clones/chatzilla_cinnabar",
-    "target": "origin"
-  }
-}

@@ -1,0 +1,18 @@
+[pulse]
+userid = "<username>"
+host = "pulse.mozilla.org"
+port = 5671
+exchange = "exchange/<username>/test"
+routing_key = ""
+queue = "queue/<username>/test"
+password = "<pulse-password>"
+
+[clones]
+directory = "../git_hg_sync_repos/"
+
+[mappings.test]
+git_repository = "/home/fbessou/dev/MOZI/fake-forge/git/test"
+
+[mappings.test.rules.esr1]
+branch_pattern = "test-esr1"
+mercurial_repository = "/home/fbessou/dev/MOZI/fake-forge/hg/test-esr1"
