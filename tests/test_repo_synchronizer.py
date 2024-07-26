@@ -7,30 +7,33 @@ from git_hg_sync.repo_synchronizer import Push, RepoSynchronyzer
 
 @pytest.fixture
 def pulse_config():
-    return PulseConfig(**{
-        "userid": "test_user",
-        "host": "pulse.mozilla.org",
-        "port": 5671,
-        "exchange": "exchange/test_user/test",
-        "routing_key": "#",
-        "queue": "queue/test_user/test",
-        "password": "PULSE_PASSWORD",
-    })
+    return PulseConfig(
+        **{
+            "userid": "test_user",
+            "host": "pulse.mozilla.org",
+            "port": 5671,
+            "exchange": "exchange/test_user/test",
+            "routing_key": "#",
+            "queue": "queue/test_user/test",
+            "password": "PULSE_PASSWORD",
+        }
+    )
 
 
 @pytest.fixture
 def mappings():
     return {
-        "myrepo": MappingConfig(**{
-            "git_repository": "myforge/myrepo.git",
-            "rules": {
-                "rule1": {
-                    "branch_pattern": "branch_name",
-                    "mercurial_repository": "myforge/myhgrepo"
-
-                }
+        "myrepo": MappingConfig(
+            **{
+                "git_repository": "myforge/myrepo.git",
+                "rules": {
+                    "rule1": {
+                        "branch_pattern": "branch_name",
+                        "mercurial_repository": "myforge/myhgrepo",
+                    }
+                },
             }
-        })
+        )
     }
 
 
