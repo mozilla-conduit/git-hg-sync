@@ -1,9 +1,10 @@
 from datetime import datetime
 from pathlib import Path
+import sys
 
 import kombu
 
-from git_hg_sync.config import Config 
+from git_hg_sync.config import Config
 
 HERE = Path(__file__).parent
 
@@ -64,15 +65,33 @@ def send_pulse_message(pulse_config, payload):
 
 
 if __name__ == "__main__":
-    payload = {
-        "type": "tag",
-        "repo_url": "https://github.com/djangoliv/chatzilla.git",
-        "tag": "truc",
-        "commit": "88949ac3ad633e92cf52354d91857074e264ad12",
-        "time": 0,
-        "pushid": 0,
-        "user": "user",
-        "push_json_url": "push_json_url",
-    }
     config = Config.from_file(HERE.parent / "config.toml")
+    config.mappings
+    message_type = sys.argv[1]
+    mapping = config.mappings[sys.argv[2]]
+    match message_type:
+        case "push":
+            payload = {
+                "type": "push",
+                "repo_url": mapping.git_repository,
+                "branches": {sys.argv[3]: sys.argv[4]},
+                "time": 0,
+                "pushid": 0,
+                "user": "user",
+                "push_json_url": "push_json_url",
+            }
+        case "tag":
+            payload = {
+                "type": "tag",
+                "repo_url": "/home/fbessou/dev/MOZI/fake-forge/git/chatzilla",
+                "tag": "tag",
+                "commit": "88949ac3ad633e92cf52354d91857074e264ad12",
+                "time": 0,
+                "pushid": 0,
+                "user": "user",
+                "push_json_url": "push_json_url",
+            }
+        case _:
+            raise NotImplementedError()
+    print(payload)
     send_pulse_message(config.pulse, payload)

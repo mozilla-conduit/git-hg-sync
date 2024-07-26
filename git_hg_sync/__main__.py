@@ -5,7 +5,7 @@ from pathlib import Path
 from kombu import Connection, Exchange, Queue
 from mozlog import commandline
 
-from git_hg_sync.config import Config, get_repos_config
+from git_hg_sync.config import Config
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronyzer
 
@@ -38,7 +38,7 @@ def get_queue(config):
     )
 
 
-def main():
+def main() -> None:
     parser = get_parser()
     commandline.add_logging_group(parser)
     args = parser.parse_args()
@@ -47,10 +47,10 @@ def main():
     pulse_config = config.pulse
     connection = get_connection(pulse_config)
 
-    repos_config = get_repos_config(HERE.parent / "repos.json")
-
     queue = get_queue(pulse_config)
-    repo_synchronyzer = RepoSynchronyzer(repos_config=repos_config)
+    repo_synchronyzer = RepoSynchronyzer(
+        clones_directory=config.clones.directory, mappings=config.mappings
+    )
     with connection as conn:
         logger.info(f"connected to {conn.host}")
         worker = PulseWorker(conn, queue, repo_synchronyzer=repo_synchronyzer)
