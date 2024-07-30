@@ -69,7 +69,6 @@ class RepoSynchronyzer:
                 branch.commit = commit
             else:
                 branch = repo.create_head(branch_name, commit)
-            breakpoint()
             for rule_name, rule in mapping.rules.items():
                 if rule.branch_pattern == branch_name:
                     remote = self.get_remote(
