@@ -10,7 +10,7 @@ from git_hg_sync.events import Push, Tag
 logger = get_proxy_logger("sync_repo")
 
 
-class RepoSynchronyzer:
+class RepoSynchronizer:
 
     def __init__(self, clones_directory: Path, mappings: dict[str, MappingConfig]):
         self._clones_directory = clones_directory

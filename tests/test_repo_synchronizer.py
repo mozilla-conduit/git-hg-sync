@@ -2,7 +2,7 @@ import pytest
 
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import MappingConfig, PulseConfig
-from git_hg_sync.repo_synchronizer import RepoSynchronyzer
+from git_hg_sync.repo_synchronizer import RepoSynchronizer
 from git_hg_sync.events import Push
 
 
@@ -39,7 +39,7 @@ def mappings():
 
 
 def test_sync_process_with_bad_repo(tmp_path, mappings):
-    syncrepos = RepoSynchronyzer(tmp_path / "clones", mappings)
+    syncrepos = RepoSynchronizer(tmp_path / "clones", mappings)
     syncrepos.sync(
         Push(
             repo_url="repo_url",
