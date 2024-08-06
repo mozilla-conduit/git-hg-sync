@@ -14,6 +14,13 @@ HERE = Path(__file__).parent
 
 def get_parser():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=Path,
+        required=True,
+        help="Configuration file path.",
+    )
     return parser
 
 
@@ -43,7 +50,7 @@ def main() -> None:
     commandline.add_logging_group(parser)
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
-    config = Config.from_file(HERE.parent / "config.toml")
+    config = Config.from_file(args.config)
     pulse_config = config.pulse
     connection = get_connection(pulse_config)
 
