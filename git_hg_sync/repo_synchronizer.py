@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -6,31 +5,9 @@ from git import Repo
 from mozlog import get_proxy_logger
 
 from git_hg_sync.config import MappingConfig
+from git_hg_sync.events import Push, Tag
 
 logger = get_proxy_logger("sync_repo")
-
-
-@dataclass
-class Push:
-    repo_url: str
-    branches: dict[
-        str, str
-    ]  # Mapping between branch names (key) and corresponding commit sha (value)
-    time: int
-    pushid: int
-    user: str
-    push_json_url: str
-
-
-@dataclass
-class Tag:
-    repo_url: str
-    tag: str
-    commit: str
-    time: int
-    pushid: int
-    user: str
-    push_json_url: str
 
 
 class RepoSynchronyzer:

@@ -2,7 +2,8 @@ import pytest
 
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import MappingConfig, PulseConfig
-from git_hg_sync.repo_synchronizer import Push, RepoSynchronyzer
+from git_hg_sync.repo_synchronizer import RepoSynchronyzer
+from git_hg_sync.events import Push
 
 
 @pytest.fixture

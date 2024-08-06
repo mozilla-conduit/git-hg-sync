@@ -1,7 +1,7 @@
 import pytest
 
 from git_hg_sync.pulse_worker import EntityTypeError, PulseWorker
-from git_hg_sync.repo_synchronizer import Push, Tag
+from git_hg_sync.events import Push, Tag
 
 
 def raw_push_entity():
