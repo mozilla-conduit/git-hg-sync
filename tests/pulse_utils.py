@@ -68,12 +68,11 @@ if __name__ == "__main__":
     config = Config.from_file(HERE.parent / "config.toml")
     config.mappings
     message_type = sys.argv[1]
-    mapping = config.mappings[sys.argv[2]]
     match message_type:
         case "push":
             payload = {
                 "type": "push",
-                "repo_url": mapping.git_repository,
+                "repo_url": sys.argv[2],
                 "branches": {sys.argv[3]: sys.argv[4]},
                 "time": 0,
                 "pushid": 0,

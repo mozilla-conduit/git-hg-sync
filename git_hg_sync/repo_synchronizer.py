@@ -4,7 +4,7 @@ from typing import Literal
 from git import Repo
 from mozlog import get_proxy_logger
 
-from git_hg_sync.config import MappingConfig
+from git_hg_sync.config import Mapping, TrackedRepository
 from git_hg_sync.events import Push, Tag
 
 logger = get_proxy_logger("sync_repo")
@@ -12,8 +12,14 @@ logger = get_proxy_logger("sync_repo")
 
 class RepoSynchronizer:
 
-    def __init__(self, clones_directory: Path, mappings: dict[str, MappingConfig]):
+    def __init__(
+        self,
+        clones_directory: Path,
+        tracked_repositories: list[TrackedRepository],
+        mappings: list[Mapping],
+    ):
         self._clones_directory = clones_directory
+        self._tracked_repositories = tracked_repositories
         self._mappings = mappings
 
     def get_remote(self, repo, remote_name: Literal["git", "hg"], remote_url: str):
@@ -31,13 +37,11 @@ class RepoSynchronizer:
                 remote_name, remote_url, allow_unsafe_protocols=True
             )
 
-    def handle_commits(
-        self, push_message: Push, clone_dir: Path, mapping: MappingConfig
-    ):
+    def handle_commits(self, push_message: Push, clone_dir: Path, mapping: Mapping):
         logger.info(f"Handle entity {push_message.pushid}")
         assert Path(clone_dir).exists(), f"clone {clone_dir} doesn't exists"
         repo = Repo(clone_dir)
-        remote = self.get_remote(repo, "git", mapping.git_repository)
+        remote = self.get_remote(repo, "git", mapping.source.url)
         # fetch new commits
         for branch_name, commit in push_message.branches.items():
             remote.fetch(commit)
@@ -46,12 +50,9 @@ class RepoSynchronizer:
                 branch.commit = commit
             else:
                 branch = repo.create_head(branch_name, commit)
-            for rule_name, rule in mapping.rules.items():
-                if rule.branch_pattern == branch_name:
-                    remote = self.get_remote(
-                        repo, "hg", "hg::" + rule.mercurial_repository
-                    )
-                    remote.push(branch.name)
+            if mapping.source.branch_pattern == branch_name:
+                remote = self.get_remote(repo, "hg", "hg::" + mapping.destination.url)
+                remote.push(branch.name)
 
         # match push_message:
         #    case Push():
@@ -65,14 +66,13 @@ class RepoSynchronizer:
         # logger.info(f"Done for entity {push_message.pushid}")
 
     def sync(self, entity: Push | Tag) -> None:
+        source_url = entity.repo_url
         if isinstance(entity, Tag):
             logger.warning("Tag message not handled not implemented yet")
             return
 
         matching_mappings = [
-            (mapping_name, mapping)
-            for mapping_name, mapping in self._mappings.items()
-            if mapping.git_repository == entity.repo_url
+            mapping for mapping in self._mappings if mapping.source == entity.repo_url
         ]
         if not matching_mappings:
             logger.warning(f"No mapping found for git repository {entity.repo_url} ")
@@ -82,8 +82,13 @@ class RepoSynchronizer:
             logger.warning(f"No mapping found for git repository {entity.repo_url} ")
             return
 
-        mapping_name, mapping = matching_mappings[0]
-        clone_directory = self._clones_directory / mapping_name
+        mapping = matching_mappings[0]
+        clone_name = next(
+            tracked_repo.url
+            for tracked_repo in self._tracked_repositories
+            if tracked_repo.url == source_url
+        )
+        clone_directory = self._clones_directory / clone_name
         self.handle_commits(
             entity,
             clone_directory,

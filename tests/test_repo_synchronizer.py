@@ -1,7 +1,15 @@
+from pathlib import Path
+
 import pytest
 
 from git_hg_sync.__main__ import get_connection, get_queue
-from git_hg_sync.config import MappingConfig, PulseConfig
+from git_hg_sync.config import (
+    Mapping,
+    MappingSource,
+    MappingDestination,
+    PulseConfig,
+    TrackedRepository,
+)
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 from git_hg_sync.events import Push
 
@@ -22,24 +30,37 @@ def pulse_config():
 
 
 @pytest.fixture
-def mappings():
-    return {
-        "myrepo": MappingConfig(
-            **{
-                "git_repository": "myforge/myrepo.git",
-                "rules": {
-                    "rule1": {
-                        "branch_pattern": "branch_name",
-                        "mercurial_repository": "myforge/myhgrepo",
-                    }
-                },
-            }
+def tracked_repositories() -> list[TrackedRepository]:
+    return [
+        TrackedRepository(
+            name="myrepo",
+            url="https://gitforge.example/myrepo",
         )
-    }
+    ]
 
 
-def test_sync_process_with_bad_repo(tmp_path, mappings):
-    syncrepos = RepoSynchronizer(tmp_path / "clones", mappings)
+@pytest.fixture
+def mappings() -> list[Mapping]:
+    return [
+        Mapping(
+            source=MappingSource(
+                url="https://gitforge.example/myrepo",
+                branch_pattern="branch1",
+            ),
+            destination=MappingDestination(
+                branch="branch",
+                url="https://hgforge/myrepo",
+            ),
+        )
+    ]
+
+
+def test_sync_process_with_bad_repo(
+    tmp_path: Path,
+    tracked_repositories: list[TrackedRepository],
+    mappings: list[Mapping],
+) -> None:
+    syncrepos = RepoSynchronizer(tmp_path / "clones", tracked_repositories, mappings)
     syncrepos.sync(
         Push(
             repo_url="repo_url",

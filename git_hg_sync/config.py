@@ -1,6 +1,6 @@
 import pathlib
 import tomllib
-from collections import Counter
+from typing import Self
 
 import pydantic
 
@@ -15,14 +15,24 @@ class PulseConfig(pydantic.BaseModel):
     password: str
 
 
-class MappingRule(pydantic.BaseModel):
+class TrackedRepository(pydantic.BaseModel):
+    name: str
+    url: str
+
+
+class MappingSource(pydantic.BaseModel):
+    url: str
     branch_pattern: str
-    mercurial_repository: str
 
 
-class MappingConfig(pydantic.BaseModel):
-    git_repository: str
-    rules: dict[str, MappingRule]
+class MappingDestination(pydantic.BaseModel):
+    url: str
+    branch: str
+
+
+class Mapping(pydantic.BaseModel):
+    source: MappingSource
+    destination: MappingDestination
 
 
 class ClonesConfig(pydantic.BaseModel):
@@ -32,20 +42,20 @@ class ClonesConfig(pydantic.BaseModel):
 class Config(pydantic.BaseModel):
     pulse: PulseConfig
     clones: ClonesConfig
-    mappings: dict[str, MappingConfig]
+    tracked_repositories: list[TrackedRepository]
+    mappings: list[Mapping]
 
-    @pydantic.field_validator("mappings")
-    @staticmethod
-    def no_duplicate_git_repositories(
-        mappings: dict[str, MappingConfig]
-    ) -> dict[str, MappingConfig]:
-        counter = Counter([mapping.git_repository for mapping in mappings.values()])
-        for git_repo, count in counter.items():
-            if count > 1:
+    @pydantic.model_validator(mode="after")
+    def verify_all_mappings_reference_tracked_repositories(
+        self,
+    ) -> Self:
+        tracked_urls = [tracked_repo.url for tracked_repo in self.tracked_repositories]
+        for mapping in self.mappings:
+            if mapping.source.url not in tracked_urls:
                 raise ValueError(
-                    f"Found {count} different mappings for the same git repository."
+                    f"Found mapping for untracked repository: {mapping.source.url}"
                 )
-        return mappings
+        return self
 
     @staticmethod
     def from_file(file_path: pathlib.Path) -> "Config":

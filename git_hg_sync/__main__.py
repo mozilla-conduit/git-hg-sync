@@ -57,7 +57,9 @@ def main() -> None:
 
     queue = get_queue(pulse_config)
     repo_synchronizer = RepoSynchronizer(
-        clones_directory=config.clones.directory, mappings=config.mappings
+        clones_directory=config.clones.directory,
+        tracked_repositories=config.tracked_repositories,
+        mappings=config.mappings,
     )
     with connection as conn:
         logger.info(f"connected to {conn.host}")

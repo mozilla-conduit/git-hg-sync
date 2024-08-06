@@ -10,9 +10,12 @@ password = "<pulse-password>"
 [clones]
 directory = "../git_hg_sync_repos/"
 
-[mappings.test]
-git_repository = "/home/fbessou/dev/MOZI/fake-forge/git/test"
+[[tracked_repositories]]
+name = "test"
+url = "/home/fbessou/dev/MOZI/fake-forge/git/test"
 
-[mappings.test.rules.esr1]
-branch_pattern = "test-esr1"
-mercurial_repository = "/home/fbessou/dev/MOZI/fake-forge/hg/test-esr1"
+[[mappings]]
+source.url = "/home/fbessou/dev/MOZI/fake-forge/git/test"
+source.branch_pattern = "test-esr1"
+destination.url = "/home/fbessou/dev/MOZI/fake-forge/hg/test-esr1"
+destination.branch = "mybranch"
