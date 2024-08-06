@@ -5,6 +5,7 @@ from pathlib import Path
 from kombu import Connection, Exchange, Queue
 from mozlog import commandline
 
+from git_hg_sync.application import Application
 from git_hg_sync.config import Config
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronyzer
@@ -60,8 +61,9 @@ def main() -> None:
     )
     with connection as conn:
         logger.info(f"connected to {conn.host}")
-        worker = PulseWorker(conn, queue, repo_synchronyzer=repo_synchronyzer)
-        worker.run()
+        worker = PulseWorker(conn, queue)
+        app = Application(worker, repo_synchronyzer)
+        app.run()
 
 
 if __name__ == "__main__":

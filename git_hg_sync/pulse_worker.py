@@ -1,9 +1,15 @@
 from kombu.mixins import ConsumerMixin
 from mozlog import get_proxy_logger
+from typing import Protocol
 
 from git_hg_sync.events import Push, Tag
 
 logger = get_proxy_logger("pluse_consumer")
+
+
+class EventHandler(Protocol):
+    def __call__(self, event: Push | Tag):
+        pass
 
 
 class EntityTypeError(Exception):
@@ -11,11 +17,12 @@ class EntityTypeError(Exception):
 
 
 class PulseWorker(ConsumerMixin):
+    event_handler: EventHandler | None
+    """Function that will be called whenever an event is received"""
 
-    def __init__(self, connection, queue, *, repo_synchronyzer):
+    def __init__(self, connection, queue):
         self.connection = connection
         self.task_queue = queue
-        self.repo_synchronyzer = repo_synchronyzer
 
     @staticmethod
     def parse_entity(raw_entity):
@@ -37,7 +44,8 @@ class PulseWorker(ConsumerMixin):
 
     def on_task(self, body, message):
         logger.info(f"Received message: {body}")
-        message.ack()
         raw_entity = body["payload"]
-        parsed_message = PulseWorker.parse_entity(raw_entity)
-        self.repo_synchronyzer.sync(parsed_message)
+        event = PulseWorker.parse_entity(raw_entity)
+        if self.event_handler:
+            self.event_handler(event)
+        message.ack()
