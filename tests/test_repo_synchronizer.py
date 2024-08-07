@@ -1,17 +1,16 @@
 from pathlib import Path
+import subprocess
+
+from git import Repo
 
 import pytest
 
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import (
-    Mapping,
-    MappingSource,
-    MappingDestination,
     PulseConfig,
     TrackedRepository,
 )
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
-from git_hg_sync.events import Push
 
 
 @pytest.fixture
@@ -39,39 +38,43 @@ def tracked_repositories() -> list[TrackedRepository]:
     ]
 
 
-@pytest.fixture
-def mappings() -> list[Mapping]:
-    return [
-        Mapping(
-            source=MappingSource(
-                url="https://gitforge.example/myrepo",
-                branch_pattern="branch1",
-            ),
-            destination=MappingDestination(
-                branch="branch",
-                url="https://hgforge/myrepo",
-            ),
-        )
-    ]
-
-
-def test_sync_process_with_bad_repo(
+def test_sync_process_(
     tmp_path: Path,
-    tracked_repositories: list[TrackedRepository],
-    mappings: list[Mapping],
 ) -> None:
-    syncrepos = RepoSynchronizer(tmp_path / "clones", tracked_repositories, mappings)
-    syncrepos.sync(
-        Push(
-            repo_url="repo_url",
-            branches={"branch1": "anothercommitsha"},
-            time=0,
-            pushid=0,
-            user="user",
-            push_json_url="push_json_url",
-        )
+
+    # Create a remote git repository
+    git_remote_repo_path = tmp_path / "git-remote" / "myrepo"
+    repo = Repo.init(git_remote_repo_path)
+    foo_path = git_remote_repo_path / "foo.txt"
+    foo_path.write_text("FOO CONTENT")
+    repo.index.add([foo_path])
+    git_commit_sha = repo.index.commit("add foo.txt").hexsha
+
+    # Create a remote mercurial repository
+    hg_remote_repo_path = tmp_path / "hg-remote" / "myrepo"
+    hg_remote_repo_path.mkdir(parents=True)
+    subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
+
+    git_local_repo_path = tmp_path / "git-local" / "myrepo"
+
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_remote_repo_path))
+    syncrepos.sync_branches(str(hg_remote_repo_path), [(git_commit_sha, "foo")])
+
+    process = subprocess.run(
+        ["hg", "heads"],
+        cwd=hg_remote_repo_path,
+        check=True,
+        capture_output=True,
+        text=True,
     )
-    # TODO finish that test (check that warning was triggered)
+    process = subprocess.run(
+        ["hg", "up", "tip"],
+        cwd=hg_remote_repo_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "FOO CONTENT" in process.stdout
 
 
 def test_get_connection_and_queue(pulse_config):

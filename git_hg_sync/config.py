@@ -4,6 +4,8 @@ from typing import Self
 
 import pydantic
 
+from git_hg_sync.mapping import Mapping
+
 
 class PulseConfig(pydantic.BaseModel):
     userid: str
@@ -18,21 +20,6 @@ class PulseConfig(pydantic.BaseModel):
 class TrackedRepository(pydantic.BaseModel):
     name: str
     url: str
-
-
-class MappingSource(pydantic.BaseModel):
-    url: str
-    branch_pattern: str
-
-
-class MappingDestination(pydantic.BaseModel):
-    url: str
-    branch: str
-
-
-class Mapping(pydantic.BaseModel):
-    source: MappingSource
-    destination: MappingDestination
 
 
 class ClonesConfig(pydantic.BaseModel):
