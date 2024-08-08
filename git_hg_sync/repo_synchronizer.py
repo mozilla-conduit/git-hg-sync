@@ -57,7 +57,8 @@ class RepoSynchronizer:
     ) -> None:
         repo = self._get_clone_repo()
         remote = self.get_remote(repo, "git", self._url)
-        remote.fetch([refspec[0] for refspec in refspecs])
+        commits_to_fetch = [refspec[0] for refspec in refspecs]
+        repo.git.fetch([remote.name, *commits_to_fetch])
         push_args = ["hg::" + destination_url]
         push_args.extend(
             [
