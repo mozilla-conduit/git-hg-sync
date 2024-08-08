@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Literal
 from dataclasses import dataclass
 
-from git import Repo
+from git import Repo, Remote
 from mozlog import get_proxy_logger
 
 
@@ -31,7 +31,9 @@ class RepoSynchronizer:
         else:
             return Repo.init(self._clone_directory)
 
-    def get_remote(self, repo, remote_name: Literal["git", "hg"], remote_url: str):
+    def get_remote(
+        self, repo: Repo, remote_name: Literal["git", "hg"], remote_url: str
+    ) -> Remote:
         """
         get the repo if it exists, create it otherwise
         the repo name is the last part of the url
