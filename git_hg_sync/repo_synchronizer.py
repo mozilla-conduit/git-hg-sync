@@ -28,8 +28,12 @@ class RepoSynchronizer:
     def _get_clone_repo(self) -> Repo:
         if self._clone_directory.exists():
             return Repo(self._clone_directory)
-        else:
-            return Repo.init(self._clone_directory)
+
+        repo = Repo.init(self._clone_directory)
+        with repo.config_writer() as config:
+            config.add_section("cinnabar")
+            config.set("cinnabar", "experiments", "branch,tag,git_commit")
+        return repo
 
     def get_remote(
         self, repo: Repo, remote_name: Literal["git", "hg"], remote_url: str
