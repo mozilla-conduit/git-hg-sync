@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 import kombu
+import json
 
 from git_hg_sync.config import Config
 
@@ -73,7 +74,7 @@ if __name__ == "__main__":
             payload = {
                 "type": "push",
                 "repo_url": sys.argv[2],
-                "branches": {sys.argv[3]: sys.argv[4]},
+                "branches": json.loads(sys.argv[3]),
                 "time": 0,
                 "pushid": 0,
                 "user": "user",
