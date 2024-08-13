@@ -11,11 +11,11 @@ password = "<pulse-password>"
 directory = "../git_hg_sync_repos/"
 
 [[tracked_repositories]]
-name = "test"
-url = "/home/fbessou/dev/MOZI/fake-forge/git/test"
+name = "firefox-releases"
+url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
 
 [[mappings]]
-source.url = "/home/fbessou/dev/MOZI/fake-forge/git/test"
-source.branch_pattern = "test-esr1"
-destination.url = "/home/fbessou/dev/MOZI/fake-forge/hg/test-esr1"
-destination.branch = "mybranch"
+source.url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
+source.branch_pattern = "^(esr\\d+)$"
+destination.url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-\\1"
+destination.branch = "default"
