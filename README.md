@@ -24,3 +24,8 @@ process the next message in the queue.
 $ docker-compose build
 $ docker-compose run sync
 ```
+
+## Known limitations
+
+- Merge commits cannot be pushed to mercurial repositories;
+- The target mercurial repository must exist in order to be able to push to it;
