@@ -6,6 +6,7 @@ exchange = "exchange/<username>/test"
 routing_key = ""
 queue = "queue/<username>/test"
 password = "<pulse-password>"
+ssl = true
 
 [clones]
 directory = "../git_hg_sync_repos/"

@@ -20,6 +20,7 @@ def pulse_config():
             "routing_key": "#",
             "queue": "queue/test_user/test",
             "password": "PULSE_PASSWORD",
+            "ssl": True,
         }
     )
 
@@ -39,7 +40,7 @@ def test_sync_process_(
 ) -> None:
 
     # Create a remote git repository
-    git_remote_repo_path = tmp_path / "git-remote" / "myrepo"
+    git_remote_repo_path = tmp_path / "git-remotes" / "myrepo"
     repo = Repo.init(git_remote_repo_path)
     foo_path = git_remote_repo_path / "foo.txt"
     foo_path.write_text("FOO CONTENT")
@@ -47,11 +48,11 @@ def test_sync_process_(
     git_commit_sha = repo.index.commit("add foo.txt").hexsha
 
     # Create a remote mercurial repository
-    hg_remote_repo_path = tmp_path / "hg-remote" / "myrepo"
+    hg_remote_repo_path = tmp_path / "hg-remotes" / "myrepo"
     hg_remote_repo_path.mkdir(parents=True)
     subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
 
-    git_local_repo_path = tmp_path / "git-local" / "myrepo"
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
 
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_remote_repo_path))
     syncrepos.sync_branches(str(hg_remote_repo_path), [(git_commit_sha, "foo")])

@@ -1,0 +1,22 @@
+[pulse]
+userid = "guest"
+host = "pulse"
+port = 5672
+exchange = "exchange/guest/test"
+routing_key = "#"
+queue = "queue/guest/test"
+password = "guest"
+ssl = false
+
+[clones]
+directory = "{directory}/clones"
+
+[[tracked_repositories]]
+name = "firefox-releases"
+url = "{directory}/git-remotes/firefox-releases"
+
+[[mappings]]
+source.url = "{directory}/git-remotes/firefox-releases"
+source.branch_pattern = "^(esr\\d+)$"
+destination.url = "{directory}/hg-remotes/mozilla-\\1"
+destination.branch = "default"

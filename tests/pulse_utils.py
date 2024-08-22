@@ -10,7 +10,7 @@ from git_hg_sync.config import Config
 HERE = Path(__file__).parent
 
 
-def send_pulse_message(pulse_config, payload, ssl=True):
+def send_pulse_message(pulse_config, payload, purge=False):
     """Send a pulse message
     The routing key will be constructed from the repository URL.
     The Pulse message will be constructed from the specified payload
@@ -31,7 +31,7 @@ def send_pulse_message(pulse_config, payload, ssl=True):
         userid=userid,
         password=password,
         connect_timeout=100,
-        ssl=ssl,
+        ssl=pulse_config.ssl,
     )
     connection.connect()
 
@@ -46,6 +46,9 @@ def send_pulse_message(pulse_config, payload, ssl=True):
             auto_delete=False,
         )
         queue(connection).declare()
+        if purge:
+            channel = connection.channel()
+            channel.queue_purge(queue.name)
 
         producer = connection.Producer(
             exchange=ex, routing_key=routing_key, serializer="json"

@@ -15,6 +15,7 @@ class PulseConfig(pydantic.BaseModel):
     routing_key: str
     queue: str
     password: str
+    ssl: bool
 
 
 class TrackedRepository(pydantic.BaseModel):
