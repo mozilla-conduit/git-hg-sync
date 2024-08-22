@@ -56,13 +56,6 @@ def test_sync_process_(
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_remote_repo_path))
     syncrepos.sync_branches(str(hg_remote_repo_path), [(git_commit_sha, "foo")])
 
-    subprocess.run(
-        ["hg", "heads"],
-        cwd=hg_remote_repo_path,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
     process = subprocess.run(
         ["hg", "export", "tip"],
         cwd=hg_remote_repo_path,
