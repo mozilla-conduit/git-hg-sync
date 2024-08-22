@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-from git import Remote, Repo
+from git import Remote, Repo, exc
 from mozlog import get_proxy_logger
 
 logger = get_proxy_logger("sync_repo")
@@ -57,7 +57,12 @@ class RepoSynchronizer:
         repo = self._get_clone_repo()
         remote = self.get_remote(repo, "git", self._url)
         commits_to_fetch = [refspec[0] for refspec in refspecs]
-        repo.git.fetch(["hg::" + destination_url])
+        try:
+            repo.git.fetch(["hg::" + destination_url])
+        except exc.GitCommandError as e:
+            # can't fetch if repo is empty
+            if "fatal: couldn't find remote ref HEAD" not in e.stderr:
+                raise e
         repo.git.fetch([remote.name, *commits_to_fetch])
         push_args = ["hg::" + destination_url]
         push_args.extend(
