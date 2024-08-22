@@ -1,9 +1,9 @@
 from mozlog import get_proxy_logger
 
+from git_hg_sync.events import Push, Tag
 from git_hg_sync.mapping import Mapping, MappingMatch
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
-from git_hg_sync.events import Push, Tag
 
 logger = get_proxy_logger(__name__)
 

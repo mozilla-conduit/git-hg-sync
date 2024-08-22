@@ -1,10 +1,9 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
-from dataclasses import dataclass
 
-from git import Repo, Remote
+from git import Remote, Repo
 from mozlog import get_proxy_logger
-
 
 logger = get_proxy_logger("sync_repo")
 

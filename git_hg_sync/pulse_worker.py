@@ -1,6 +1,7 @@
+from typing import Protocol
+
 from kombu.mixins import ConsumerMixin
 from mozlog import get_proxy_logger
-from typing import Protocol
 
 from git_hg_sync.events import Push, Tag
 

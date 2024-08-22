@@ -1,9 +1,9 @@
+import json
 import sys
 from datetime import datetime
 from pathlib import Path
 
 import kombu
-import json
 
 from git_hg_sync.config import Config
 

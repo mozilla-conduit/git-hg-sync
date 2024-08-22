@@ -3,8 +3,8 @@ import os
 import pulse_utils
 import pytest
 
-from git_hg_sync.config import PulseConfig
 from git_hg_sync.__main__ import get_connection, get_queue
+from git_hg_sync.config import PulseConfig
 
 NO_RABBITMQ = not (os.getenv("RABBITMQ") == "true")
 
