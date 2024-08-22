@@ -9,6 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: create coverage folder
+        run: |
+          mkdir tests_output
+          chmod a+w tests_output
+
       - name: Run docker-compose
         uses: hoverkraft-tech/compose-action@v2.0.1
         with:
@@ -16,4 +21,13 @@ jobs:
 
       - name: Execute tests in the running services
         run: |
-          docker compose run sync
+           docker compose run sync
+ 
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: tests_output/coverage.xml
+          title: Coverage
+          badge-title: Coverage
+          junitxml-path: tests_output/pytest.xml
+          junitxml-title: JUnit Xml Summary

@@ -3,3 +3,4 @@ clones
 **/__pycache__/
 config.toml
 .coverage
+tests_output

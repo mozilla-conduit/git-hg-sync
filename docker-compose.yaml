@@ -1,7 +1,9 @@
 services:
   sync:
     build: .
-    command: ['pytest', 'tests', '-p', 'no:cacheprovider']
+    command: ['pytest', '--junitxml=./tests_output/pytest.xml', '--cov-report', 'xml:./tests_output/coverage.xml', '--cov=git_hg_sync', 'tests/']
+    volumes:
+      - ./tests_output:/app/tests_output
     environment:
       - RABBITMQ=true
     depends_on:

@@ -17,10 +17,11 @@ RUN ./install_git-cinnabar.sh
 RUN mv git-cinnabar git-remote-hg /usr/bin/
 
 # install test dependencies
-RUN pip install -U pip pytest pytest-mock
+RUN pip install -U pip pytest pytest-mock pytest-cov
 
 # Copy local code to the container image.
 COPY . /app
+RUN chown -R app: /app
 
 USER app
 RUN pip install -e .
