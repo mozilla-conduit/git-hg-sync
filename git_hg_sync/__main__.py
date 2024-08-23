@@ -46,12 +46,7 @@ def get_queue(config):
     )
 
 
-def main() -> None:
-    parser = get_parser()
-    commandline.add_logging_group(parser)
-    args = parser.parse_args()
-    logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
-    config = Config.from_file(args.config)
+def start_app(config, logger):
     pulse_config = config.pulse
     connection = get_connection(pulse_config)
 
@@ -68,6 +63,15 @@ def main() -> None:
         worker = PulseWorker(conn, queue)
         app = Application(worker, synchronizers, config.mappings)
         app.run()
+
+
+def main() -> None:
+    parser = get_parser()
+    commandline.add_logging_group(parser)
+    args = parser.parse_args()
+    logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
+    config = Config.from_file(args.config)
+    start_app(config, logger)
 
 
 if __name__ == "__main__":
