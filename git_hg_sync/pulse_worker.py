@@ -21,9 +21,10 @@ class PulseWorker(ConsumerMixin):
     event_handler: EventHandler | None
     """Function that will be called whenever an event is received"""
 
-    def __init__(self, connection, queue):
+    def __init__(self, connection, queue, *, one_shot=False):
         self.connection = connection
         self.task_queue = queue
+        self.one_shot = one_shot
 
     @staticmethod
     def parse_entity(raw_entity):
@@ -50,3 +51,5 @@ class PulseWorker(ConsumerMixin):
         if self.event_handler:
             self.event_handler(event)
         message.ack()
+        if self.one_shot:
+            self.should_stop = True

@@ -46,7 +46,7 @@ def get_queue(config):
     )
 
 
-def start_app(config, logger):
+def start_app(config, logger, *, one_shot=False):
     pulse_config = config.pulse
     connection = get_connection(pulse_config)
 
@@ -60,7 +60,7 @@ def start_app(config, logger):
     }
     with connection as conn:
         logger.info(f"connected to {conn.host}")
-        worker = PulseWorker(conn, queue)
+        worker = PulseWorker(conn, queue, one_shot=one_shot)
         app = Application(worker, synchronizers, config.mappings)
         app.run()
 
