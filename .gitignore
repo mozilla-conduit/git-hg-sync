@@ -1,6 +1,6 @@
 clones
 .tox
 **/__pycache__/
-config.toml
+/config.toml
 .coverage
 tests_output

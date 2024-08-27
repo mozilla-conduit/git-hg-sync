@@ -21,8 +21,10 @@ process the next message in the queue.
 ## build and test
 
 ```console
+$ mkdir -p tests_output
+$ chmod a+w tests_output
 $ docker-compose build
-$ docker-compose run sync
+$ docker-compose run --rm sync
 ```
 
 ## Known limitations
