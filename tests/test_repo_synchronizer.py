@@ -5,24 +5,8 @@ import pytest
 from git import Repo
 
 from git_hg_sync.__main__ import get_connection, get_queue
-from git_hg_sync.config import PulseConfig, TrackedRepository
+from git_hg_sync.config import TrackedRepository
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
-
-
-@pytest.fixture
-def pulse_config():
-    return PulseConfig(
-        **{
-            "userid": "test_user",
-            "host": "pulse.mozilla.org",
-            "port": 5671,
-            "exchange": "exchange/test_user/test",
-            "routing_key": "#",
-            "queue": "queue/test_user/test",
-            "password": "PULSE_PASSWORD",
-            "ssl": True,
-        }
-    )
 
 
 @pytest.fixture

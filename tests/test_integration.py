@@ -8,26 +8,10 @@ from git import Repo
 from mozlog import get_proxy_logger
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
-from git_hg_sync.config import Config, PulseConfig
+from git_hg_sync.config import Config
 
 NO_RABBITMQ = not (os.getenv("RABBITMQ") == "true")
 HERE = Path(__file__).parent
-
-
-@pytest.fixture
-def pulse_config():
-    return PulseConfig(
-        **{
-            "userid": "guest",
-            "host": "pulse",
-            "port": 5672,
-            "exchange": "exchange/guest/test",
-            "routing_key": "#",
-            "queue": "queue/guest/test",
-            "password": "guest",
-            "ssl": False,
-        }
-    )
 
 
 @pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
