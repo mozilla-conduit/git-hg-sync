@@ -23,7 +23,7 @@ jobs:
         uses: MishaKav/pytest-coverage-comment@main
         with:
           pytest-xml-coverage-path: coverage.xml
-          title: Coverage
-          badge-title: Coverage
+          title: Unit tests Coverage
+          badge-title: Unit tests Coverage
           junitxml-path: pytest.xml
           junitxml-title: JUnit Xml Summary
