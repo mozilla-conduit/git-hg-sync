@@ -19,11 +19,3 @@ $ git pull git_chatzilla
 $ # check
 $ git cinnabar fsck
 ```
-
-## example for handle a commit
-
-```console
-$ git fetch git_chatzilla aea1d23b482030bceefb6f181cb5698ce50e3901
-$ git cherry-pick aea1d23b482030bceefb6f181cb5698ce50e3901
-$ git push origin
-```
