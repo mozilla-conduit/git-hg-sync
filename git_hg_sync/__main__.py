@@ -10,8 +10,6 @@ from git_hg_sync.config import Config, PulseConfig
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
-HERE = Path(__file__).parent
-
 
 def get_parser():
     parser = argparse.ArgumentParser()
