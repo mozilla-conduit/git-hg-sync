@@ -2,6 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 
+import sentry_sdk
 from kombu import Connection, Exchange, Queue
 from mozlog import commandline
 
@@ -69,6 +70,10 @@ def main() -> None:
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
     config = Config.from_file(args.config)
+    sentry_config = config.sentry
+    if sentry_config and sentry_config.sentry_url:
+        logger.info(f"sentry url: {sentry_config.sentry_url}")
+        sentry_sdk.init(sentry_config.sentry_url)
     start_app(config, logger)
 
 
