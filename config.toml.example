@@ -8,6 +8,9 @@ queue = "queue/<username>/test"
 password = "<pulse-password>"
 ssl = true
 
+[sentry]
+sentry_url = ""
+
 [clones]
 directory = "../git_hg_sync_repos/"
 

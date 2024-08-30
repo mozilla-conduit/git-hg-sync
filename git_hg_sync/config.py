@@ -27,8 +27,13 @@ class ClonesConfig(pydantic.BaseModel):
     directory: pathlib.Path
 
 
+class SentryConfig(pydantic.BaseModel):
+    sentry_url: str | None = None
+
+
 class Config(pydantic.BaseModel):
     pulse: PulseConfig
+    sentry: SentryConfig | None = None
     clones: ClonesConfig
     tracked_repositories: list[TrackedRepository]
     mappings: list[Mapping]
