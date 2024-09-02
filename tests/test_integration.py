@@ -6,6 +6,7 @@ import pulse_utils
 import pytest
 from git import Repo
 from mozlog import get_proxy_logger
+from utils import hg_export_tip
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config
@@ -77,12 +78,5 @@ def test_full_app(
     # execute app
     start_app(config, get_proxy_logger("test"), one_shot=True)
 
-    # tests
-    process = subprocess.run(
-        ["hg", "export", "tip"],
-        cwd=hg_remote_repo_path,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert "FOO CONTENT" in process.stdout
+    # test
+    assert "FOO CONTENT" in hg_export_tip(hg_remote_repo_path)
