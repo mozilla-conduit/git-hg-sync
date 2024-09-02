@@ -10,7 +10,7 @@ from mozlog import get_proxy_logger
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config
 
-NO_RABBITMQ = not (os.getenv("RABBITMQ") == "true")
+NO_RABBITMQ = not os.getenv("RABBITMQ") == "true"
 HERE = Path(__file__).parent
 
 
