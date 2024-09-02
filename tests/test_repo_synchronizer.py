@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from git import Repo
+from utils import hg_export_tip
 
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import TrackedRepository
@@ -41,14 +42,8 @@ def test_sync_process_(
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_remote_repo_path))
     syncrepos.sync_branches(str(hg_remote_repo_path), [(git_commit_sha, "foo")])
 
-    process = subprocess.run(
-        ["hg", "export", "tip"],
-        cwd=hg_remote_repo_path,
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    assert "FOO CONTENT" in process.stdout
+    # test
+    assert "FOO CONTENT" in hg_export_tip(hg_remote_repo_path)
 
 
 def test_get_connection_and_queue(pulse_config):
