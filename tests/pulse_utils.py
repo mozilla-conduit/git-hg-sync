@@ -70,7 +70,6 @@ def send_pulse_message(pulse_config, payload, purge=False):
 
 if __name__ == "__main__":
     config = Config.from_file(HERE.parent / "config.toml")
-    config.mappings
     message_type = sys.argv[1]
     match message_type:
         case "push":
