@@ -18,8 +18,8 @@ directory = "../git_hg_sync_repos/"
 name = "firefox-releases"
 url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
 
-[[mappings]]
-source.url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
-source.branch_pattern = "^(esr\\d+)$"
-destination.url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-\\1"
-destination.branch = "default"
+[[branch_mappings]]
+source_url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
+branch_pattern = "^(esr\\d+)$"
+destination_url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-\\1"
+destination_branch = "default"

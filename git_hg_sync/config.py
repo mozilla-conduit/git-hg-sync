@@ -4,7 +4,7 @@ from typing import Self
 
 import pydantic
 
-from git_hg_sync.mapping import Mapping
+from git_hg_sync.mapping import BranchMapping
 
 
 class PulseConfig(pydantic.BaseModel):
@@ -36,17 +36,18 @@ class Config(pydantic.BaseModel):
     sentry: SentryConfig | None = None
     clones: ClonesConfig
     tracked_repositories: list[TrackedRepository]
-    mappings: list[Mapping]
+    branch_mappings: list[BranchMapping]
 
     @pydantic.model_validator(mode="after")
     def verify_all_mappings_reference_tracked_repositories(
         self,
     ) -> Self:
+
         tracked_urls = [tracked_repo.url for tracked_repo in self.tracked_repositories]
-        for mapping in self.mappings:
-            if mapping.source.url not in tracked_urls:
+        for mapping in self.branch_mappings:
+            if mapping.source_url not in tracked_urls:
                 raise ValueError(
-                    f"Found mapping for untracked repository: {mapping.source.url}"
+                    f"Found mapping for untracked repository: {mapping.source_url}"
                 )
         return self
 

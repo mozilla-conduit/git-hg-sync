@@ -63,7 +63,7 @@ def start_app(
     with connection as conn:
         logger.info(f"connected to {conn.host}")
         worker = PulseWorker(conn, queue, one_shot=one_shot)
-        app = Application(worker, synchronizers, config.mappings)
+        app = Application(worker, synchronizers, config.branch_mappings)
         app.run()
 
 
@@ -73,6 +73,7 @@ def main() -> None:
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
     config = Config.from_file(args.config)
+
     sentry_config = config.sentry
     if sentry_config and sentry_config.sentry_url:
         logger.info(f"sentry url: {sentry_config.sentry_url}")

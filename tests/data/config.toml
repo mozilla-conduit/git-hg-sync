@@ -15,8 +15,8 @@ directory = "{directory}/clones"
 name = "firefox-releases"
 url = "{directory}/git-remotes/firefox-releases"
 
-[[mappings]]
-source.url = "{directory}/git-remotes/firefox-releases"
-source.branch_pattern = "^(esr\\d+)$"
-destination.url = "{directory}/hg-remotes/mozilla-\\1"
-destination.branch = "default"
+[[branch_mappings]]
+source_url = "{directory}/git-remotes/firefox-releases"
+branch_pattern = "^(esr\\d+)$"
+destination_url = "{directory}/hg-remotes/mozilla-\\1"
+destination_branch = "default"

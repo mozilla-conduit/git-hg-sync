@@ -8,6 +8,7 @@ from utils import hg_export_tip
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import TrackedRepository, PulseConfig
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
+from git_hg_sync.mapping import SyncBranchOperation
 
 
 @pytest.fixture
@@ -40,7 +41,10 @@ def test_sync_process_(
     git_local_repo_path = tmp_path / "clones" / "myrepo"
 
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_remote_repo_path))
-    syncrepos.sync_branches(str(hg_remote_repo_path), [(git_commit_sha, "foo")])
+    operation = SyncBranchOperation(
+        source_commit=git_commit_sha, destination_branch="foo"
+    )
+    syncrepos.sync(str(hg_remote_repo_path), [operation])
 
     # test
     assert "FOO CONTENT" in hg_export_tip(hg_remote_repo_path)
