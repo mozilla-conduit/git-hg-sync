@@ -1,8 +1,10 @@
 name: Python
-on: [push, pull_request]
+on: [pull_request]
 jobs:
   Pytest:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python 3.10

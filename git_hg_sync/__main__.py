@@ -1,5 +1,6 @@
 import argparse
 import sys
+import logging
 from pathlib import Path
 
 import sentry_sdk
@@ -45,7 +46,9 @@ def get_queue(config):
     )
 
 
-def start_app(config, logger, *, one_shot=False):
+def start_app(
+    config: Config, logger: logging.Logger, *, one_shot: bool = False
+) -> None:
     pulse_config = config.pulse
     connection = get_connection(pulse_config)
 
