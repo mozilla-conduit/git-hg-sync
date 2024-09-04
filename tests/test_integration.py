@@ -9,14 +9,14 @@ from mozlog import get_proxy_logger
 from utils import hg_export_tip
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
-from git_hg_sync.config import Config
+from git_hg_sync.config import Config, PulseConfig
 
 NO_RABBITMQ = not os.getenv("RABBITMQ") == "true"
 HERE = Path(__file__).parent
 
 
 @pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
-def test_send_and_receive(pulse_config):
+def test_send_and_receive(pulse_config: PulseConfig) -> None:
 
     payload = {
         "type": "tag",

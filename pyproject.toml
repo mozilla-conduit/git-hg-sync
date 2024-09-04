@@ -11,3 +11,11 @@ dependencies = ['kombu', 'mozillapulse', 'GitPython', 'mozlog', "pydantic", "sen
 
 [tool.ruff]
 line-length = 100
+
+[[tool.mypy.overrides]]
+module = [
+  'kombu.*',
+  'mozlog'
+]
+
+ignore_missing_imports = true

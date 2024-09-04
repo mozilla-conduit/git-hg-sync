@@ -6,7 +6,7 @@ from git import Repo
 from utils import hg_export_tip
 
 from git_hg_sync.__main__ import get_connection, get_queue
-from git_hg_sync.config import TrackedRepository
+from git_hg_sync.config import TrackedRepository, PulseConfig
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 
@@ -46,7 +46,7 @@ def test_sync_process_(
     assert "FOO CONTENT" in hg_export_tip(hg_remote_repo_path)
 
 
-def test_get_connection_and_queue(pulse_config):
+def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
     connection = get_connection(pulse_config)
     queue = get_queue(pulse_config)
     assert connection.userid == pulse_config.userid

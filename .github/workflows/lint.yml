@@ -5,5 +5,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: chartboost/ruff-action@v1
-      - uses: psf/black@stable
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install tox
+        run: pip install tox
+      - name: Lint with ruff, black and mypy
+        run: tox -e lint
