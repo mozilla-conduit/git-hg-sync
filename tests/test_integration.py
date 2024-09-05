@@ -6,7 +6,7 @@ import pulse_utils
 import pytest
 from git import Repo
 from mozlog import get_proxy_logger
-from utils import hg_export_tip
+from utils import hg_cat
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config, PulseConfig
@@ -44,18 +44,49 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
 def test_full_app(
     tmp_path: Path,
 ) -> None:
+    # Create a remote mercurial repository
+    hg_remote_repo_path = tmp_path / "hg-remotes" / "mozilla-esr128"
+    hg_remote_repo_path.mkdir(parents=True)
+    subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
+
     # Create a remote git repository
     git_remote_repo_path = tmp_path / "git-remotes" / "firefox-releases"
-    repo = Repo.init(git_remote_repo_path)
+    # Create an initial commit on git
+    repo = Repo.init(git_remote_repo_path, b="esr128")
     foo_path = git_remote_repo_path / "foo.txt"
     foo_path.write_text("FOO CONTENT")
     repo.index.add([foo_path])
-    git_commit_sha = repo.index.commit("add foo.txt").hexsha
+    repo.index.commit("add foo.txt").hexsha
 
-    # Create a remote mercurial repository
-    hg_remote_repo_path = tmp_path / "hg-remotes" / "mozilla-esr12"
-    hg_remote_repo_path.mkdir(parents=True)
-    subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
+    # Push to mercurial repository
+    subprocess.run(
+        [
+            "git",
+            "push",
+            "hg::" + str(hg_remote_repo_path),
+            "esr128:refs/heads/branches/default/tip",
+        ],
+        cwd=git_remote_repo_path,
+        check=True,
+    )
+
+    assert "FOO CONTENT" in hg_cat(hg_remote_repo_path, "foo.txt", "default")
+
+    # Create a branch in mercurial repository for tags to live in
+    subprocess.run(["hg", "branch", "tags"], cwd=hg_remote_repo_path, check=True)
+    tags_branch_test_file = hg_remote_repo_path / "README.md"
+    tags_branch_test_file.write_text("This branch contains tags.")
+    subprocess.run(
+        ["hg", "add", str(tags_branch_test_file)], cwd=hg_remote_repo_path, check=True
+    )
+    subprocess.run(
+        ["hg", "commit", "-m", "create tag branch"], cwd=hg_remote_repo_path, check=True
+    )
+
+    bar_path = git_remote_repo_path / "bar.txt"
+    bar_path.write_text("BAR CONTENT")
+    repo.index.add([bar_path])
+    git_commit_sha = repo.index.commit("add bar.txt").hexsha
 
     # modify config file to match the tmp dirs
     config_content = Path(HERE / "data" / "config.toml").read_text()
@@ -67,7 +98,8 @@ def test_full_app(
     payload = {
         "type": "push",
         "repo_url": str(git_remote_repo_path),
-        "branches": {"esr12": git_commit_sha},
+        "branches": {"esr128": git_commit_sha},
+        "tags": {"FIREFOX_128_0esr_RELEASE": git_commit_sha},
         "time": 0,
         "pushid": 0,
         "user": "user",
@@ -79,4 +111,4 @@ def test_full_app(
     start_app(config, get_proxy_logger("test"), one_shot=True)
 
     # test
-    assert "FOO CONTENT" in hg_export_tip(hg_remote_repo_path)
+    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "default")

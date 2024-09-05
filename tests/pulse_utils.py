@@ -80,6 +80,7 @@ if __name__ == "__main__":
                 "type": "push",
                 "repo_url": sys.argv[2],
                 "branches": json.loads(sys.argv[3]),
+                "tags": json.loads(sys.argv[4]),
                 "time": 0,
                 "pushid": 0,
                 "user": "user",
