@@ -63,7 +63,9 @@ def start_app(
     with connection as conn:
         logger.info(f"connected to {conn.host}")
         worker = PulseWorker(conn, queue, one_shot=one_shot)
-        app = Application(worker, synchronizers, config.branch_mappings)
+        app = Application(
+            worker, synchronizers, [*config.branch_mappings, *config.tag_mappings]
+        )
         app.run()
 
 

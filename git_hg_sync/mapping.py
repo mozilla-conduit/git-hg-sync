@@ -24,7 +24,7 @@ class SyncTagOperation:
 
     # Destination (hg)
     tag: str
-    tags_branch: str
+    tags_destination_branch: str
 
 
 SyncOperation: TypeAlias = SyncBranchOperation | SyncTagOperation
@@ -82,4 +82,32 @@ class BranchMapping(Mapping):
 
 # Tag Mapping
 
-# TODO
+
+class TagMapping(Mapping):
+    tag_pattern: str
+    destination_url: str
+    tags_destination_branch: str
+
+    @cached_property
+    def _tag_pattern(self) -> re.Pattern:
+        return re.compile(self.tag_pattern)
+
+    def match(self, event: Push) -> Sequence[MappingMatch]:
+        if event.repo_url != self.source_url:
+            return []
+        matches: list[MappingMatch] = []
+        for tag_name, commit in event.tags.items():
+            if not self._tag_pattern.match(tag_name):
+                continue
+            destination_url = re.sub(self._tag_pattern, self.destination_url, tag_name)
+            matches.append(
+                MappingMatch(
+                    destination_url=destination_url,
+                    operation=SyncTagOperation(
+                        tag=tag_name,
+                        source_commit=commit,
+                        tags_destination_branch=self.tags_destination_branch,
+                    ),
+                )
+            )
+        return matches

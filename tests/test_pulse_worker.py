@@ -5,7 +5,7 @@ from subprocess import PIPE, Popen
 
 import pytest
 
-from git_hg_sync.events import Push, Tag
+from git_hg_sync.events import Push
 from git_hg_sync.pulse_worker import EntityTypeError, PulseWorker
 
 HERE = Path(__file__).parent
@@ -16,19 +16,7 @@ def raw_push_entity():
         "type": "push",
         "repo_url": "repo_url",
         "branches": {"mybranch": "acommitsha"},
-        "time": 0,
-        "pushid": 0,
-        "user": "user",
-        "push_json_url": "push_json_url",
-    }
-
-
-def raw_tag_entity():
-    return {
-        "type": "tag",
-        "repo_url": "repo_url",
-        "tag": "tag",
-        "commit": "commit",
+        "tags": {"mytag": "acommitsha"},
         "time": 0,
         "pushid": 0,
         "user": "user",
@@ -39,8 +27,6 @@ def raw_tag_entity():
 def test_parse_entity_valid() -> None:
     push_entity = PulseWorker.parse_entity(raw_push_entity())
     assert isinstance(push_entity, Push)
-    tag_entity = PulseWorker.parse_entity(raw_tag_entity())
-    assert isinstance(tag_entity, Tag)
 
 
 def test_parse_invalid_type() -> None:

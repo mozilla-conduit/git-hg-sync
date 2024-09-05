@@ -4,7 +4,7 @@ from typing import Self
 
 import pydantic
 
-from git_hg_sync.mapping import BranchMapping
+from git_hg_sync.mapping import BranchMapping, TagMapping
 
 
 class PulseConfig(pydantic.BaseModel):
@@ -37,6 +37,7 @@ class Config(pydantic.BaseModel):
     clones: ClonesConfig
     tracked_repositories: list[TrackedRepository]
     branch_mappings: list[BranchMapping]
+    tag_mappings: list[TagMapping]
 
     @pydantic.model_validator(mode="after")
     def verify_all_mappings_reference_tracked_repositories(
