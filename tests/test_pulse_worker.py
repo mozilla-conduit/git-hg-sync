@@ -29,13 +29,13 @@ def raw_tag_entity():
     }
 
 
-def test_parse_entity_valid():
+def test_parse_entity_valid() -> None:
     push_entity = PulseWorker.parse_entity(raw_push_entity())
     assert isinstance(push_entity, Push)
     tag_entity = PulseWorker.parse_entity(raw_tag_entity())
     assert isinstance(tag_entity, Tag)
 
 
-def test_parse_invalid_type():
+def test_parse_invalid_type() -> None:
     with pytest.raises(EntityTypeError):
         PulseWorker.parse_entity({"type": "unknown"})

@@ -1,7 +1,8 @@
+from pathlib import Path
 import subprocess
 
 
-def hg_export_tip(repo_path: str):
+def hg_export_tip(repo_path: Path):
     process = subprocess.run(
         ["hg", "export", "tip"],
         cwd=repo_path,

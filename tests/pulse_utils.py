@@ -2,15 +2,18 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import kombu
 
-from git_hg_sync.config import Config
+from git_hg_sync.config import Config, PulseConfig
 
 HERE = Path(__file__).parent
 
 
-def send_pulse_message(pulse_config, payload, purge=False):
+def send_pulse_message(
+    pulse_config: PulseConfig, payload: Any, purge: bool = False
+) -> None:
     """Send a pulse message
     The routing key will be constructed from the repository URL.
     The Pulse message will be constructed from the specified payload
@@ -22,7 +25,7 @@ def send_pulse_message(pulse_config, payload, purge=False):
     host = pulse_config.host
     port = pulse_config.port
     exchange = pulse_config.exchange
-    queue = pulse_config.queue
+    queue_name = pulse_config.queue
     print(f"connecting to pulse at {host}:{port} as {userid}")
 
     connection = kombu.Connection(
@@ -38,7 +41,7 @@ def send_pulse_message(pulse_config, payload, purge=False):
     with connection:
         ex = kombu.Exchange(exchange, type="direct")
         queue = kombu.Queue(
-            name=queue,
+            name=queue_name,
             exchange=exchange,
             routing_key=routing_key,
             durable=True,
