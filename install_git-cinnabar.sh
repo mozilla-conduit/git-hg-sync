@@ -2,6 +2,6 @@
 
 curl https://raw.githubusercontent.com/glandium/git-cinnabar/master/download.py -o download.py
 chmod u+x download.py
-./download.py
+./download.py --exact 0.7.0beta1
 chmod a+x git-cinnabar
 chmod a+x git-remote-hg
