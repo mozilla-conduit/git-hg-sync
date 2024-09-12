@@ -31,7 +31,7 @@ class RepoSynchronizer:
         repo = Repo.init(self._clone_directory)
         with repo.config_writer() as config:
             config.add_section("cinnabar")
-            config.set("cinnabar", "experiments", "branch,tag,git_commit")
+            config.set("cinnabar", "experiments", "branch,tag,git_commit,merge")
         return repo
 
     def get_remote(
