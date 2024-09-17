@@ -2,12 +2,12 @@ from pathlib import Path
 import subprocess
 
 
-def hg_export_tip(repo_path: Path):
+def hg_cat(repo_path: Path, file: Path | str, revision: str):
     process = subprocess.run(
-        ["hg", "export", "tip"],
+        ["hg", "cat", str(file), "-r", revision],
         cwd=repo_path,
-        check=True,
         capture_output=True,
+        check=True,
         text=True,
     )
     return process.stdout
