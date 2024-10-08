@@ -1,3 +1,7 @@
+import signal
+from types import FrameType
+from typing import Optional
+
 from mozlog import get_proxy_logger
 
 from git_hg_sync.events import Push, Tag
@@ -22,6 +26,11 @@ class Application:
         self._mappings = mappings
 
     def run(self) -> None:
+        def signal_handler(sig: int, frame: Optional[FrameType]) -> None:
+            self._worker.shoud_stop = True
+            logger.info("Process stopped by user")
+
+        signal.signal(signal.SIGINT, signal_handler)
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
