@@ -1,11 +1,11 @@
 import signal
 from types import FrameType
-from typing import Optional
+from typing import Optional, Sequence
 
 from mozlog import get_proxy_logger
 
 from git_hg_sync.events import Push, Tag
-from git_hg_sync.mapping import Mapping, MappingMatch
+from git_hg_sync.mapping import Mapping, SyncOperation
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
@@ -18,7 +18,7 @@ class Application:
         self,
         worker: PulseWorker,
         repo_synchronizers: dict[str, RepoSynchronizer],
-        mappings: list[Mapping],
+        mappings: Sequence[Mapping],
     ):
         self._worker = worker
         self._worker.event_handler = self._handle_event
@@ -36,20 +36,17 @@ class Application:
     def _handle_push_event(self, push_event: Push) -> None:
         logger.info("Handling push event.")
         synchronizer = self._repo_synchronizers[push_event.repo_url]
-        matches_by_destination: dict[str, list[MappingMatch]] = {}
+        operations_by_destination: dict[str, list[SyncOperation]] = {}
 
         for mapping in self._mappings:
             if matches := mapping.match(push_event):
                 for match in matches:
-                    matches_by_destination.setdefault(match.destination_url, []).append(
-                        match
-                    )
+                    operations_by_destination.setdefault(
+                        match.destination_url, []
+                    ).append(match.operation)
 
-        for destination, matches in matches_by_destination.items():
-            refspecs = []
-            for match in matches:
-                refspecs.append((match.source_commit, match.destination_branch))
-            synchronizer.sync_branches(destination, refspecs)
+        for destination, operations in operations_by_destination.items():
+            synchronizer.sync(destination, operations)
 
     def _handle_event(self, event: Push | Tag) -> None:
         if event.repo_url not in self._repo_synchronizers:
