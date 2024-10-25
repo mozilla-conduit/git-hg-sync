@@ -1,4 +1,5 @@
 import signal
+import sys
 from types import FrameType
 from typing import Optional, Sequence
 
@@ -27,8 +28,11 @@ class Application:
 
     def run(self) -> None:
         def signal_handler(sig: int, frame: Optional[FrameType]) -> None:
+            if self._worker.should_stop:
+                logger.info("Process killed by user")
+                sys.exit(1)
             self._worker.shoud_stop = True
-            logger.info("Process stopped by user")
+            logger.info("Process exiting gracefully")
 
         signal.signal(signal.SIGINT, signal_handler)
         self._worker.run()
