@@ -38,7 +38,7 @@ class Application:
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
-        logger.info("Handling push event.")
+        logger.info(f"Handling push event: {push_event.pushid}")
         synchronizer = self._repo_synchronizers[push_event.repo_url]
         operations_by_destination: dict[str, list[SyncOperation]] = {}
 
