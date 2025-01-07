@@ -1,12 +1,17 @@
+import sys
+
 import mozlog
 import pytest
 
 from git_hg_sync.config import PulseConfig
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def mozlog_logging() -> None:
     logger = mozlog.structuredlog.StructuredLogger("tests")
+    logger.add_handler(
+        mozlog.handlers.StreamHandler(sys.stdout, mozlog.formatters.JSONFormatter())
+    )
     mozlog.structuredlog.set_default_logger(logger)
 
 
