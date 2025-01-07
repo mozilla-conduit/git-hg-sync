@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Sequence, TypeAlias
+from typing import Sequence, TypeAlias, Literal
 
 import pydantic
 
@@ -16,6 +16,8 @@ class SyncBranchOperation:
     # Destination (hg)
     destination_branch: str
 
+    type: Literal["SyncBranchOperation"] = "SyncBranchOperation"
+
 
 @dataclass
 class SyncTagOperation:
@@ -25,6 +27,8 @@ class SyncTagOperation:
     # Destination (hg)
     tag: str
     tags_destination_branch: str
+
+    type: Literal["SyncTagOperation"] = "SyncTagOperation"
 
 
 SyncOperation: TypeAlias = SyncBranchOperation | SyncTagOperation
