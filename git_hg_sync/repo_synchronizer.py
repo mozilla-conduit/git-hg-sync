@@ -5,7 +5,8 @@ from git import Repo, exc
 from git_hg_sync.mapping import SyncOperation, SyncBranchOperation, SyncTagOperation
 from mozlog import get_proxy_logger
 
-logger = get_proxy_logger("sync_repo")
+
+logger = get_proxy_logger(__name__)
 
 
 class RepoSyncError(Exception):

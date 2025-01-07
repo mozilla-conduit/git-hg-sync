@@ -5,7 +5,7 @@ from mozlog import get_proxy_logger
 
 from git_hg_sync.events import Push, Tag
 
-logger = get_proxy_logger("pluse_consumer")
+logger = get_proxy_logger(__name__)
 
 
 class EventHandler(Protocol):
