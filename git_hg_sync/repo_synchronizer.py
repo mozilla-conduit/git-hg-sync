@@ -5,6 +5,7 @@ from pathlib import Path
 
 from git import Repo, exc
 from git_hg_sync.mapping import SyncOperation, SyncBranchOperation, SyncTagOperation
+from git_hg_sync.retry import retry
 from mozlog import get_proxy_logger
 
 
@@ -90,14 +91,22 @@ class RepoSynchronizer:
 
         # Ensure we have all commits from destination repository
         logger.debug(f"Fetching all commits from destination. {self._log_data()}")
-        self._fetch_all_from_remote(repo, destination_remote)
+        retry(
+            lambda: self._fetch_all_from_remote(repo, destination_remote),
+            tries=2,
+            action="fetching commits from destination",
+        )
 
         # Get commits we want to send to destination repository
         commits_to_fetch = [operation.source_commit for operation in operations]
         logger.debug(
             f"Fetching source commits. {self._log_data(commits=commits_to_fetch)}"
         )
-        repo.git.fetch([self._src_remote, *commits_to_fetch])
+        retry(
+            lambda: repo.git.fetch([self._src_remote, *commits_to_fetch]),
+            tries=2,
+            action="fetching source commits",
+        )
 
         push_args = [destination_remote]
 
@@ -118,8 +127,19 @@ class RepoSynchronizer:
             logger.debug(
                 f"Adding mercurial metadata to git commits. {self._log_data(args=push_args)}"
             )
-            repo.git.execute(
-                ["git", "-c", "cinnabar.data=force", "push", "--dry-run", *push_args]
+            retry(
+                lambda: repo.git.execute(
+                    [
+                        "git",
+                        "-c",
+                        "cinnabar.data=force",
+                        "push",
+                        "--dry-run",
+                        *push_args,
+                    ]
+                ),
+                tries=2,
+                action="adding mercurial metadata to git commits",
             )
 
         # Handle tag operations
@@ -133,12 +153,16 @@ class RepoSynchronizer:
             logger.debug(
                 f"Get tag branch from destination. {self._log_data(tag_branch=tag_branch)}."
             )
-            repo.git.fetch(
-                [
-                    "-f",
-                    destination_remote,
-                    f"refs/heads/branches/{tag_branch}/tip:{tag_branch}",
-                ]
+            retry(
+                lambda: repo.git.fetch(
+                    [
+                        "-f",
+                        destination_remote,
+                        f"refs/heads/branches/{tag_branch}/tip:{tag_branch}",
+                    ]
+                ),
+                tries=2,
+                action="getting tag branch from destination",
             )
             push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
 
@@ -167,4 +191,9 @@ class RepoSynchronizer:
         logger.debug(
             f"Pushing branches and tags to destination. {self._log_data(command=logged_command)}"
         )
-        repo.git.push(*push_args)
+        retry(
+            lambda: repo.git.push(*push_args),
+            tries=2,
+            delay=5,
+            action="pushing branch and tags to destination",
+        )
