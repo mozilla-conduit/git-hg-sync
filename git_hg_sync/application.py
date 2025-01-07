@@ -11,6 +11,7 @@ from git_hg_sync.events import Push, Tag
 from git_hg_sync.mapping import Mapping, SyncOperation
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
+from git_hg_sync.retry import retry
 
 logger = get_proxy_logger(__name__)
 
@@ -54,11 +55,29 @@ class Application:
                     ).append(match.operation)
 
         for destination, operations in operations_by_destination.items():
-            synchronizer.sync(destination, operations)
+            try:
+                retry(
+                    lambda: synchronizer.sync(destination, operations),
+                    tries=3,
+                    action="executing sync operations",
+                    delay=5,
+                )
+            except Exception:
+                error_data = json.dumps(
+                    {
+                        "destination_url": destination,
+                        "operations": [asdict(operation) for operation in operations],
+                    }
+                )
+                logger.error(
+                    f"An error prevented completion of the following sync operations. {error_data}",
+                    exc_info=True,
+                )
 
     def _handle_event(self, event: Push | Tag) -> None:
         if event.repo_url not in self._repo_synchronizers:
-            logger.info("Ignoring event for untracked repository: %()s", event.repo_url)
+            ignored_event = json.dumps(asdict(event))
+            logger.info(f"Ignoring event for untracked repository. {ignored_event}")
             return
         match event:
             case Push():
