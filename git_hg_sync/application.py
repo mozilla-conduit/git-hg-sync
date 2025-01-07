@@ -1,3 +1,5 @@
+from dataclasses import asdict
+import json
 import signal
 import sys
 from types import FrameType
@@ -29,7 +31,7 @@ class Application:
     def run(self) -> None:
         def signal_handler(sig: int, frame: Optional[FrameType]) -> None:
             if self._worker.should_stop:
-                logger.info("Process killed by user")
+                logger.error("Process killed by user")
                 sys.exit(1)
             self._worker.should_stop = True
             logger.info("Process exiting gracefully")
@@ -38,7 +40,9 @@ class Application:
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
-        logger.info(f"Handling push event: {push_event.pushid}")
+        json_event = json.dumps(asdict(push_event))
+        logger.info(f"Handling push event. {json_event}")
+
         synchronizer = self._repo_synchronizers[push_event.repo_url]
         operations_by_destination: dict[str, list[SyncOperation]] = {}
 
