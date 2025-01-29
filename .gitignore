@@ -1,6 +1,6 @@
-clones
-.tox
 **/__pycache__/
+/.coverage
+/.tox
+/clones
 /config.toml
-.coverage
-tests_output
+/tests_output

@@ -1,9 +1,7 @@
 FROM python:3.12-slim
 
-WORKDIR /app
-
 RUN groupadd --gid 10001 app \
-  && useradd -m -g app --uid 10001 -s /usr/sbin/nologin app
+  && useradd -m -g app --uid 10001 -d /app -s /usr/sbin/nologin app
 
 RUN apt-get update && \
     apt-get install --yes git mercurial curl vim && \
@@ -11,17 +9,24 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /root/.cache
 
+WORKDIR /app
+
 # git-cinnabar
 COPY install_git-cinnabar.sh .
 RUN ./install_git-cinnabar.sh
 RUN mv git-cinnabar git-remote-hg /usr/bin/
 
 # install test dependencies
-RUN pip install -U pip pytest pytest-mock pytest-cov
+RUN pip install -U pip pytest pytest-mock pip-tools
 
-# Copy local code to the container image.
-COPY . /app
-RUN chown -R app: /app
+# setup just the venv so changes to the source won't require a full venv
+# rebuild
+COPY --chown=app:app README.md .
+COPY --chown=app:app pyproject.toml .
+RUN pip-compile --verbose pyproject.toml
+RUN pip install -r requirements.txt
 
+# copy app and install
+COPY --chown=app:app . /app
+RUN pip install /app
 USER app
-RUN pip install -e .
