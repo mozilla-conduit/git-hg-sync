@@ -1,5 +1,4 @@
 import argparse
-import sys
 from pathlib import Path
 
 import sentry_sdk
@@ -72,7 +71,7 @@ def main() -> None:
     parser = get_parser()
     commandline.add_logging_group(parser)
     args = parser.parse_args()
-    logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
+    logger = commandline.setup_logging("service", args)
     config = Config.from_file(args.config)
 
     sentry_config = config.sentry
