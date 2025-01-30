@@ -1,7 +1,7 @@
 import signal
 import sys
+from collections.abc import Sequence
 from types import FrameType
-from typing import Optional, Sequence
 
 from mozlog import get_proxy_logger
 
@@ -14,20 +14,19 @@ logger = get_proxy_logger(__name__)
 
 
 class Application:
-
     def __init__(
         self,
         worker: PulseWorker,
         repo_synchronizers: dict[str, RepoSynchronizer],
         mappings: Sequence[Mapping],
-    ):
+    ) -> None:
         self._worker = worker
         self._worker.event_handler = self._handle_event
         self._repo_synchronizers = repo_synchronizers
         self._mappings = mappings
 
     def run(self) -> None:
-        def signal_handler(sig: int, frame: Optional[FrameType]) -> None:
+        def signal_handler(_sig: int, _frame: FrameType | None) -> None:
             if self._worker.should_stop:
                 logger.info("Process killed by user")
                 sys.exit(1)

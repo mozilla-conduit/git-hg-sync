@@ -1,6 +1,5 @@
 import argparse
 import sys
-import logging
 from pathlib import Path
 
 import sentry_sdk
@@ -13,7 +12,7 @@ from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c",
@@ -25,7 +24,7 @@ def get_parser():
     return parser
 
 
-def get_connection(config: PulseConfig):
+def get_connection(config: PulseConfig) -> Connection:
     return Connection(
         hostname=config.host,
         port=config.port,
@@ -36,7 +35,7 @@ def get_connection(config: PulseConfig):
     )
 
 
-def get_queue(config):
+def get_queue(config: Config | PulseConfig) -> Queue:
     exchange = Exchange(config.exchange, type="topic")
     return Queue(
         name=config.queue,
@@ -47,7 +46,7 @@ def get_queue(config):
 
 
 def start_app(
-    config: Config, logger: logging.Logger, *, one_shot: bool = False
+    config: Config, logger: commandline.StructuredLogger, *, one_shot: bool = False
 ) -> None:
     pulse_config = config.pulse
     connection = get_connection(pulse_config)

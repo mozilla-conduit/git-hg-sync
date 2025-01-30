@@ -22,12 +22,3 @@ jobs:
       - name: Execute tests in the running services
         run: |
            docker compose run sync
-
-      - name: Pytest coverage comment
-        uses: MishaKav/pytest-coverage-comment@main
-        with:
-          pytest-xml-coverage-path: tests_output/coverage.xml
-          title: Integration tests Coverage
-          badge-title: Integration tests Coverage
-          junitxml-path: tests_output/pytest.xml
-          junitxml-title: JUnit Xml Summary

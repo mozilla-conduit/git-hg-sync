@@ -1,9 +1,9 @@
 from pathlib import Path
 
-
 from git import Repo, exc
-from git_hg_sync.mapping import SyncOperation, SyncBranchOperation, SyncTagOperation
 from mozlog import get_proxy_logger
+
+from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
 
 logger = get_proxy_logger("sync_repo")
 
@@ -17,12 +17,11 @@ class MercurialMetadataNotFoundError(RepoSyncError):
 
 
 class RepoSynchronizer:
-
     def __init__(
         self,
         clone_directory: Path,
         url: str,
-    ):
+    ) -> None:
         self._clone_directory = clone_directory
         self._src_remote = url
 
@@ -42,7 +41,7 @@ class RepoSynchronizer:
 
     def _commit_has_mercurial_metadata(self, repo: Repo, git_commit: str) -> bool:
         stdout = repo.git.cinnabar(["git2hg", git_commit])
-        return not all([char == "0" for char in stdout.strip()])
+        return not all(char == "0" for char in stdout.strip())
 
     def _fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
         try:
@@ -89,7 +88,7 @@ class RepoSynchronizer:
         ]
 
         # Create tag branches locally
-        tag_branches = set([op.tags_destination_branch for op in tag_ops])
+        tag_branches = {op.tags_destination_branch for op in tag_ops}
         for tag_branch in tag_branches:
             repo.git.fetch(
                 [

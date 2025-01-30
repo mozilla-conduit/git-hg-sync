@@ -12,18 +12,10 @@ jobs:
           cache: 'pip'
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip pytest pytest-mock pytest-cov
+          python -m pip install --upgrade pip pytest pytest-mock
           pip install -e .
           ./install_git-cinnabar.sh
           echo "${{ github.workspace }}" >> $GITHUB_PATH
       - name: Test with pytest
         run: |
-          pytest --junitxml=pytest.xml --cov-report "xml:coverage.xml" --cov=git_hg_sync tests/
-      - name: Pytest coverage comment
-        uses: MishaKav/pytest-coverage-comment@main
-        with:
-          pytest-xml-coverage-path: coverage.xml
-          title: Unit tests Coverage
-          badge-title: Unit tests Coverage
-          junitxml-path: pytest.xml
-          junitxml-title: JUnit Xml Summary
+          pytest --junitxml=pytest.xml 

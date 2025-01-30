@@ -20,11 +20,17 @@ process the next message in the queue.
 
 ## build and test
 
+Format and test/lint code:
+
 ```console
-$ mkdir -p tests_output
-$ chmod a+w tests_output
-$ docker-compose build
-$ docker-compose run --rm sync
+$ tox -e format,lint
+```
+
+Run tests:
+
+```console
+$ docker compose run --build sync
+$ docker compose down
 ```
 
 ## Known limitations

@@ -6,9 +6,9 @@ from git import Repo
 from utils import hg_cat
 
 from git_hg_sync.__main__ import get_connection, get_queue
-from git_hg_sync.config import TrackedRepository, PulseConfig
-from git_hg_sync.repo_synchronizer import RepoSynchronizer
+from git_hg_sync.config import PulseConfig, TrackedRepository
 from git_hg_sync.mapping import SyncBranchOperation, SyncTagOperation
+from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def test_sync_process_(
     foo_path = git_remote_repo_path / "foo.txt"
     foo_path.write_text("FOO CONTENT")
     repo.index.add([foo_path])
-    repo.index.commit("add foo.txt").hexsha
+    repo.index.commit("add foo.txt")
 
     # Push to mercurial repository
     subprocess.run(

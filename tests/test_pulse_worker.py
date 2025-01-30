@@ -11,7 +11,7 @@ from git_hg_sync.pulse_worker import EntityTypeError, PulseWorker
 HERE = Path(__file__).parent
 
 
-def raw_push_entity():
+def raw_push_entity() -> dict:
     return {
         "type": "push",
         "repo_url": "repo_url",

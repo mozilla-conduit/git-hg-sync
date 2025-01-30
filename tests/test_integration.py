@@ -1,7 +1,9 @@
 import os
 import subprocess
 from pathlib import Path
+from typing import Any
 
+import kombu
 import pulse_utils
 import pytest
 from git import Repo
@@ -11,13 +13,12 @@ from utils import hg_cat
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config, PulseConfig
 
-NO_RABBITMQ = not os.getenv("RABBITMQ") == "true"
+NO_RABBITMQ = os.getenv("RABBITMQ") != "true"
 HERE = Path(__file__).parent
 
 
 @pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
 def test_send_and_receive(pulse_config: PulseConfig) -> None:
-
     payload = {
         "type": "push",
         "repo_url": "repo.git",
@@ -30,7 +31,7 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
         "push_json_url": "push_json_url",
     }
 
-    def callback(body, message):
+    def callback(body: Any, message: kombu.Message) -> None:
         message.ack()
         assert body["payload"] == payload
 
@@ -57,7 +58,7 @@ def test_full_app(
     foo_path = git_remote_repo_path / "foo.txt"
     foo_path.write_text("FOO CONTENT")
     repo.index.add([foo_path])
-    repo.index.commit("add foo.txt").hexsha
+    repo.index.commit("add foo.txt")
 
     # Push to mercurial repository
     subprocess.run(
