@@ -4,6 +4,7 @@ from git import Repo, exc
 from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
+from git_hg_sync.retry import retry
 
 logger = get_proxy_logger("sync_repo")
 
@@ -48,7 +49,7 @@ class RepoSynchronizer:
             repo.git.fetch([remote])
         except exc.GitCommandError as e:
             # can't fetch if repo is empty
-            if "fatal: couldn't find remote ref HEAD" not in e.stderr:
+            if "fatal: couldn't find remote ref HEAD" in e.stderr:
                 raise e
 
     def sync(self, destination_url: str, operations: list[SyncOperation]) -> None:
@@ -56,12 +57,13 @@ class RepoSynchronizer:
         destination_remote = f"hg::{destination_url}"
 
         # Ensure we have all commits from destination repository
-        self._fetch_all_from_remote(repo, destination_remote)
+        with retry("fetching commits from destination"):
+            self._fetch_all_from_remote(repo, destination_remote)
 
         # Get commits we want to send to destination repository
         commits_to_fetch = [operation.source_commit for operation in operations]
-        repo.git.fetch([self._src_remote, *commits_to_fetch])
-
+        with retry("fetching source commits"):
+            repo.git.fetch([self._src_remote, *commits_to_fetch])
         push_args = [destination_remote]
 
         # Handle branch operations
@@ -78,10 +80,14 @@ class RepoSynchronizer:
         # tagging can only be done on a commit that already have mercurial
         # metadata
         if branch_ops:
-            repo.git.execute(
-                ["git", "-c", "cinnabar.data=force", "push", "--dry-run", *push_args]
-            )
-
+            with retry("adding mercurial metadata to git commits"):
+                repo.git.execute(
+                    ["git"]
+                    + ["-c", "cinnabar.data=force"]
+                    + ["push"]
+                    + ["--dry-run"]
+                    + push_args,
+                )
         # Handle tag operations
         tag_ops: list[SyncTagOperation] = [
             op for op in operations if isinstance(op, SyncTagOperation)
@@ -90,13 +96,14 @@ class RepoSynchronizer:
         # Create tag branches locally
         tag_branches = {op.tags_destination_branch for op in tag_ops}
         for tag_branch in tag_branches:
-            repo.git.fetch(
-                [
-                    "-f",
-                    destination_remote,
-                    f"refs/heads/branches/{tag_branch}/tip:{tag_branch}",
-                ]
-            )
+            with retry("getting tag branch from destination"):
+                repo.git.fetch(
+                    [
+                        "-f",
+                        destination_remote,
+                        f"refs/heads/branches/{tag_branch}/tip:{tag_branch}",
+                    ]
+                )
             push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
 
         # Create tags
@@ -116,4 +123,5 @@ class RepoSynchronizer:
             )
 
         # Push commits, branches and tags to destination
-        repo.git.push(*push_args)
+        with retry("pushing branch and tags to destination"):
+            repo.git.push(*push_args)

@@ -55,6 +55,7 @@ lint.ignore = [
     "E501", # line-too-long
     "ERA001", # commented-out-code
     "G004", # logging-f-string
+    "G201", # logging-exc-info (mozlog doesn't support .exception)
     "ISC001", # single-line-implicit-string-concatenation (formatter will fix)
     "PERF203", # try-except-in-loop
     "PERF401", # manual-list-comprehension

@@ -1,3 +1,5 @@
+import dataclasses
+import json
 import signal
 import sys
 from collections.abc import Sequence
@@ -9,6 +11,7 @@ from git_hg_sync.events import Push, Tag
 from git_hg_sync.mapping import Mapping, SyncOperation
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
+from git_hg_sync.retry import retry
 
 logger = get_proxy_logger(__name__)
 
@@ -30,7 +33,7 @@ class Application:
             if self._worker.should_stop:
                 logger.info("Process killed by user")
                 sys.exit(1)
-            self._worker.shoud_stop = True
+            self._worker.should_stop = True
             logger.info("Process exiting gracefully")
 
         signal.signal(signal.SIGINT, signal_handler)
@@ -49,7 +52,23 @@ class Application:
                     ).append(match.operation)
 
         for destination, operations in operations_by_destination.items():
-            synchronizer.sync(destination, operations)
+            # noinspection PyBroadException
+            try:
+                with retry(action="executing sync operations", tries=3, delay=5):
+                    synchronizer.sync(destination, operations)
+            except Exception:
+                error_data = json.dumps(
+                    {
+                        "destination_url": destination,
+                        "operations": [
+                            dataclasses.asdict(operation) for operation in operations
+                        ],
+                    }
+                )
+                logger.error(
+                    f"An error prevented completion of the following sync operations. {error_data}",
+                    exc_info=True,
+                )
 
     def _handle_event(self, event: Push | Tag) -> None:
         if event.repo_url not in self._repo_synchronizers:
