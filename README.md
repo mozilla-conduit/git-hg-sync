@@ -18,7 +18,39 @@ to produce the equivalent mercurial commits to the right repo (depending on the 
 It finally pushes the changes to the remote mercurial repository… then goes back to step one to
 process the next message in the queue.
 
-## build and test
+## Run
+
+```console
+$ docker compose up -d
+```
+
+The logs from the syncer can be displayed with
+
+```console
+$ docker compose logs -f sync
+```
+
+XXX: queue config
+
+```
+rabbitmqadmin declare exchange name=exchange/git-hg-sync/test type=direct
+rabbitmqadmin declare queue name=queue/git-hg-sync/sync durable=true
+rabbitmqadmin declare binding source=exchange/git-hg-sync/test destination=queue/git-hg-sync/sync routing_key=git-hg-sync
+```
+
+The AMQP exchange is available at localhost:5672. To send a message, you can do the following
+
+```console
+$ echo '{"payload": {"type": "push", "repo_url": "bla", "branches": [ "main" ], "tags": [], "time": "'`date +%s`'", "user": "'$USER'", "push_json_url": "blu", "pushid": 2 }}' \
+  | docker compose run --rm -T  send
+```
+
+(The message can also be received with `docker compose run --rm recv`.)
+
+The RabbitMQ management interface is available at http://localhost:15672/, and
+the login and password are `guest` (don't do this at home, or in prod).
+
+## Build and test
 
 Format and test/lint code:
 
@@ -29,7 +61,7 @@ $ tox -e format,lint
 Run tests:
 
 ```console
-$ docker compose run --build sync
+$ docker compose run --rm test
 $ docker compose down
 ```
 

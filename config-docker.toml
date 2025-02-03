@@ -1,0 +1,31 @@
+[pulse]
+userid = "guest"
+host = "pulse"
+port = 5672
+exchange = "exchange/git-hg-sync/test"
+routing_key = "git-hg-sync"
+queue = "queue/git-hg-sync/sync"
+password = "guest"
+ssl = false
+
+[sentry]
+sentry_url = ""
+
+[clones]
+directory = "../git_hg_sync_repos/"
+
+[[tracked_repositories]]
+name = "firefox-releases"
+url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
+
+[[branch_mappings]]
+source_url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
+branch_pattern = "^(esr\\d+)$"
+destination_url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-\\1"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
+tag_pattern = "^FIREFOX_BETA_(\\d+)_(BASE|END)$"
+destination_url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-beta"
+tags_destination_branch = "tags"

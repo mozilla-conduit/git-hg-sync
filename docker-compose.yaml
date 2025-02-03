@@ -1,14 +1,44 @@
 services:
-  sync:
+  sync: &sync_config
+    image: git_hg_sync
+    command: ["--config", "config-docker.toml", "--log-raw-level", "debug"]
     build: .
-    command: ['pytest', '--junitxml=./tests_output/pytest.xml', 'tests/']
     volumes:
-      - ./tests_output:/app/tests_output
+      - .:/app
+      - ./tests_output:/app/tests_output:z
     environment:
       - RABBITMQ=true
     depends_on:
       pulse:
         condition: service_healthy
+    networks:
+      - pulse_network
+
+  send:
+    image: rabbitmq:3-management-alpine
+    entrypoint: rabbitmqadmin publish --host pulse exchange=exchange/git-hg-sync/test routing_key=git-hg-sync
+    profiles:
+      - send
+    networks:
+      - pulse_network
+
+  recv:
+    image: rabbitmq:3-management-alpine
+    entrypoint: rabbitmqadmin get --host pulse queue=queue/git-hg-sync/sync
+    profiles:
+      - recv
+    networks:
+      - pulse_network
+
+  test:
+    <<: *sync_config
+    command: ["--junitxml=/tmp/tests_output/pytest.xml", "tests/"]
+    entrypoint: pytest
+    volumes:
+      - .:/app
+      - ./tests_output:/app/tests_output:z
+    profiles:
+      - test
     networks:
       - pulse_network
 
