@@ -30,14 +30,6 @@ The logs from the syncer can be displayed with
 $ docker compose logs -f sync
 ```
 
-XXX: queue config
-
-```
-rabbitmqadmin declare exchange name=exchange/git-hg-sync/test type=direct
-rabbitmqadmin declare queue name=queue/git-hg-sync/sync durable=true
-rabbitmqadmin declare binding source=exchange/git-hg-sync/test destination=queue/git-hg-sync/sync routing_key=git-hg-sync
-```
-
 The AMQP exchange is available at localhost:5672. To send a message, you can do the following
 
 ```console

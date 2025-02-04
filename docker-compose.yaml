@@ -44,6 +44,9 @@ services:
 
   pulse:
     image: rabbitmq:3-management-alpine
+    volumes:
+      - ./rabbitmq/90-definitions-import.conf:/etc/rabbitmq/conf.d/90-definitions-import.conf
+      - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 5s
