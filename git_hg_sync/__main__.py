@@ -60,6 +60,7 @@ def start_app(
         for tracked_repo in config.tracked_repositories
     }
     with connection as conn:
+        conn.connect()
         logger.info(f"connected to {conn.host}")
         worker = PulseWorker(conn, queue, one_shot=one_shot)
         app = Application(
