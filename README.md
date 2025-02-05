@@ -18,7 +18,48 @@ to produce the equivalent mercurial commits to the right repo (depending on the 
 It finally pushes the changes to the remote mercurial repository… then goes back to step one to
 process the next message in the queue.
 
-## build and test
+## Run
+
+```console
+$ docker compose up -d
+```
+
+The logs from the syncer can be displayed with
+
+```console
+$ docker compose logs -f sync
+```
+
+The AMQP exchange is available at localhost:5672. To send a message, you can do the following
+
+```console
+$ echo '{"payload": {"type": "push", "repo_url": "bla", "branches": [ "main" ], "tags": [], "time": "'`date +%s`'", "user": "'$USER'", "push_json_url": "blu", "pushid": 2 }}' \
+  | docker compose run --rm -T  send
+```
+
+(The message can also be received with `docker compose run --rm recv`.)
+
+The RabbitMQ management interface is available at http://localhost:15672/, and
+the login and password are `guest` (don't do this at home, or in prod).
+
+## Configuration
+
+An example configuration file can be found in `config.toml.example`. A different
+configuration file can be specified with the `--config` (`-c`) option.
+
+In addition, Pulse parameters can be overridden via the following environment
+variables:
+
+- PULSE_EXCHANGE
+- PULSE_HOST
+- PULSE_PASSWORD
+- PULSE_PORT (needs to be an integer)
+- PULSE_QUEUE
+- PULSE_ROUTING_KEY
+- PULSE_SSL (needs to be an empty string to be False, otherwise True)
+- PULSE_USERID
+
+## Build and test
 
 Format and test/lint code:
 
@@ -29,7 +70,7 @@ $ tox -e format,lint
 Run tests:
 
 ```console
-$ docker compose run --build sync
+$ docker compose run --rm test
 $ docker compose down
 ```
 

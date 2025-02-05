@@ -1,0 +1,71 @@
+{
+  "bindings": [
+    {
+      "arguments": {},
+      "destination": "queue/git-hg-sync/sync",
+      "destination_type": "queue",
+      "routing_key": "git-hg-sync",
+      "source": "exchange/git-hg-sync/test",
+      "vhost": "/"
+    }
+  ],
+  "exchanges": [
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "internal": false,
+      "name": "exchange/git-hg-sync/test",
+      "type": "direct",
+      "vhost": "/"
+    }
+  ],
+  "global_parameters": [
+    {
+      "name": "internal_cluster_id",
+      "value": "rabbitmq-cluster-id-1XAliM1Q1b1raDVu8AeWIA"
+    }
+  ],
+  "parameters": [],
+  "permissions": [
+    {
+      "configure": ".*",
+      "read": ".*",
+      "user": "guest",
+      "vhost": "/",
+      "write": ".*"
+    }
+  ],
+  "policies": [],
+  "product_name": "RabbitMQ",
+  "product_version": "3.13.7",
+  "queues": [
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "queue/git-hg-sync/sync",
+      "vhost": "/"
+    }
+  ],
+  "rabbit_version": "3.13.7",
+  "rabbitmq_version": "3.13.7",
+  "topic_permissions": [],
+  "users": [
+    {
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "limits": {},
+      "name": "guest",
+      "password_hash": "ywxQjVk0n/qwUfbLIf7L2tJIXrNLfM1bd1GoMeJSzZiRMWSd",
+      "tags": ["administrator"]
+    }
+  ],
+  "vhosts": [
+    {
+      "description": "Default virtual host",
+      "metadata": { "description": "Default virtual host", "tags": [] },
+      "name": "/",
+      "tags": []
+    }
+  ]
+}

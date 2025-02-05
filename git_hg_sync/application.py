@@ -30,7 +30,7 @@ class Application:
             if self._worker.should_stop:
                 logger.info("Process killed by user")
                 sys.exit(1)
-            self._worker.shoud_stop = True
+            self._worker.should_stop = True
             logger.info("Process exiting gracefully")
 
         signal.signal(signal.SIGINT, signal_handler)
@@ -53,7 +53,7 @@ class Application:
 
     def _handle_event(self, event: Push | Tag) -> None:
         if event.repo_url not in self._repo_synchronizers:
-            logger.info("Ignoring event for untracked repository: %()s", event.repo_url)
+            logger.info(f"Ignoring event for untracked repository: {event.repo_url}")
             return
         match event:
             case Push():

@@ -53,6 +53,8 @@ def start_app(
 
     queue = get_queue(pulse_config)
 
+    logger.info(f"Reading messages from {connection}/{queue.name} ...")
+
     synchronizers = {
         tracked_repo.url: RepoSynchronizer(
             config.clones.directory / tracked_repo.name, tracked_repo.url
@@ -60,6 +62,7 @@ def start_app(
         for tracked_repo in config.tracked_repositories
     }
     with connection as conn:
+        conn.connect()
         logger.info(f"connected to {conn.host}")
         worker = PulseWorker(conn, queue, one_shot=one_shot)
         app = Application(
