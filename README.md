@@ -42,6 +42,23 @@ $ echo '{"payload": {"type": "push", "repo_url": "bla", "branches": [ "main" ], 
 The RabbitMQ management interface is available at http://localhost:15672/, and
 the login and password are `guest` (don't do this at home, or in prod).
 
+## Configuration
+
+An example configuration file can be found in `config.toml.example`. A different
+configuration file can be specified with the `--config` (`-c`) option.
+
+In addition, Pulse parameters can be overridden via the following environment
+variables:
+
+- PULSE_EXCHANGE
+- PULSE_HOST
+- PULSE_PASSWORD
+- PULSE_PORT (needs to be an integer)
+- PULSE_QUEUE
+- PULSE_ROUTING_KEY
+- PULSE_SSL (needs to be an empty string to be False, otherwise True)
+- PULSE_USERID
+
 ## Build and test
 
 Format and test/lint code:

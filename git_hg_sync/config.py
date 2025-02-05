@@ -1,3 +1,4 @@
+import os
 import pathlib
 from typing import Self
 
@@ -43,6 +44,12 @@ class Config(pydantic.BaseModel):
     def verify_all_mappings_reference_tracked_repositories(
         self,
     ) -> Self:
+        # Allow to override Pulse parameters via environment.
+        for config in self.pulse.model_fields:
+            env_var = f"PULSE_{config}".upper()
+            if value := os.getenv(env_var):
+                setattr(self.pulse, config, value)
+
         tracked_urls = [tracked_repo.url for tracked_repo in self.tracked_repositories]
         for mapping in self.branch_mappings:
             if mapping.source_url not in tracked_urls:

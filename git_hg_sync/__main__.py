@@ -53,6 +53,8 @@ def start_app(
 
     queue = get_queue(pulse_config)
 
+    logger.info(f"Reading messages from {connection}/{queue.name} ...")
+
     synchronizers = {
         tracked_repo.url: RepoSynchronizer(
             config.clones.directory / tracked_repo.name, tracked_repo.url
