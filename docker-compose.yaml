@@ -1,14 +1,26 @@
 services:
-  sync: &sync_config
+  sync_init:
+    user: "${UID}:${GID}"
     image: git_hg_sync
-    command: ["--config", "config-docker.toml", "--log-raw-level", "debug"]
-    build: .
+    entrypoint: ["/app/create_clones.sh", "/clones"]
+    environment:
+      # Let the script create .ssh somewhere writable
+      HOME: /tmp
     volumes:
       - .:/app
-      - ./tests_output:/app/tests_output:z
+      - ./clones:/clones:z
+  sync: &sync_config
+    image: git_hg_sync
+    build: .
+    command: ["--config", "config-docker.toml", "--log-raw-level", "debug"]
+    volumes:
+      - .:/app
+      - ./clones:/clones:z
     environment:
       - RABBITMQ=true
     depends_on:
+      sync_init:
+        condition: service_completed_successfully
       pulse:
         condition: service_healthy
     networks:
