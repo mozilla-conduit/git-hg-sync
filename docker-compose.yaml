@@ -17,6 +17,7 @@ services:
       - .:/app
       - ./clones:/clones:z
     environment:
+      - EMAIL='docker@sync'
       - RABBITMQ=true
     depends_on:
       sync_init:

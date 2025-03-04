@@ -30,17 +30,56 @@ The logs from the syncer can be displayed with
 $ docker compose logs -f sync
 ```
 
-The AMQP exchange is available at localhost:5672. To send a message, you can do the following
+Repositories can be seen on the host in the `clones` subdirectory. Remember to delete if you want to start fresh.
+
+```
+$ ls clones
+mozilla-beta  mozilla-esr115  mozilla-esr128  test-repo-git  test-repo-hg
+```
+
+See the `create_clones.sh` for the creation logic. `test-repo-hg` is the original HG repository (but is otherwise unused), `test-repo-git` is the source Git repository, while the various `mozilla-*` are the targets HG repositories to sync to. The syncer will also create its own `firefox-releases` Git repo to work in.
+
+### AMQP Exchange
+
+The AMQP exchange is available at localhost:5672. The RabbitMQ management interface is available at http://localhost:15672/, and the login and password are `guest` (don't do this at home, or in prod).
+
+The `send` container can be used by piping messages to send via the exchange, into `docker compose run --rm -T  send`. The message can also be received with `docker compose run --rm recv`, if the syncer is not running.
+
+### Example synchronisation
+
+To create, then synchronise a new commit to the `beta` and `esr115` branches, do the following.
 
 ```console
-$ echo '{"payload": {"type": "push", "repo_url": "bla", "branches": [ "main" ], "tags": [], "time": "'`date +%s`'", "user": "'$USER'", "push_json_url": "blu", "pushid": 2 }}' \
+$ docker compose exec sync git --git-dir /clones/test-repo-git/.git commit --allow-empty -m 'test commit'
+$ REV=$(docker compose exec sync git --git-dir /clones/test-repo-git/.git show -q --pretty=format:%H)
+$ TAG=FIREFOX_BETA_42_END
+$ docker compose exec sync git --git-dir /clones/test-repo-git/.git tag $TAG $REV
+$ echo '{"payload": {"type": "push", "repo_url": "/clones/test-repo-git", "branches": { "beta": "'$REV'", "esr115": "'$REV'" }, "tags": { "'$TAG'": "'$REV'" }, "time": "'`date +%s`'", "user": "'$USER'", "push_json_url": "blu", "pushid": 2 }}' \
   | docker compose run --rm -T  send
 ```
 
-(The message can also be received with `docker compose run --rm recv`.)
+After successful processing, the new `test commit` should be visible in, e.g.,
+the `mozilla-esr115` repo.
 
-The RabbitMQ management interface is available at http://localhost:15672/, and
-the login and password are `guest` (don't do this at home, or in prod).
+```
+$ hg --cwd clones/mozilla-esr115 log | head -n 6
+changeset:   219:3acba9603e31
+tag:         tip
+parent:      217:19243c838e62
+user:        root <docker@sync>
+date:        Tue Mar 18 04:18:41 2025 +0000
+summary:     test commit
+$ cd ../mozilla-beta
+$ hg --cwd clones/mozilla-beta tags | head
+tip                              220:d74d8b53e762
+FIREFOX_BETA_42_END              219:3acba9603e31
+```
+
+A tag can then be created, and synced. For example, `FIREFOX_BETA_42_END` for the `mozilla-beta` repo. Note that the revision that the tags points to needs to exist on the target Mercurial repo prior to creating it. It can be created as part of the same Pulse message, with the `branches` object.
+
+Note: The tags on the Mercurial side should be created on a dedicated branch. As each tag update requires a new commit to be created, however, this would leave commits on the target Hg branch which do not have equivalents on the Git side. Creating them on a separate branch avoids this confusion. Mercurial will detect them all the same.
+
+Note that, in both examples above, both `branches` and `tags` are present, but one is empty. They are both required, but cannot be set at the same time.
 
 ## Configuration
 
