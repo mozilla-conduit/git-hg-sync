@@ -4,6 +4,7 @@ from pathlib import Path
 from subprocess import PIPE, Popen
 
 import pytest
+from pydantic import ValidationError
 
 from git_hg_sync.events import Push
 from git_hg_sync.pulse_worker import EntityTypeError, PulseWorker
@@ -11,6 +12,7 @@ from git_hg_sync.pulse_worker import EntityTypeError, PulseWorker
 HERE = Path(__file__).parent
 
 
+@pytest.fixture
 def raw_push_entity() -> dict:
     return {
         "type": "push",
@@ -24,14 +26,21 @@ def raw_push_entity() -> dict:
     }
 
 
-def test_parse_entity_valid() -> None:
-    push_entity = PulseWorker.parse_entity(raw_push_entity())
+def test_parse_entity_valid(raw_push_entity: dict) -> None:
+    push_entity = PulseWorker.parse_entity(raw_push_entity)
     assert isinstance(push_entity, Push)
 
 
-def test_parse_invalid_type() -> None:
+def test_parse_invalid_type(raw_push_entity: dict) -> None:
     with pytest.raises(EntityTypeError):
-        PulseWorker.parse_entity({"type": "unknown"})
+        raw_push_entity["type"] = "unknown"
+        PulseWorker.parse_entity(raw_push_entity)
+
+
+def test_parse_invalid_data_types(raw_push_entity: dict) -> None:
+    with pytest.raises(ValidationError):
+        raw_push_entity["branches"] = ["main"]
+        PulseWorker.parse_entity(raw_push_entity)
 
 
 def test_sigint_signal_interception() -> None:

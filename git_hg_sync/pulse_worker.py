@@ -4,6 +4,7 @@ from typing import Any, Protocol
 import kombu
 from kombu.mixins import ConsumerMixin
 from mozlog import get_proxy_logger
+from pydantic import ValidationError
 
 from git_hg_sync.events import Push, Tag
 
@@ -93,7 +94,7 @@ class PulseWorker(ConsumerMixin):
             )
             message.reject()
             return
-        except (EntityTypeError, TypeError) as e:
+        except (EntityTypeError, TypeError, ValidationError) as e:
             logger.warning(f"Invalid payload: {e}, rejecting ... `{raw_entity}`")
             message.reject()
             return

@@ -22,7 +22,7 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
     payload = {
         "type": "push",
         "repo_url": "repo.git",
-        "bracnhes": {},
+        "branches": {},
         "tags": {},
         "commit": "sha",
         "time": 0,

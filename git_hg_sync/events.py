@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class Push:
+class Push(BaseModel):
     repo_url: str
     branches: dict[
         str, str
@@ -16,8 +15,7 @@ class Push:
     push_json_url: str
 
 
-@dataclass
-class Tag:
+class Tag(BaseModel):
     repo_url: str
     tag: str
     commit: str
