@@ -49,7 +49,13 @@ class Application:
                     ).append(match.operation)
 
         for destination, operations in operations_by_destination.items():
-            synchronizer.sync(destination, operations)
+            try:
+                synchronizer.sync(destination, operations)
+            except Exception as exc:
+                logger.warning(
+                    f"Failed to process operations: {destination=} {operations=} {exc=}"
+                )
+                raise exc
 
     def _handle_event(self, event: Push | Tag) -> None:
         if event.repo_url not in self._repo_synchronizers:

@@ -99,8 +99,13 @@ class PulseWorker(ConsumerMixin):
             message.reject()
             return
 
-        if self.event_handler:
-            self.event_handler(event)
-        message.ack()
+        try:
+            if self.event_handler:
+                self.event_handler(event)
+        except:  # noqa: E722
+            message.requeue()
+        else:
+            message.ack()
+
         if self.one_shot:
             self.should_stop = True

@@ -10,6 +10,7 @@ services:
       - .:/app
       - ./clones:/clones:z
   sync: &sync_config
+    user: "${UID}:${GID}"
     image: git_hg_sync
     build: .
     command: ["--config", "config-docker.toml", "--log-raw-level", "debug"]
