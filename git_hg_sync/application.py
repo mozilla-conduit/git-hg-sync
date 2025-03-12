@@ -37,7 +37,9 @@ class Application:
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
-        logger.info(f"Handling push event: {push_event.pushid}")
+        logger.debug(
+            f"Handling push event: {push_event.pushid} for {push_event.repo_url}"
+        )
         synchronizer = self._repo_synchronizers[push_event.repo_url]
         operations_by_destination: dict[str, list[SyncOperation]] = {}
 
@@ -56,10 +58,13 @@ class Application:
                     f"Failed to process operations: {destination=} {operations=} {exc=}"
                 )
                 raise exc
+        logger.info(
+            f"Successfully handled event: {push_event.pushid} for {push_event.repo_url}"
+        )
 
     def _handle_event(self, event: Push | Tag) -> None:
         if event.repo_url not in self._repo_synchronizers:
-            logger.info(f"Ignoring event for untracked repository: {event.repo_url}")
+            logger.warning(f"Ignoring event for untracked repository: {event.repo_url}")
             return
         match event:
             case Push():
