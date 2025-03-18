@@ -43,16 +43,16 @@ git config remote.origin.push +HEAD:refs/heads/branches/default/tip
 git cinnabar fsck
 
 for b in ${BRANCHES}; do
-	git branch "${b}"
+  git branch "${b}"
 done
 
 for t in ${TAGS}; do
-	git tag "${t}_END"
-	git tag "${t}_START" HEAD~10
+  git tag "${t}_END"
+  git tag "${t}_START" HEAD~10
 done
 
 cd -
 
 for b in ${BRANCHES} beta; do
-	cp -r "${HG_REPO_CLONE}" "${CLONES_DIR}/mozilla-${b}"
+  cp -r "${HG_REPO_CLONE}" "${CLONES_DIR}/mozilla-${b}"
 done
