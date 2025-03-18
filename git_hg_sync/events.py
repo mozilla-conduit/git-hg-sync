@@ -28,11 +28,4 @@ class Push(BaseModel):
         return self
 
 
-class Tag(BaseModel):
-    repo_url: str
-    tag: str
-    commit: str
-    time: int
-    pushid: int
-    user: str
-    push_json_url: str
+Event = Push

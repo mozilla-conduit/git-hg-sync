@@ -5,7 +5,7 @@ from types import FrameType
 
 from mozlog import get_proxy_logger
 
-from git_hg_sync.events import Push, Tag
+from git_hg_sync.events import Event, Push
 from git_hg_sync.mapping import Mapping, SyncOperation
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
@@ -62,7 +62,7 @@ class Application:
             f"Successfully handled event: {push_event.pushid} for {push_event.repo_url}"
         )
 
-    def _handle_event(self, event: Push | Tag) -> None:
+    def _handle_event(self, event: Event) -> None:
         if event.repo_url not in self._repo_synchronizers:
             logger.warning(f"Ignoring event for untracked repository: {event.repo_url}")
             return
