@@ -47,7 +47,7 @@ The `send` container can be used by piping messages to send via the exchange, in
 
 ### Example synchronisation
 
-To create, then synchronise a new commit to the `beta` and `esr115` branches, do the following.
+To create, then synchronise a new commit to the `beta` and `esr115` branches, do the following. A tag can also be created, and synced.
 
 ```console
 $ docker compose exec sync git --git-dir /clones/test-repo-git/.git commit --allow-empty -m 'test commit'
@@ -58,8 +58,10 @@ $ echo '{"payload": {"type": "push", "repo_url": "/clones/test-repo-git", "branc
   | docker compose run --rm -T  send
 ```
 
+Note that the revision that the tags points to needs to exist on the target Mercurial repo prior to creating it. It can be created as part of the same Pulse message, with the `branches` object.
+
 After successful processing, the new `test commit` should be visible in, e.g.,
-the `mozilla-esr115` repo.
+the `mozilla-esr115` (and `beta`) repo, and the tag should be present in the `beta` repo.
 
 ```
 $ hg --cwd clones/mozilla-esr115 log | head -n 6
@@ -75,16 +77,47 @@ tip                              220:d74d8b53e762
 FIREFOX_BETA_42_END              219:3acba9603e31
 ```
 
-A tag can then be created, and synced. For example, `FIREFOX_BETA_42_END` for the `mozilla-beta` repo. Note that the revision that the tags points to needs to exist on the target Mercurial repo prior to creating it. It can be created as part of the same Pulse message, with the `branches` object.
-
-Note: The tags on the Mercurial side should be created on a dedicated branch. As each tag update requires a new commit to be created, however, this would leave commits on the target Hg branch which do not have equivalents on the Git side. Creating them on a separate branch avoids this confusion. Mercurial will detect them all the same.
-
-Note that, in both examples above, both `branches` and `tags` are present, but one is empty. They are both required, but cannot be set at the same time.
-
 ## Configuration
 
 An example configuration file can be found in `config.toml.example`. A different
 configuration file can be specified with the `--config` (`-c`) option.
+
+It contains 6 main sections:
+
+- `pulse` holds the exchange configuration (can be overridden by environment, see below)
+- `sentry` contains the `sentry_url` for monitoring
+- `clones` allows to set the `directory` in which local work clones will be created
+- `tracked_repositories` provides `name` and source `url` for Git repos to track
+- `branch_mappings` describes which Git repo and branches should be sync to which Hg repo
+- `tag_mappings` describes which Git tags should be sync to which Hg repo
+
+### Repository configuration
+
+Both `*_mappings` sections have a `[source|destination]_url` (`source` is Git, `destination` is Hg). They also have a `[branch|tag]_pattern`, which allows to filter Git branches or tags to sync to specified Hg destinations (and branch). The `pattern` supports regexps.
+
+Note: The tags on the Mercurial side should be created on a dedicated branch. As each tag update requires a new commit to be created, however, this would leave commits on the target Hg branch which do not have equivalents on the Git side. Creating them on a separate branch avoids this confusion. Mercurial will detect them all the same.
+
+```
+[[tracked_repositories]]
+name = "firefox-releases"
+url = "/clones/test-repo-git"
+
+# ESR branches
+[[branch_mappings]]
+source_url = "/clones/test-repo-git"
+branch_pattern = "^(esr\\d+)$"
+destination_url = "/clones/mozilla-\\1"
+destination_branch = "default"
+
+# ESR tags
+[[tag_mappings]]
+source_url = "/clones/test-repo-git"
+tag_pattern = "^FIREFOX_(\\d+)\\.\\d+\\.\\d+esr_(BUILD\\d+|RELEASE)$"
+destination_url = "/clones/mozilla-esr\\1"
+tags_destination_branch = "default"
+```
+
+### Pulse parameters
 
 In addition, Pulse parameters can be overridden via the following environment
 variables:
