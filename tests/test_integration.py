@@ -24,7 +24,6 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
         "repo_url": "repo.git",
         "branches": {},
         "tags": {},
-        "commit": "sha",
         "time": 0,
         "pushid": 0,
         "user": "user",
@@ -114,3 +113,4 @@ def test_full_app(
 
     # test
     assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "default")
+    assert "FIREFOX_128_0esr_RELEASE" in hg_cat(hg_remote_repo_path, ".hgtags", "tags")

@@ -43,6 +43,30 @@ def test_parse_invalid_data_types(raw_push_entity: dict) -> None:
         PulseWorker.parse_entity(raw_push_entity)
 
 
+@pytest.mark.parametrize(
+    "remove, exception",
+    [
+        ([], None),
+        (["branches"], None),
+        (["tags"], None),
+        (["branches", "tags"], ValidationError),
+    ],
+)
+def test_parse_branch_and_or_tags(
+    raw_push_entity: dict, remove: list[str], exception: Exception | None
+) -> None:
+    entity = raw_push_entity
+    for f in remove:
+        del entity[f]
+
+    if exception:
+        with pytest.raises(exception):
+            PulseWorker.parse_entity(entity)
+    else:
+        push_entity = PulseWorker.parse_entity(entity)
+        assert isinstance(push_entity, Push)
+
+
 def test_sigint_signal_interception() -> None:
     config_file = HERE / "data" / "config.toml"
     module_path = HERE.parent / "git_hg_sync" / "__main__.py"
