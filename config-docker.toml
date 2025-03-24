@@ -22,7 +22,7 @@ url = "/clones/test-repo-git"
 [[branch_mappings]]
 source_url = "/clones/test-repo-git"
 branch_pattern = "beta"
-destination_url = "/clones/mozilla-beta" # also, m-c
+destination_url = "/clones/mozilla-beta"
 destination_branch = "default"
 
 [[tag_mappings]]
