@@ -37,7 +37,7 @@ $ ls clones
 mozilla-beta  mozilla-esr115  mozilla-esr128  test-repo-git  test-repo-hg
 ```
 
-See the `create_clones.sh` for the creation logic. `test-repo-hg` is the original HG repository (but is otherwise unused), `test-repo-git` is the source Git repository, while the various `mozilla-*` are the targets HG repositories to sync to. The syncer will also create its own `firefox-releases` Git repo to work in.
+See the `create_clones.sh` for the creation logic. `test-repo-hg` is the original Mercurial repository (but is otherwise unused), `test-repo-git` is the source Git repository, while the various `mozilla-*` are the targets Mercurial repositories to sync to. The syncer will also create its own `firefox-releases` Git repo to work in.
 
 ### AMQP Exchange
 
