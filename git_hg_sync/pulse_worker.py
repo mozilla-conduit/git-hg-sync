@@ -69,7 +69,6 @@ class PulseWorker(ConsumerMixin):
                 return
 
         if not isinstance(body, dict):
-            breakpoint()
             logger.warning(f"Invalid message data, rejecting ... `{body}`")
             message.reject()
             return
