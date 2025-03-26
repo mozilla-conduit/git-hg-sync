@@ -34,7 +34,6 @@ git config fetch.prune true
 
 # conf
 git config remote.origin.skipDefaultUpdate true
-git remote set-url --push origin hg::ssh://git@forge.extranet.logilab.fr/ogiorgis/chatzilla
 git config remote.origin.push +HEAD:refs/heads/branches/default/tip
 
 # check
