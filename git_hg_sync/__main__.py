@@ -5,6 +5,7 @@ from pathlib import Path
 import sentry_sdk
 from kombu import Connection, Exchange, Queue
 from mozlog import commandline
+from pydantic import ValidationError
 
 from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
@@ -76,7 +77,11 @@ def main() -> None:
     commandline.add_logging_group(parser)
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
-    config = Config.from_file(args.config)
+    try:
+        config = Config.from_file(args.config)
+    except ValidationError as e:
+        logger.error(f"Invalid configuration: {e}")
+        sys.exit(1)
 
     sentry_config = config.sentry
     if sentry_config and sentry_config.sentry_url:
