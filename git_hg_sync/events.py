@@ -16,7 +16,7 @@ class Push(BaseModel):
         default_factory=dict
     )  # Mapping between tag names (key) and corresponding commit sha (value)
     time: int
-    pushid: int
+    push_id: int
     user: str
     push_json_url: str
 

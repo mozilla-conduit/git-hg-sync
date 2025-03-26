@@ -38,7 +38,7 @@ class Application:
 
     def _handle_push_event(self, push_event: Push) -> None:
         logger.debug(
-            f"Handling push event: {push_event.pushid} for {push_event.repo_url}"
+            f"Handling push event: {push_event.push_id} for {push_event.repo_url}"
         )
         synchronizer = self._repo_synchronizers[push_event.repo_url]
         operations_by_destination: dict[str, list[SyncOperation]] = {}
@@ -59,7 +59,7 @@ class Application:
                 )
                 raise exc
         logger.info(
-            f"Successfully handled event: {push_event.pushid} for {push_event.repo_url}"
+            f"Successfully handled event: {push_event.push_id} for {push_event.repo_url}"
         )
 
     def _handle_event(self, event: Event) -> None:

@@ -20,7 +20,7 @@ def raw_push_entity() -> dict:
         "branches": {"mybranch": "acommitsha"},
         "tags": {"mytag": "acommitsha"},
         "time": 0,
-        "pushid": 0,
+        "push_id": 0,
         "user": "user",
         "push_json_url": "push_json_url",
     }

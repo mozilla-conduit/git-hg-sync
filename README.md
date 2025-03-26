@@ -54,7 +54,7 @@ $ docker compose exec sync git --git-dir /clones/test-repo-git/.git commit --all
 $ REV=$(docker compose exec sync git --git-dir /clones/test-repo-git/.git show -q --pretty=format:%H)
 $ TAG=FIREFOX_BETA_42_END
 $ docker compose exec sync git --git-dir /clones/test-repo-git/.git tag $TAG $REV
-$ echo '{"payload": {"type": "push", "repo_url": "/clones/test-repo-git", "branches": { "beta": "'$REV'", "esr115": "'$REV'" }, "tags": { "'$TAG'": "'$REV'" }, "time": "'`date +%s`'", "user": "'$USER'", "push_json_url": "blu", "pushid": 2 }}' \
+$ echo '{"payload": {"type": "push", "repo_url": "/clones/test-repo-git", "branches": { "beta": "'$REV'", "esr115": "'$REV'" }, "tags": { "'$TAG'": "'$REV'" }, "time": "'`date +%s`'", "user": "'$USER'", "push_json_url": "blu", "push_id": 2 }}' \
   | docker compose run --rm -T  send
 ```
 

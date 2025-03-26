@@ -25,7 +25,7 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
         "branches": {},
         "tags": {},
         "time": 0,
-        "pushid": 0,
+        "push_id": 0,
         "user": "user",
         "push_json_url": "push_json_url",
     }
@@ -102,7 +102,7 @@ def test_full_app(
         "branches": {"esr128": git_commit_sha},
         "tags": {"FIREFOX_128_0esr_RELEASE": git_commit_sha},
         "time": 0,
-        "pushid": 0,
+        "push_id": 0,
         "user": "user",
         "push_json_url": "push_json_url",
     }
