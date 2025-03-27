@@ -52,8 +52,14 @@ class RepoSynchronizer:
                 raise e
 
     def sync(self, destination_url: str, operations: list[SyncOperation]) -> None:
-        logger.debug(f"Syncing {operations} to {destination_url}")
-        repo = self._get_clone_repo()
+        logger.info(f"Syncing {operations} to {destination_url} ...")
+        try:
+            repo = self._get_clone_repo()
+        except PermissionError as exc:
+            raise PermissionError(
+                f"Failed to create local clone from {destination_url}"
+            ) from exc
+
         destination_remote = f"hg::{destination_url}"
 
         # Ensure we have all commits from destination repository
