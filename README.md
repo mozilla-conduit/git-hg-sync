@@ -131,6 +131,14 @@ variables:
 - PULSE_SSL (needs to be an empty string to be False, otherwise True)
 - PULSE_USERID
 
+### SSH key
+
+If SSH-based authentication is required, the Docker image has an entrypoint that
+sets up the necessary environment.
+
+The private key should be pass in a format suitable for `ssh-add`(1) via the
+SSH_PRIVATE_KEY environment variable.
+
 ## Build and test
 
 Format and test/lint code:

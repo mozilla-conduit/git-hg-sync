@@ -33,5 +33,5 @@ COPY --chown=app:app . /app
 RUN pip install -e /app
 USER app
 
-ENTRYPOINT ["/usr/local/bin/git-hg-sync"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["--config", "config-docker.toml"]
