@@ -50,6 +50,10 @@ class Application:
                         match.destination_url, []
                     ).append(match.operation)
 
+        if not operations_by_destination:
+            logger.warning(f"No operation for {push_event}")
+            return
+
         for destination, operations in operations_by_destination.items():
             try:
                 synchronizer.sync(destination, operations)
