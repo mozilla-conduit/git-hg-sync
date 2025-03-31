@@ -82,3 +82,19 @@ source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "autoland"
 destination_url = "ssh://hg.mozilla.org//integration/autoland/"
 destination_branch = "default"
+
+
+[[tracked_repositories]]
+name = "infra-testing"
+url = "https://github.com/mozilla-firefox/infra-testing/m-c/"
+
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/infra-testing"
+branch_pattern = ".*"
+destination_url = "ssh://hg.mozilla.org//conduit-testing/m-c/"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/infra-testing"
+tag_pattern = ".*"
+destination_url = "ssh://hg.mozilla.org//conduit-testing/m-c/"
+tags_destination_branch = "tags"
