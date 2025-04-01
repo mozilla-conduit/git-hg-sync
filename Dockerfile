@@ -33,9 +33,10 @@ RUN echo '[ui]\nssh = ssh -oStrictHostKeyChecking=accept-new' >> /etc/mercurial/
 
 # copy app and install
 COPY --chown=app:app . /app
+COPY --chown=app:app entrypoint.sh /entrypoint.sh
 # Make the install editable so we can mount the local source into a container based on this image.
 RUN pip install -e /app
 USER app
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["--config", "config-docker.toml"]
