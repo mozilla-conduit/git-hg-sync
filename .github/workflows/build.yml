@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  # XXX: remove before merging
+  pull_request:
+    branches:
+      - main
 
 env:
   DOCKERHUB_REPO: mozillaconduit/git-hg-sync
