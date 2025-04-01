@@ -6,6 +6,8 @@ on:
       - develop
       - staging
       - main
+  # XXX: remove before merging
+  pull_request:
 
 env:
   IMAGE_NAME: lando
