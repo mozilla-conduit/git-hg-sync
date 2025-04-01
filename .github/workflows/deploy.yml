@@ -6,6 +6,9 @@ on:
       - develop
       - staging
       - main
+  release:
+    types:
+      - published
   # XXX: remove before merging
   pull_request:
 
