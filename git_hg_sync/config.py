@@ -4,8 +4,11 @@ from typing import Self
 
 import pydantic
 import tomllib
+from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import BranchMapping, TagMapping
+
+logger = get_proxy_logger(__name__)
 
 
 class PulseConfig(pydantic.BaseModel):
@@ -48,6 +51,7 @@ class Config(pydantic.BaseModel):
         for config in self.pulse.model_fields:
             env_var = f"PULSE_{config}".upper()
             if value := os.getenv(env_var):
+                logger.info(f"Setting Pulse {config} option from {env_var}")
                 setattr(self.pulse, config, value)
 
         tracked_urls = [tracked_repo.url for tracked_repo in self.tracked_repositories]
