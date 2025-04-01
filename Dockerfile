@@ -27,13 +27,13 @@ COPY --chown=app:app pyproject.toml .
 RUN pip-compile --verbose pyproject.toml \
     && pip install -r requirements.txt
 
-RUN echo '[ui]\nssh = ssh -oStrictHostKeyChecking=accept-new' >> /etc/mercurial/hgrc \
-  && mkdir -p /clones \
+RUN mkdir -p /clones \
   && chown app:app /clones
 
 # copy app and install
+COPY docker/hgrc /etc/mercurial/hgrc
+COPY docker/entrypoint.sh /entrypoint.sh
 COPY --chown=app:app . /app
-COPY --chown=app:app entrypoint.sh /entrypoint.sh
 # Make the install editable so we can mount the local source into a container based on this image.
 RUN pip install -e /app
 USER app
