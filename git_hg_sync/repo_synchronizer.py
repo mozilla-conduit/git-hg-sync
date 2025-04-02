@@ -52,7 +52,14 @@ class RepoSynchronizer:
                 raise e
 
     def sync(self, destination_url: str, operations: list[SyncOperation]) -> None:
-        repo = self._get_clone_repo()
+        logger.info(f"Syncing {operations} to {destination_url} ...")
+        try:
+            repo = self._get_clone_repo()
+        except PermissionError as exc:
+            raise PermissionError(
+                f"Failed to create local clone from {destination_url}"
+            ) from exc
+
         destination_remote = f"hg::{destination_url}"
 
         # Ensure we have all commits from destination repository
@@ -69,9 +76,12 @@ class RepoSynchronizer:
             op for op in operations if isinstance(op, SyncBranchOperation)
         ]
         for branch_operation in branch_ops:
-            push_args.append(
-                f"{branch_operation.source_commit}:refs/heads/branches/{branch_operation.destination_branch}/tip"
-            )
+            try:
+                push_args.append(
+                    f"{branch_operation.source_commit}:refs/heads/branches/{branch_operation.destination_branch}/tip"
+                )
+            except Exception as e:
+                raise RepoSyncError(branch_operation, e) from e
 
         # Add mercurial metadata to new commits from synced branches
         # Some of these commits could be tagged in the same synchronization and
@@ -104,16 +114,20 @@ class RepoSynchronizer:
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
-                raise MercurialMetadataNotFoundError()
-            repo.git.cinnabar(
-                [
-                    "tag",
-                    "--onto",
-                    f"refs/heads/{tag_operation.tags_destination_branch}",
-                    tag_operation.tag,
-                    tag_operation.source_commit,
-                ]
-            )
+                raise MercurialMetadataNotFoundError(tag_operation)
+            try:
+                repo.git.cinnabar(
+                    [
+                        "tag",
+                        "--onto",
+                        f"refs/heads/{tag_operation.tags_destination_branch}",
+                        tag_operation.tag,
+                        tag_operation.source_commit,
+                    ]
+                )
+            except Exception as e:
+                raise RepoSyncError(tag_operation, e) from e
 
+        logger.debug(f"Push arguments: {push_args}")
         # Push commits, branches and tags to destination
         repo.git.push(*push_args)

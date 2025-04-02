@@ -17,6 +17,9 @@ dependencies = [
     "sentry_sdk",
 ]
 
+[project.scripts]
+git-hg-sync = "git_hg_sync.__main__:main"
+
 [tool.ruff]
 lint.select = [
     "A", # flake8-builtins

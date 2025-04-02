@@ -82,7 +82,7 @@ if __name__ == "__main__":
                 "branches": json.loads(sys.argv[3]),
                 "tags": json.loads(sys.argv[4]),
                 "time": 0,
-                "pushid": 0,
+                "push_id": 0,
                 "user": "user",
                 "push_json_url": "push_json_url",
             }
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                 "tag": "tag",
                 "commit": "88949ac3ad633e92cf52354d91857074e264ad12",
                 "time": 0,
-                "pushid": 0,
+                "push_id": 0,
                 "user": "user",
                 "push_json_url": "push_json_url",
             }

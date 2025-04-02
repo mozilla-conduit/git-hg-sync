@@ -5,7 +5,7 @@ from types import FrameType
 
 from mozlog import get_proxy_logger
 
-from git_hg_sync.events import Push, Tag
+from git_hg_sync.events import Event, Push
 from git_hg_sync.mapping import Mapping, SyncOperation
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
@@ -30,14 +30,16 @@ class Application:
             if self._worker.should_stop:
                 logger.info("Process killed by user")
                 sys.exit(1)
-            self._worker.shoud_stop = True
+            self._worker.should_stop = True
             logger.info("Process exiting gracefully")
 
         signal.signal(signal.SIGINT, signal_handler)
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
-        logger.info(f"Handling push event: {push_event.pushid}")
+        logger.debug(
+            f"Handling push event: {push_event.push_id} for {push_event.repo_url}"
+        )
         synchronizer = self._repo_synchronizers[push_event.repo_url]
         operations_by_destination: dict[str, list[SyncOperation]] = {}
 
@@ -48,12 +50,25 @@ class Application:
                         match.destination_url, []
                     ).append(match.operation)
 
-        for destination, operations in operations_by_destination.items():
-            synchronizer.sync(destination, operations)
+        if not operations_by_destination:
+            logger.warning(f"No operation for {push_event}")
+            return
 
-    def _handle_event(self, event: Push | Tag) -> None:
+        for destination, operations in operations_by_destination.items():
+            try:
+                synchronizer.sync(destination, operations)
+            except Exception as exc:
+                logger.warning(
+                    f"Failed to process operations: {destination=} {operations=} {exc=}"
+                )
+                raise exc
+        logger.info(
+            f"Successfully handled event: {push_event.push_id} for {push_event.repo_url}"
+        )
+
+    def _handle_event(self, event: Event) -> None:
         if event.repo_url not in self._repo_synchronizers:
-            logger.info("Ignoring event for untracked repository: %()s", event.repo_url)
+            logger.warning(f"Ignoring event for untracked repository: {event.repo_url}")
             return
         match event:
             case Push():

@@ -1,6 +1,9 @@
 name: Pytest in docker compose
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: main
 
 jobs:
   build:
@@ -21,4 +24,4 @@ jobs:
 
       - name: Execute tests in the running services
         run: |
-           docker compose run sync
+           docker compose run test

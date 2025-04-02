@@ -5,6 +5,7 @@ from pathlib import Path
 import sentry_sdk
 from kombu import Connection, Exchange, Queue
 from mozlog import commandline
+from pydantic import ValidationError
 
 from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
@@ -53,6 +54,8 @@ def start_app(
 
     queue = get_queue(pulse_config)
 
+    logger.info(f"Reading messages from {connection}/{queue.name} ...")
+
     synchronizers = {
         tracked_repo.url: RepoSynchronizer(
             config.clones.directory / tracked_repo.name, tracked_repo.url
@@ -60,6 +63,7 @@ def start_app(
         for tracked_repo in config.tracked_repositories
     }
     with connection as conn:
+        conn.connect()
         logger.info(f"connected to {conn.host}")
         worker = PulseWorker(conn, queue, one_shot=one_shot)
         app = Application(
@@ -73,7 +77,11 @@ def main() -> None:
     commandline.add_logging_group(parser)
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args, {"raw": sys.stdout})
-    config = Config.from_file(args.config)
+    try:
+        config = Config.from_file(args.config)
+    except ValidationError as e:
+        logger.error(f"Invalid configuration: {e}")
+        sys.exit(1)
 
     sentry_config = config.sentry
     if sentry_config and sentry_config.sentry_url:

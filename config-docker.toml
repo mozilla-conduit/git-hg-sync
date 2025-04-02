@@ -1,0 +1,46 @@
+[pulse]
+userid = "guest"
+host = "pulse"
+port = 5672
+exchange = "exchange/git-hg-sync/test"
+routing_key = "git-hg-sync"
+queue = "queue/git-hg-sync/sync"
+password = "guest"
+ssl = false
+
+[sentry]
+sentry_url = ""
+
+[clones]
+directory = "/clones"
+
+[[tracked_repositories]]
+name = "firefox-releases"
+url = "/clones/test-repo-git"
+
+# BETA
+[[branch_mappings]]
+source_url = "/clones/test-repo-git"
+branch_pattern = "beta"
+destination_url = "/clones/mozilla-beta"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "/clones/test-repo-git"
+tag_pattern = "^FIREFOX_BETA_(\\d+)_(BASE|END)$"
+destination_url = "/clones/mozilla-beta"
+tags_destination_branch = "tags"
+
+# ESR
+[[branch_mappings]]
+source_url = "/clones/test-repo-git"
+branch_pattern = "^(esr\\d+)$"
+destination_url = "/clones/mozilla-\\1"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "/clones/test-repo-git"
+tag_pattern = "^FIREFOX_(\\d+)\\.\\d+\\.\\d+esr_(BUILD\\d+|RELEASE)$"
+destination_url = "/clones/mozilla-esr\\1"
+tags_destination_branch = "default"
+

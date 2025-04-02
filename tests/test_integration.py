@@ -22,11 +22,10 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
     payload = {
         "type": "push",
         "repo_url": "repo.git",
-        "bracnhes": {},
+        "branches": {},
         "tags": {},
-        "commit": "sha",
         "time": 0,
-        "pushid": 0,
+        "push_id": 0,
         "user": "user",
         "push_json_url": "push_json_url",
     }
@@ -103,7 +102,7 @@ def test_full_app(
         "branches": {"esr128": git_commit_sha},
         "tags": {"FIREFOX_128_0esr_RELEASE": git_commit_sha},
         "time": 0,
-        "pushid": 0,
+        "push_id": 0,
         "user": "user",
         "push_json_url": "push_json_url",
     }
@@ -114,3 +113,4 @@ def test_full_app(
 
     # test
     assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "default")
+    assert "FIREFOX_128_0esr_RELEASE" in hg_cat(hg_remote_repo_path, ".hgtags", "tags")
