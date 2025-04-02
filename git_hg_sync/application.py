@@ -66,7 +66,7 @@ class Application:
             try:
                 with retry(action="executing sync operations", tries=3, delay=5):
                     synchronizer.sync(destination, operations)
-            except Exception:
+            except Exception as exc:
                 error_data = json.dumps(
                     {
                         "destination_url": destination,
