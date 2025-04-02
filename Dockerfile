@@ -1,5 +1,7 @@
 FROM python:3.12-slim
 
+ENV PORT=8000
+
 RUN groupadd --gid 10001 app \
   && useradd -m -g app --uid 10001 -d /app -s /usr/sbin/nologin app
 
@@ -37,6 +39,8 @@ COPY --chown=app:app . /app
 # Make the install editable so we can mount the local source into a container based on this image.
 RUN pip install -e /app
 USER app
+
+HEALTHCHECK CMD curl -sfk http://localhost:$PORT -o/dev/null
 
 # run service
 ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
