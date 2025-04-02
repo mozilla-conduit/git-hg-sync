@@ -13,21 +13,12 @@ on:
   pull_request:
 
 env:
-  IMAGE_NAME: lando
+  IMAGE_NAME: git-hg-sync
   GAR_LOCATION: us
-  GCP_PROJECT_ID: moz-fx-lando-prod
-  GAR_REPOSITORY: lando-prod
+  GCP_PROJECT_ID: moz-fx-git-hg-sync-prod
+  GAR_REPOSITORY: git-hg-sync-prod
 
 jobs:
-  # build:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #           fetch-depth: '0'
-  #     - name: Build the Docker image
-  #       run: docker build -t lando .
-
   deploy:
     runs-on: ubuntu-latest
     permissions:
