@@ -1,36 +1,34 @@
-import contextlib
 import time
-from collections.abc import Generator
-from typing import Any
+from collections.abc import Callable
 
 from mozlog import get_proxy_logger
 
 logger = get_proxy_logger("retry")
 
 
-@contextlib.contextmanager
 def retry(
     action: str,
+    callback: Callable,
     *,
     tries: int = 2,
     delay: float = 0.25,
-) -> Generator[Any, None, None]:
+) -> None:
     logger.debug(action)
     for attempt in range(1, tries + 1):
         try:
-            yield
+            callback()
             break
         except Exception as exc:
-            action_text = f" while {action}" if action else ""
+            action_text = f" {action}" if action else ""
             if attempt < tries:
                 logger.error(
-                    f"Attempt {attempt}/{tries} failed{action_text} with error: {type(exc).__name__}: {exc}. Retrying...",
-                    exc_info=True,
+                    f"Failed attempt{action_text} [{attempt}/{tries}]. Retrying..."
                 )
                 if delay > 0:
                     time.sleep(delay)
             else:
                 logger.error(
-                    f"Attempt {attempt}/{tries} failed{action_text}. Aborting."
+                    f"Final attempt{action_text} [{attempt}/{tries}] failed with error: {type(exc).__name__}: {exc}. Aborting.",
+                    exc_info=True,
                 )
                 raise
