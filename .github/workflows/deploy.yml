@@ -21,6 +21,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: build
     permissions:
       contents: read
       id-token: write
