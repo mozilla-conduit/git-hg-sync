@@ -4,7 +4,6 @@ import os
 import signal
 import sys
 from collections.abc import Sequence
-from functools import partial
 from types import FrameType
 
 from mozlog import get_proxy_logger
@@ -14,7 +13,6 @@ from git_hg_sync.events import Event, Push
 from git_hg_sync.mapping import Mapping, SyncOperation
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
-from git_hg_sync.retry import retry
 
 logger = get_proxy_logger(__name__)
 
@@ -65,20 +63,7 @@ class Application:
 
         for destination, operations in operations_by_destination.items():
             try:
-                retry(
-                    "executing sync operations",
-                    # Python gotcha: when creating closure in a loop, any loop
-                    # variable used in the closure takes the last value of the variable,
-                    # at the end of the loop [0].
-                    #
-                    # We can use functools.partial to early-bind those parameters into
-                    # a Callable.
-                    #
-                    # [0] https://docs.python-guide.org/writing/gotchas/#late-binding-closures
-                    partial(synchronizer.sync, destination, operations),
-                    tries=3,
-                    delay=5,
-                )
+                synchronizer.sync(destination, operations)
             except Exception as exc:
                 error_data = json.dumps(
                     {
