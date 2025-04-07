@@ -18,12 +18,14 @@ def heartbeat() -> flask.Response:
     try:
         pid = int(PID_FILEPATH.read_text().strip())
     except (OSError, ValueError):
-        return flask.Response("failed to read pidfile", status=500)
+        return flask.Response("failed to read pidfile", status=503)
 
     try:
+        # Test is a process with this PID is still running.
+        # Returns 0 if so, or raises OSError otherwise.
         os.kill(pid, 0)
     except OSError:
-        return flask.Response(f"pid {pid} not running", status=500)
+        return flask.Response(f"pid {pid} not running", status=503)
     return flask.Response(f"ok: pid {pid} running", status=200)
 
 
