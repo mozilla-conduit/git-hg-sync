@@ -13,6 +13,7 @@ def retry(
     tries: int = 2,
     delay: float = 0.25,
 ) -> None:
+    """Run a `callback` up to `tries` times with a `delay` between Exceptions."""
     logger.debug(action)
     for attempt in range(1, tries + 1):
         try:
