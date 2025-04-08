@@ -1,10 +1,12 @@
 FROM python:3.12-slim
 
+ENV PORT=8000
+
 RUN groupadd --gid 10001 app \
   && useradd -m -g app --uid 10001 -d /app -s /usr/sbin/nologin app
 
 RUN apt-get update && \
-    apt-get install --yes git mercurial curl vim && \
+    apt-get install --yes git mercurial curl tini && \
     apt-get -q --yes autoremove && \
     apt-get clean && \
     rm -rf /root/.cache && \
@@ -38,5 +40,8 @@ COPY --chown=app:app . /app
 RUN pip install -e /app
 USER app
 
-ENTRYPOINT ["/entrypoint.sh"]
+HEALTHCHECK CMD curl -sfk http://localhost:$PORT -o/dev/null
+
+# run service
+ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
 CMD ["--config", "config-docker.toml"]

@@ -3,4 +3,5 @@
 /.tox
 /clones
 /config.toml
+/pidfile
 /tests_output
