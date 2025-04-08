@@ -1,13 +1,13 @@
-# This should be set via the environment
-#[pulse]
-#userid = "guest"
-#host = "pulse"
-#port = 5672
-#exchange = "exchange/git-hg-sync/test"
-#routing_key = "git-hg-sync"
-#queue = "queue/git-hg-sync/sync"
-#password = "guest"
-#ssl = false
+[pulse]
+# Those parameters can be overriden by PULSE_* environment variables
+host = "pulse.mozilla.org"
+port = 5671
+ssl = true
+userid = "pulsegithgsyncprod"
+password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
+exchange = "exchange/pulsegithgsyncprod/pushes"
+routing_key = "gitpushes"
+queue = "queue/pulsegithgsyncprod/pushes"
 
 [sentry]
 sentry_url = "FIXME"
