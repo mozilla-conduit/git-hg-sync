@@ -1,3 +1,6 @@
+import dataclasses
+import json
+import os
 import signal
 import sys
 from collections.abc import Sequence
@@ -5,6 +8,7 @@ from types import FrameType
 
 from mozlog import get_proxy_logger
 
+from git_hg_sync import PID_FILEPATH
 from git_hg_sync.events import Event, Push
 from git_hg_sync.mapping import Mapping, SyncOperation
 from git_hg_sync.pulse_worker import PulseWorker
@@ -27,6 +31,7 @@ class Application:
 
     def run(self) -> None:
         def signal_handler(_sig: int, _frame: FrameType | None) -> None:
+            PID_FILEPATH.unlink(missing_ok=True)
             if self._worker.should_stop:
                 logger.info("Process killed by user")
                 sys.exit(1)
@@ -34,6 +39,8 @@ class Application:
             logger.info("Process exiting gracefully")
 
         signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+        PID_FILEPATH.write_text(f"{os.getpid()}\n")
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
@@ -58,8 +65,17 @@ class Application:
             try:
                 synchronizer.sync(destination, operations)
             except Exception as exc:
+                error_data = json.dumps(
+                    {
+                        "destination_url": destination,
+                        "operations": [
+                            dataclasses.asdict(operation) for operation in operations
+                        ],
+                    }
+                )
                 logger.warning(
-                    f"Failed to process operations: {destination=} {operations=} {exc=}"
+                    f"An error prevented completion of the following sync operations. {error_data}",
+                    exc_info=True,
                 )
                 raise exc
         logger.info(

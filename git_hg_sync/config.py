@@ -47,8 +47,7 @@ class Config(pydantic.BaseModel):
     def verify_all_mappings_reference_tracked_repositories(
         self,
     ) -> Self:
-        # Allow to override Pulse parameters via environment.
-        for config in self.pulse.model_fields:
+        for config in PulseConfig.model_fields:
             env_var = f"PULSE_{config}".upper()
             if value := os.getenv(env_var):
                 logger.info(f"Setting Pulse {config} option from {env_var}")
