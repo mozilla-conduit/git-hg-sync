@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "CMD:" "${@}"
+
 if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
   echo "Importing SSH key supplied in \$SSH_PRIVATE_KEY ..."
   eval "$(ssh-agent -s)"
@@ -7,6 +9,7 @@ if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
   SSH_PRIVATE_KEY='imported'
   export GIT_SSH_COMMAND="ssh -oStrictHostKeyChecking=accept-new"
 fi
+
 
 case "${1:-}" in
   "bash"|"sh")
