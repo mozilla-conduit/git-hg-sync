@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-ENV ENVIRONMENT=docker
+ENV ENVIRONMENT=dev
 ENV PORT=8000
 
 RUN groupadd --gid 10001 app \
