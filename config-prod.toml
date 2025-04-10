@@ -115,3 +115,21 @@ source_url = "https://github.com/mozilla-firefox/infra-testing"
 tag_pattern = ".*"
 destination_url = "ssh://hg.mozilla.org//conduit-testing/m-c/"
 tags_destination_branch = "tags"
+
+#####################
+# REVIEW (MOZ-PHAB) #
+#####################
+
+[[tracked_repositories]]
+name = "review"
+url = "https://github.com/mozilla-conduit/review/"
+
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-conduit/review/"
+branch_pattern = ".*"
+destination_url = "ssh://hg.mozilla.org//conduit-testing/review/"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/review/"
+tag_pattern = ".*"
+destination_url = "ssh://hg.mozilla.org//conduit-testing/review/"
