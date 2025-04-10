@@ -31,9 +31,9 @@ case "${1:-}" in
 
     # Hack to replace {{ENVIRONMENT}} in the exec-style CMD with the ${ENVIRONMENT} env variable.
     ARGS=("${@}")
-    set -
+    set --
     for ARG in "${ARGS[@]}"; do
-      set - "${@}" "$(echo "${ARG}" | sed "s/{{ENVIRONMENT}}/${ENVIRONMENT}/")"
+      set -- "${@}" "$(echo "${ARG}" | sed "s/{{ENVIRONMENT}}/${ENVIRONMENT}/")"
     done
 
     echo $@
