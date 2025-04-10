@@ -1,4 +1,4 @@
-name: Pytest in docker compose
+name: Tests in docker compose
 
 on:
   pull_request:
@@ -17,11 +17,11 @@ jobs:
           mkdir tests_output
           chmod a+w tests_output
 
-      - name: Run docker-compose
+      - name: Setup docker-compose
         uses: hoverkraft-tech/compose-action@v2.0.1
         with:
           compose-file: "docker-compose.yaml"
 
       - name: Execute tests in the running services
         run: |
-           docker compose run test
+          docker compose run test
