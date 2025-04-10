@@ -1,5 +1,6 @@
 FROM python:3.12-slim
 
+ENV ENVIRONMENT=docker
 ENV PORT=8000
 
 RUN groupadd --gid 10001 app \
@@ -44,4 +45,4 @@ HEALTHCHECK CMD curl -sfk http://localhost:$PORT -o/dev/null
 
 # run service
 ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
-CMD ["--config", "config-docker.toml"]
+CMD ["--config", "config-${ENVIRONMENT}.toml"]
