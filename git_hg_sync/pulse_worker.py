@@ -53,8 +53,11 @@ class PulseWorker(ConsumerMixin):
         consumer = consumer_class(
             self.task_queue, auto_declare=False, callbacks=[self.on_task]
         )
-        logger.info(f"{consumer=}")
+        logger.debug(f"{consumer=}")
         return [consumer]
+
+    def on_connection_error(self, exc: Exception, interval: int) -> None:
+        logger.error(f"Connection error: {exc=}, retrying in {interval}s ...")
 
     def on_task(self, body: Any, message: kombu.Message) -> None:
         logger.info(f"Received message: {body}")
