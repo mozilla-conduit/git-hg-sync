@@ -97,9 +97,13 @@ tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)_(BUILD\\d+|R
 destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
 tags_destination_branch = "tags"
 
+#################
+# INFRA-TESTING #
+#################
+
 [[tracked_repositories]]
 name = "infra-testing"
-url = "https://github.com/mozilla-firefox/infra-testing/m-c/"
+url = "https://github.com/mozilla-firefox/infra-testing"
 
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"
