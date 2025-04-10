@@ -3,14 +3,16 @@
 host = "pulse.mozilla.org"
 port = 5671
 ssl = true
-userid = "pulsegithgsyncdev"
+userid = "githgsyncdev"
 password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
-exchange = "exchange/pulsegithgsyncdev/pushes"
+# The exchange is declared by the Producer.
+exchange = "exchange/landodev/pushes"
 routing_key = "gitpushes"
-queue = "queue/pulsegithgsyncdev/pushes"
+# The Consumer declares the queue and binds it to the exchange.
+queue = "queue/githgsyncdev/pushes"
 
 [sentry]
-sentry_url = "FIXME"
+sentry_url = ""
 
 [clones]
 directory = "/clones"
@@ -38,13 +40,13 @@ name = "test-repo-github"
 url = "https://github.com/mozilla-conduit/test-repo"
 
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-conduit/test-repo-github"
+source_url = "https://github.com/mozilla-conduit/test-repo"
 branch_pattern = "dev"
 destination_url = "ssh://hg.mozilla.org//conduit-testing/test-repo-github-dev"
 destination_branch = "default"
 
 [[tag_mappings]]
-source_url = "https://github.com/mozilla-conduit/test-repo-github"
+source_url = "https://github.com/mozilla-conduit/test-repo"
 tag_pattern = "^(DEV)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org//conduit-testing/test-repo-github-dev"
 tags_destination_branch = "dev-tags"
