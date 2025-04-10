@@ -45,4 +45,4 @@ HEALTHCHECK CMD curl -sfk http://localhost:$PORT -o/dev/null
 
 # run service
 ENTRYPOINT ["/usr/bin/tini", "--", "/entrypoint.sh"]
-CMD ["--config", "config-${ENVIRONMENT}.toml"]
+CMD "--config config-${ENVIRONMENT}.toml"
