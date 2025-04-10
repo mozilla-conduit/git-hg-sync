@@ -10,7 +10,7 @@ routing_key = "gitpushes"
 queue = "queue/pulsegithgsyncprod/pushes"
 
 [sentry]
-sentry_url = "FIXME"
+sentry_url = ""
 
 [clones]
 directory = "/clones"
@@ -109,6 +109,7 @@ url = "https://github.com/mozilla-firefox/infra-testing"
 source_url = "https://github.com/mozilla-firefox/infra-testing"
 branch_pattern = ".*"
 destination_url = "ssh://hg.mozilla.org//conduit-testing/m-c/"
+destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"
@@ -128,8 +129,10 @@ url = "https://github.com/mozilla-conduit/review/"
 source_url = "https://github.com/mozilla-conduit/review/"
 branch_pattern = ".*"
 destination_url = "ssh://hg.mozilla.org//conduit-testing/review/"
+destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/review/"
 tag_pattern = ".*"
 destination_url = "ssh://hg.mozilla.org//conduit-testing/review/"
+tags_destination_branch = "tags"
