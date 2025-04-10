@@ -15,25 +15,26 @@ sentry_url = "FIXME"
 [clones]
 directory = "/clones"
 
+###########
+# FIREFOX #
+###########
+
 [[tracked_repositories]]
 name = "firefox"
 url = "https://github.com/mozilla-firefox/firefox"
 
-# M-C
+#
+# AUTOLAND
+#
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
-branch_pattern = "main"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-central/"
+branch_pattern = "autoland"
+destination_url = "ssh://hg.mozilla.org//integration/autoland/"
 destination_branch = "default"
 
-[[tag_mappings]]
-source_url = "https://github.com/mozilla-firefox/firefox"
-# BETA_<M> and NIGHTLY_<M> tags to m-c
-tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-central/"
-tags_destination_branch = "tags"
-
+#
 # BETA
+#
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "beta"
@@ -47,21 +48,9 @@ tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)b\\d+_(BUILD\
 destination_url = "ssh://hg.mozilla.org//releases/mozilla-beta/"
 tags_destination_branch = "tags"
 
-# RELEASE
-[[branch_mappings]]
-source_url = "https://github.com/mozilla-firefox/firefox"
-branch_pattern = "release"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
-destination_branch = "default"
-
-[[tag_mappings]]
-source_url = "https://github.com/mozilla-firefox/firefox"
-# <M>_<m>(_<p>...) BUILD and RELEASE tags to mozilla-release
-tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)_(BUILD\\d+|RELEASE)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
-tags_destination_branch = "tags"
-
+#
 # ESRs
+#
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 # esr<M> branches to mozilla-esr<M>
@@ -76,13 +65,37 @@ tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+)(_\\d+)+esr_(BUILD\\d
 destination_url = "ssh://hg.mozilla.org//releases/mozilla-esr\\3/"
 tags_destination_branch = "tags"
 
-# AUTOLAND
+#
+# MOZILLA-CENTRAL
+#
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
-branch_pattern = "autoland"
-destination_url = "ssh://hg.mozilla.org//integration/autoland/"
+branch_pattern = "main"
+destination_url = "ssh://hg.mozilla.org//releases/mozilla-central/"
 destination_branch = "default"
 
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# BETA_<M> and NIGHTLY_<M> tags to m-c
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
+destination_url = "ssh://hg.mozilla.org//releases/mozilla-central/"
+tags_destination_branch = "tags"
+
+#
+# RELEASE
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+branch_pattern = "release"
+destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# <M>_<m>(_<p>...) BUILD and RELEASE tags to mozilla-release
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)_(BUILD\\d+|RELEASE)$"
+destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
+tags_destination_branch = "tags"
 
 [[tracked_repositories]]
 name = "infra-testing"
