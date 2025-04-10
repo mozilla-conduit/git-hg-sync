@@ -91,6 +91,12 @@ It contains 6 main sections:
 - `branch_mappings` describes which Git repo and branches should be sync to which Hg repo
 - `tag_mappings` describes which Git tags should be sync to which Hg repo
 
+By default, `config-docker.toml` will be used, both by the Docker image itself,
+as well as the compose stack. It is however possible to instruct the container
+to use another of the shipped configuration files by setting the `ENVIRONMENT`
+env variable. The container will default to user `config-${ENVIRONMENT}.toml`,
+unless the `CMD` is explicitly overridden.
+
 ### Repository configuration
 
 Both `*_mappings` sections have a `[source|destination]_url` (`source` is Git, `destination` is Hg). They also have a `[branch|tag]_pattern`, which allows to filter Git branches or tags to sync to specified Hg destinations (and branch). The `pattern` supports regexps.
