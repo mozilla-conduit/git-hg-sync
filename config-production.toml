@@ -32,6 +32,7 @@ branch_pattern = "autoland"
 destination_url = "ssh://hg.mozilla.org//integration/autoland/"
 destination_branch = "default"
 
+
 #
 # BETA
 #
@@ -48,6 +49,7 @@ tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)b\\d+_(BUILD\
 destination_url = "ssh://hg.mozilla.org//releases/mozilla-beta/"
 tags_destination_branch = "tags"
 
+
 #
 # ESRs
 #
@@ -62,8 +64,19 @@ destination_branch = "default"
 source_url = "https://github.com/mozilla-firefox/firefox"
 # <M>_<m>(_<p>...)esr BUILD and RELEASE tags to mozilla-esr<M>
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-esr\\3/"
+destination_url = "ssh://hg.mozilla.org//releases/mozilla-esr\\2/"
 tags_destination_branch = "tags"
+
+#
+# relbranches
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# <M>_<m>_X RELBRANCH to mozilla-release matching branch
+tag_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_ESR_(\\d+)(_\\d+_X)_RELBRANCH)$"
+destination_url = "ssh://hg.mozilla.org//releases/mozilla-esr\\3/"
+destination_branch = "\\1"
+
 
 #
 # MOZILLA-CENTRAL
@@ -81,6 +94,7 @@ tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(BETA|NIGHTLY)_(\\d+)_(BASE
 destination_url = "ssh://hg.mozilla.org//releases/mozilla-central/"
 tags_destination_branch = "tags"
 
+
 #
 # RELEASE
 #
@@ -96,6 +110,17 @@ source_url = "https://github.com/mozilla-firefox/firefox"
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)_(BUILD\\d+|RELEASE)$"
 destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
 tags_destination_branch = "tags"
+
+#
+# relbranches
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# <M>_<m>_X RELBRANCH to mozilla-release matching branch
+tag_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+_\\d+_X)_RELBRANCH)$"
+destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
+destination_branch = "\\1"
+
 
 #################
 # INFRA-TESTING #
@@ -116,6 +141,7 @@ source_url = "https://github.com/mozilla-firefox/infra-testing"
 tag_pattern = ".*"
 destination_url = "ssh://hg.mozilla.org//conduit-testing/m-c/"
 tags_destination_branch = "tags"
+
 
 #####################
 # REVIEW (MOZ-PHAB) #
