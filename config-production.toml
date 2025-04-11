@@ -3,11 +3,12 @@
 host = "pulse.mozilla.org"
 port = 5671
 ssl = true
-userid = "pulsegithgsyncprod"
+userid = "githgsyncprod"
 password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
-exchange = "exchange/pulsegithgsyncprod/pushes"
+# Exchanges and Queues are created by the Producer
+exchange = "exchange/githglandoprod/pushes"
 routing_key = "gitpushes"
-queue = "queue/pulsegithgsyncprod/pushes"
+queue = "queue/githglandoprod/pushes"
 
 [sentry]
 sentry_url = ""
