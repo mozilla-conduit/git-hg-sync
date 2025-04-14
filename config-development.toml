@@ -25,13 +25,13 @@ url = "https://github.com/mozilla-conduit/ff-test"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-conduit/ff-test"
 branch_pattern = "dev"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/ff-test-dev"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/ff-test"
 tag_pattern = "^(DEV)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/ff-test-dev"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 tags_destination_branch = "dev-tags"
 
 
@@ -42,11 +42,11 @@ url = "https://github.com/mozilla-conduit/test-repo"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-conduit/test-repo"
 branch_pattern = "dev"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/test-repo-github-dev"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-dev"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/test-repo"
 tag_pattern = "^(DEV)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/test-repo-github-dev"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-dev"
 tags_destination_branch = "dev-tags"

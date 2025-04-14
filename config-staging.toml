@@ -25,13 +25,13 @@ url = "https://github.com/mozilla-conduit/ff-test"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-conduit/ff-test"
 branch_pattern = "stage"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/ff-test-stage"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-stage"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/ff-test"
 tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/ff-test-stage"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-stage"
 tags_destination_branch = "stage-tags"
 
 
@@ -42,11 +42,11 @@ url = "https://github.com/mozilla-conduit/test-repo"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-conduit/test-repo"
 branch_pattern = "stage"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/test-repo-github-stage"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/test-repo"
 tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/test-repo-github-stage"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
 tags_destination_branch = "stage-tags"
