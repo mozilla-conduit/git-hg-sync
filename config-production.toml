@@ -31,7 +31,7 @@ url = "https://github.com/mozilla-firefox/firefox"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "autoland"
-destination_url = "ssh://hg.mozilla.org//integration/autoland/"
+destination_url = "ssh://hg.mozilla.org/integration/autoland/"
 destination_branch = "default"
 
 
@@ -41,14 +41,14 @@ destination_branch = "default"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "beta"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-beta/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-beta/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 # <M>_<m>(_<p>...)b<n> BUILD and RELEASE tags to mozilla-beta
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)b\\d+_(BUILD\\d+|RELEASE)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-beta/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-beta/"
 tags_destination_branch = "tags"
 
 
@@ -59,14 +59,14 @@ tags_destination_branch = "tags"
 source_url = "https://github.com/mozilla-firefox/firefox"
 # esr<M> branches to mozilla-esr<M>
 branch_pattern = "^(esr\\d+)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-\\1/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-\\1/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 # <M>_<m>(_<p>...)esr BUILD and RELEASE tags to mozilla-esr<M>
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-esr\\2/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-esr\\2/"
 tags_destination_branch = "tags"
 
 #
@@ -76,7 +76,7 @@ tags_destination_branch = "tags"
 source_url = "https://github.com/mozilla-firefox/firefox"
 # <M>_<m>_X RELBRANCH to mozilla-release matching branch
 tag_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_ESR_(\\d+)(_\\d+_X)_RELBRANCH)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-esr\\3/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-esr\\3/"
 destination_branch = "\\1"
 
 
@@ -86,14 +86,14 @@ destination_branch = "\\1"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "main"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-central/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-central/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 # BETA_<M> and NIGHTLY_<M> tags to m-c
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-central/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-central/"
 tags_destination_branch = "tags"
 
 
@@ -103,14 +103,14 @@ tags_destination_branch = "tags"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "release"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 # <M>_<m>(_<p>...) BUILD and RELEASE tags to mozilla-release
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)_(BUILD\\d+|RELEASE)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
 tags_destination_branch = "tags"
 
 #
@@ -120,7 +120,7 @@ tags_destination_branch = "tags"
 source_url = "https://github.com/mozilla-firefox/firefox"
 # <M>_<m>_X RELBRANCH to mozilla-release matching branch
 tag_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+_\\d+_X)_RELBRANCH)$"
-destination_url = "ssh://hg.mozilla.org//releases/mozilla-release/"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
 destination_branch = "\\1"
 
 
@@ -135,13 +135,13 @@ url = "https://github.com/mozilla-firefox/infra-testing"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"
 branch_pattern = ".*"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/m-c/"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/m-c/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"
 tag_pattern = ".*"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/m-c/"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/m-c/"
 tags_destination_branch = "tags"
 
 
@@ -156,11 +156,11 @@ url = "https://github.com/mozilla-conduit/review/"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-conduit/review/"
 branch_pattern = ".*"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/review/"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/review/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/review/"
 tag_pattern = ".*"
-destination_url = "ssh://hg.mozilla.org//conduit-testing/review/"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/review/"
 tags_destination_branch = "tags"
