@@ -16,6 +16,8 @@ from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 logger = get_proxy_logger(__name__)
 
+REQUEST_USER_ENV_VAR = "AUTOLAND_REQUEST_USER"
+
 
 class Application:
     def __init__(
@@ -61,6 +63,8 @@ class Application:
             logger.warning(f"No operation for {push_event}")
             return
 
+        os.environ[REQUEST_USER_ENV_VAR] = push_event.user
+        logger.debug(f"{REQUEST_USER_ENV_VAR} set to {push_event.user}")
         for destination, operations in operations_by_destination.items():
             try:
                 synchronizer.sync(destination, operations)
@@ -78,6 +82,7 @@ class Application:
                     exc_info=True,
                 )
                 raise exc
+        del os.environ[REQUEST_USER_ENV_VAR]
         logger.info(
             f"Successfully handled event: {push_event.push_id} for {push_event.repo_url}"
         )
