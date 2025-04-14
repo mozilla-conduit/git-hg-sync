@@ -5,10 +5,11 @@ port = 5671
 ssl = true
 userid = "githgsyncprod"
 password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
-# Exchanges and Queues are created by the Producer
-exchange = "exchange/githglandoprod/pushes"
+# The exchange is declared by the Producer.
+exchange = "exchange/landoprod/pushes"
 routing_key = "gitpushes"
-queue = "queue/githglandoprod/pushes"
+# The Consumer declares the queue and binds it to the exchange.
+queue = "queue/githgsyncprod/pushes"
 
 [sentry]
 sentry_url = ""
