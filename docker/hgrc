@@ -1,2 +1,2 @@
 [ui]
-ssh = ssh -oStrictHostKeyChecking=accept-new -l "${SSH_USERNAME}"
+ssh = ssh -oStrictHostKeyChecking=accept-new -l "${SSH_USERNAME}" -oSendEnv=AUTOLAND_REQUEST_USER
