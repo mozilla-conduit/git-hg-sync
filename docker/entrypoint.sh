@@ -31,13 +31,13 @@ case "${1:-}" in
 
     # Hack to replace {{ENVIRONMENT}} in the exec-style CMD with the ${ENVIRONMENT} env variable.
     ARGS=("${@}")
-    set --
+    set -- /usr/local/bin/git-hg-sync
     for ARG in "${ARGS[@]}"; do
       set -- "${@}" "$(echo "${ARG}" | sed "s/{{ENVIRONMENT}}/${ENVIRONMENT}/")"
     done
 
-    echo $@
+    echo "Running: ${@}"
 
-    exec /usr/local/bin/git-hg-sync "${@}"
+    exec "${@}"
   ;;
 esac
