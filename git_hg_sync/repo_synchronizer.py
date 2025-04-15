@@ -4,6 +4,7 @@ from pathlib import Path
 from git import Repo, exc
 from mozlog import get_proxy_logger
 
+from git_hg_sync.application import REQUEST_USER_ENV_VAR
 from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
 from git_hg_sync.retry import retry
 
@@ -53,7 +54,9 @@ class RepoSynchronizer:
             if "fatal: couldn't find remote ref HEAD" in e.stderr:
                 raise e
 
-    def sync(self, destination_url: str, operations: list[SyncOperation]) -> None:
+    def sync(
+        self, destination_url: str, operations: list[SyncOperation], request_user: str
+    ) -> None:
         logger.info(f"Syncing {operations} to {destination_url} ...")
         try:
             repo = self._get_clone_repo()
@@ -90,6 +93,11 @@ class RepoSynchronizer:
             except Exception as e:
                 raise RepoSyncError(branch_operation, e) from e
 
+        git_env = {
+            REQUEST_USER_ENV_VAR: request_user,
+        }
+        logger.debug(f"{REQUEST_USER_ENV_VAR} set to {request_user}")
+
         # Add mercurial metadata to new commits from synced branches
         # Some of these commits could be tagged in the same synchronization and
         # tagging can only be done on a commit that already have mercurial
@@ -103,6 +111,7 @@ class RepoSynchronizer:
                     + ["push"]
                     + ["--dry-run"]
                     + push_args,
+                    env=git_env,
                 ),
             )
         # Handle tag operations
@@ -141,7 +150,8 @@ class RepoSynchronizer:
                         f"refs/heads/{tag_operation.tags_destination_branch}",
                         tag_operation.tag,
                         tag_operation.source_commit,
-                    ]
+                    ],
+                    env=git_env,
                 )
             except Exception as e:
                 raise RepoSyncError(tag_operation, e) from e
