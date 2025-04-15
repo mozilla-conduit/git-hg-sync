@@ -1,5 +1,7 @@
 FROM python:3.12-slim
 
+ENV SSH_USERNAME=app
+
 ENV PORT=8000
 
 RUN groupadd --gid 10001 app \
