@@ -5,9 +5,8 @@ if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
   eval "$(ssh-agent -s)"
   ssh-add - <<< "${SSH_PRIVATE_KEY}"
   export SSH_PRIVATE_KEY='imported'
-  export GIT_SSH_COMMAND="ssh -oStrictHostKeyChecking=accept-new"
 fi
-
+export GIT_SSH_COMMAND="ssh -oStrictHostKeyChecking=accept-new -l ${SSH_USERNAME} -oSendEnv=AUTOLAND_REQUEST_USER"
 
 case "${1:-}" in
   "bash"|"sh")
