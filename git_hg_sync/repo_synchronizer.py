@@ -96,8 +96,7 @@ class RepoSynchronizer:
             except Exception as e:
                 raise RepoSyncError(branch_operation, e) from e
 
-        git_env = os.environ.copy()
-        git_env[REQUEST_USER_ENV_VAR] = request_user
+        os.environ[REQUEST_USER_ENV_VAR] = request_user
         logger.debug(f"{REQUEST_USER_ENV_VAR} set to {request_user}")
 
         # Add mercurial metadata to new commits from synced branches
@@ -160,5 +159,5 @@ class RepoSynchronizer:
         # Push commits, branches and tags to destination
         retry(
             "pushing branch and tags to destination",
-            lambda: repo.git.push(*push_args, env=git_env),
+            lambda: repo.git.push(*push_args),
         )
