@@ -10,6 +10,7 @@ from git_hg_sync.retry import retry
 
 logger = get_proxy_logger("sync_repo")
 
+GIT_SSH_COMMAND_ENV_VAR = "GIT_SSH_COMMAND"
 REQUEST_USER_ENV_VAR = "AUTOLAND_REQUEST_USER"
 
 
@@ -99,6 +100,9 @@ class RepoSynchronizer:
             REQUEST_USER_ENV_VAR: request_user,
         }
         logger.debug(f"{REQUEST_USER_ENV_VAR} set to {request_user}")
+        if git_ssh_command := os.getenv(GIT_SSH_COMMAND_ENV_VAR):
+            logger.debug(f"{GIT_SSH_COMMAND_ENV_VAR} set to {git_ssh_command}")
+            git_env[GIT_SSH_COMMAND_ENV_VAR] = git_ssh_command
 
         # Add mercurial metadata to new commits from synced branches
         # Some of these commits could be tagged in the same synchronization and
