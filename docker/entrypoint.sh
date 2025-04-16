@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
   echo "Importing SSH key supplied in \$SSH_PRIVATE_KEY ..."
@@ -7,6 +7,7 @@ if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
   export SSH_PRIVATE_KEY='imported'
 fi
 export GIT_SSH_COMMAND="ssh -oStrictHostKeyChecking=accept-new -l ${SSH_USERNAME}"
+
 
 case "${1:-}" in
   "bash"|"sh")

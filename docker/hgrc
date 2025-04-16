@@ -1,2 +1,2 @@
 [ui]
-ssh = ssh -oStrictHostKeyChecking=accept-new
+ssh = ssh -oStrictHostKeyChecking=accept-new -l "${SSH_USERNAME}"
