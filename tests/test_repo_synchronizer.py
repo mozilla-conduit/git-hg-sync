@@ -77,7 +77,7 @@ def test_sync_process_(
         ),
     ]
 
-    request_user = "request_user@moz.test"
+    request_user = "request_user@example.com"
     syncrepos.sync(str(hg_remote_repo_path), operations, request_user)
 
     # test
