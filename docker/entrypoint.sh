@@ -6,8 +6,7 @@ if [ -n "${SSH_PRIVATE_KEY:-}" ]; then
   ssh-add - <<< "${SSH_PRIVATE_KEY}"
   export SSH_PRIVATE_KEY='imported'
 fi
-export GIT_SSH_COMMAND="ssh -oStrictHostKeyChecking=accept-new -l ${SSH_USERNAME}"
-
+export GIT_SSH_COMMAND="ssh -oStrictHostKeyChecking=accept-new -l ${SSH_USERNAME} -oSendEnv=AUTOLAND_REQUEST_USER"
 
 case "${1:-}" in
   "bash"|"sh")

@@ -77,7 +77,8 @@ def test_sync_process_(
         ),
     ]
 
-    syncrepos.sync(str(hg_remote_repo_path), operations)
+    request_user = "request_user@example.com"
+    syncrepos.sync(str(hg_remote_repo_path), operations, request_user)
 
     # test
     assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "bar")
