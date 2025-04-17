@@ -8,7 +8,7 @@ import pulse_utils
 import pytest
 from git import Repo
 from mozlog import get_proxy_logger
-from utils import hg_cat
+from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config, PulseConfig
@@ -114,3 +114,9 @@ def test_full_app(
     # test
     assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "default")
     assert "FIREFOX_128_0esr_RELEASE" in hg_cat(hg_remote_repo_path, ".hgtags", "tags")
+
+    # test tag commit message
+    tag_log = hg_log(hg_remote_repo_path, "tags", ["-T", "{desc}"])
+    assert "No bug - Tagging" in tag_log
+    assert "FIREFOX_128_0esr_RELEASE" in tag_log
+    assert hg_rev(hg_remote_repo_path, "default") in tag_log

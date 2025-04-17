@@ -30,6 +30,8 @@ source_url = "/clones/test-repo-git"
 tag_pattern = "^FIREFOX_BETA_(\\d+)_(BASE|END)$"
 destination_url = "/clones/mozilla-beta"
 tags_destination_branch = "tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 
 # ESR
 [[branch_mappings]]
@@ -43,4 +45,5 @@ source_url = "/clones/test-repo-git"
 tag_pattern = "^FIREFOX_(\\d+)\\.\\d+\\.\\d+esr_(BUILD\\d+|RELEASE)$"
 destination_url = "/clones/mozilla-esr\\1"
 tags_destination_branch = "default"
-
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"

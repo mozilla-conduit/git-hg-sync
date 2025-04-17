@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from git import Repo
-from utils import hg_cat
+from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import PulseConfig, TrackedRepository
@@ -38,6 +38,11 @@ def test_sync_process_(
     repo.index.add([foo_path])
     repo.index.commit("add foo.txt")
 
+    branch = "bar"
+    tag_branch = "tags"
+    tag = "mytag"
+    tag_suffix = "some suffix"
+
     # Push to mercurial repository
     subprocess.run(
         [
@@ -71,9 +76,12 @@ def test_sync_process_(
     git_local_repo_path = tmp_path / "clones" / "myrepo"
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_remote_repo_path))
     operations: list[SyncBranchOperation | SyncTagOperation] = [
-        SyncBranchOperation(source_commit=git_commit_sha, destination_branch="bar"),
+        SyncBranchOperation(source_commit=git_commit_sha, destination_branch=branch),
         SyncTagOperation(
-            source_commit=git_commit_sha, tag="mytag", tags_destination_branch="tags"
+            source_commit=git_commit_sha,
+            tag=tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
         ),
     ]
 
@@ -81,9 +89,15 @@ def test_sync_process_(
     syncrepos.sync(str(hg_remote_repo_path), operations, request_user)
 
     # test
-    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "bar")
+    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", branch)
+    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", tag)
 
-    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "mytag")
+    # test tag commit message
+    tag_log = hg_log(hg_remote_repo_path, tag_branch, ["-T", "{desc}"])
+    assert "No bug - Tagging" in tag_log
+    assert tag_suffix in tag_log
+    assert tag in tag_log
+    assert hg_rev(hg_remote_repo_path, branch) in tag_log
 
 
 def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:

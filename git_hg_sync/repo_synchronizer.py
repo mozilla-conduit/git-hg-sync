@@ -10,7 +10,6 @@ from git_hg_sync.retry import retry
 
 logger = get_proxy_logger("sync_repo")
 
-GIT_SSH_COMMAND_ENV_VAR = "GIT_SSH_COMMAND"
 REQUEST_USER_ENV_VAR = "AUTOLAND_REQUEST_USER"
 
 
@@ -46,8 +45,7 @@ class RepoSynchronizer:
         return repo
 
     def _commit_has_mercurial_metadata(self, repo: Repo, git_commit: str) -> bool:
-        stdout = repo.git.cinnabar(["git2hg", git_commit])
-        return not all(char == "0" for char in stdout.strip())
+        return not all(char == "0" for char in self._git2hg(repo, git_commit))
 
     def _fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
         try:
@@ -142,10 +140,14 @@ class RepoSynchronizer:
                 repo, tag_operation.source_commit
             ):
                 raise MercurialMetadataNotFoundError(tag_operation)
+            hg_sha = self._git2hg(repo, tag_operation.source_commit)
+            tag_message = f"No bug - Tagging {hg_sha} with {tag_operation.tag} {tag_operation.tag_message_suffix}"
             try:
                 repo.git.cinnabar(
                     [
                         "tag",
+                        "--message",
+                        tag_message,
                         "--onto",
                         f"refs/heads/{tag_operation.tags_destination_branch}",
                         tag_operation.tag,
@@ -161,3 +163,6 @@ class RepoSynchronizer:
             "pushing branch and tags to destination",
             lambda: repo.git.push(*push_args),
         )
+
+    def _git2hg(self, repo: Repo, git_commit: str) -> str:
+        return repo.git.cinnabar(["git2hg", git_commit]).strip()

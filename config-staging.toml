@@ -33,6 +33,8 @@ source_url = "https://github.com/mozilla-conduit/ff-test"
 tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-stage"
 tags_destination_branch = "stage-tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 
 
 [[tracked_repositories]]
@@ -50,3 +52,5 @@ source_url = "https://github.com/mozilla-conduit/test-repo"
 tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
 tags_destination_branch = "stage-tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"

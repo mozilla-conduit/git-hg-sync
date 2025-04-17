@@ -121,6 +121,8 @@ source_url = "/clones/test-repo-git"
 tag_pattern = "^FIREFOX_(\\d+)\\.\\d+\\.\\d+esr_(BUILD\\d+|RELEASE)$"
 destination_url = "/clones/mozilla-esr\\1"
 tags_destination_branch = "default"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 ```
 
 ### Pulse parameters
