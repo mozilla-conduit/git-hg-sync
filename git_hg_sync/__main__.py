@@ -54,6 +54,8 @@ def start_app(
 
     queue = get_queue(pulse_config)
 
+    queue(connection).queue_declare()
+    queue(connection).queue_bind()
     logger.info(f"Reading messages from {connection}/{queue.name} ...")
 
     synchronizers = {

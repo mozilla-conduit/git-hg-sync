@@ -53,7 +53,7 @@ class PulseWorker(ConsumerMixin):
         consumer = consumer_class(
             self.task_queue, auto_declare=False, callbacks=[self.on_task]
         )
-        logger.debug(f"{consumer=}")
+        logger.debug(f"Using consumer {consumer=}")
         return [consumer]
 
     def on_connection_error(self, exc: Exception, interval: int) -> None:

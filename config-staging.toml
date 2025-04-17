@@ -1,0 +1,52 @@
+[pulse]
+# Those parameters can be overriden by PULSE_* environment variables
+host = "pulse.mozilla.org"
+port = 5671
+ssl = true
+userid = "githgsyncstage"
+password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
+# The exchange is declared by the Producer.
+exchange = "exchange/landostage/pushes"
+routing_key = "gitpushes"
+# The Consumer declares the queue and binds it to the exchange.
+queue = "queue/githgsyncstage/pushes"
+
+[sentry]
+sentry_url = ""
+
+[clones]
+directory = "/clones"
+
+
+[[tracked_repositories]]
+name = "ff-test"
+url = "https://github.com/mozilla-conduit/ff-test"
+
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+branch_pattern = "stage"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-stage"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-stage"
+tags_destination_branch = "stage-tags"
+
+
+[[tracked_repositories]]
+name = "test-repo-github"
+url = "https://github.com/mozilla-conduit/test-repo"
+
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-conduit/test-repo"
+branch_pattern = "stage"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/test-repo"
+tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
+tags_destination_branch = "stage-tags"

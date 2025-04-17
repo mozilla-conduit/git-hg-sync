@@ -20,15 +20,24 @@ case "${1:-}" in
     PORT="${PORT:-8000}"
     export PYTHONUNBUFFERED=1
     gunicorn \
-      --bind 0.0.0.0:$PORT \
+      --bind "0.0.0.0:$PORT" \
       --workers 2 \
       --worker-tmp-dir /dev/shm \
-      --log-level debug \
+      --log-level warning \
       --capture-output \
       --enable-stdio-inheritance \
       --daemon \
       dockerflow:app
 
-    exec /usr/local/bin/git-hg-sync "${@}"
+    # Hack to replace {{ENVIRONMENT}} in the exec-style CMD with the ${ENVIRONMENT} env variable.
+    ARGS=("${@}")
+    set -- /usr/local/bin/git-hg-sync
+    for ARG in "${ARGS[@]}"; do
+      set -- "${@}" "$(echo "${ARG}" | sed "s/{{ENVIRONMENT}}/${ENVIRONMENT}/")"
+    done
+
+    echo "Running: ${@}"
+
+    exec "${@}"
   ;;
 esac
