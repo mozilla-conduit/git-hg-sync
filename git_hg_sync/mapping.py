@@ -8,6 +8,8 @@ import pydantic
 
 from git_hg_sync.events import Push
 
+DEFAULT_TAG_MESSAGE_SUFFIX = "a=tagging CLOSED TREE DONTBUILD"
+
 
 @dataclass
 class SyncBranchOperation:
@@ -26,6 +28,7 @@ class SyncTagOperation:
     # Destination (hg)
     tag: str
     tags_destination_branch: str
+    tag_message_suffix: str
 
 
 SyncOperation: TypeAlias = SyncBranchOperation | SyncTagOperation
@@ -88,6 +91,7 @@ class TagMapping(Mapping):
     tag_pattern: str
     destination_url: str
     tags_destination_branch: str
+    tag_message_suffix: str = DEFAULT_TAG_MESSAGE_SUFFIX
 
     @cached_property
     def _tag_pattern(self) -> re.Pattern:
@@ -108,6 +112,7 @@ class TagMapping(Mapping):
                         tag=tag_name,
                         source_commit=commit,
                         tags_destination_branch=self.tags_destination_branch,
+                        tag_message_suffix=self.tag_message_suffix,
                     ),
                 )
             )

@@ -29,3 +29,5 @@ source_url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
 tag_pattern = "^FIREFOX_BETA_(\\d+)_(BASE|END)$"
 destination_url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-beta"
 tags_destination_branch = "tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
