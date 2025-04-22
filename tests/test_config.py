@@ -15,23 +15,33 @@ def test_load_config() -> None:
 
 
 def test_load_config_env_override(monkeypatch: MonkeyPatch) -> None:
-    pulse_env = {
-        "exchange": "overridden exchange",
-        "host": "overridden host",
-        "password": "overridden password",
-        "port": "overridden port",
-        "queue": "overridden queue",
-        "routing_key": "overridden routing_key",
-        "ssl": "false",
-        "userid": "overridden userid",
+    overrides = {
+        "pulse": {
+            "exchange": "overridden exchange",
+            "host": "overridden host",
+            "password": "overridden password",
+            "port": "overridden port",
+            "queue": "overridden queue",
+            "routing_key": "overridden routing_key",
+            "ssl": "false",
+            "userid": "overridden userid",
+        },
     }
 
-    for key in pulse_env:  # noqa: PLC0206 We want the key only here...
-        monkeypatch.setenv(f"PULSE_{key}".upper(), pulse_env[key])
+    no_prefix_sections = []
+
+    for section, env in overrides.items():
+        for var, value in env.items():
+            if section in no_prefix_sections:
+                monkeypatch.setenv(f"{var}".upper(), value)
+            else:
+                monkeypatch.setenv(f"{section}_{var}".upper(), value)
 
     config = Config.from_file(HERE / "data" / "config.toml")
 
-    for key in pulse_env:  # noqa: PLC0206
-        assert getattr(config.pulse, key) == pulse_env[key], (
-            f"Pulse configuration not overridden for {key}"
-        )
+    for section, env in overrides.items():
+        for var, value in env.items():
+            section_config = getattr(config, section)
+            assert getattr(section_config, var) == value, (
+                f"Configuration not overridden for {section}.{var}"
+            )
