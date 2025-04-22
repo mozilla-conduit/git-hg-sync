@@ -47,11 +47,11 @@ class Config(pydantic.BaseModel):
     def verify_all_mappings_reference_tracked_repositories(
         self,
     ) -> Self:
-        for config in PulseConfig.model_fields:
-            env_var = f"PULSE_{config}".upper()
-            if value := os.getenv(env_var):
-                logger.info(f"Setting Pulse {config} option from {env_var}")
-                setattr(self.pulse, config, value)
+        for config_field in PulseConfig.model_fields:
+            env_var = f"PULSE_{config_field}".upper()
+            self._update_config_from_env(
+                f"Pulse {config_field}", self.pulse, config_field, env_var
+            )
 
         tracked_urls = [tracked_repo.url for tracked_repo in self.tracked_repositories]
         for mapping in self.branch_mappings:
@@ -60,6 +60,21 @@ class Config(pydantic.BaseModel):
                     f"Found mapping for untracked repository: {mapping.source_url}"
                 )
         return self
+
+    @staticmethod
+    def _update_config_from_env(
+        name: str,
+        config_entry: pydantic.BaseModel | None,
+        config_field: str,
+        env_var: str,
+    ) -> None:
+        """Update a specific field in a model based on the environment."""
+        if not config_entry:
+            return
+
+        if value := os.getenv(env_var):
+            logger.info(f"Setting {name} option from {env_var}")
+            setattr(config_entry, config_field, value)
 
     @staticmethod
     def from_file(file_path: pathlib.Path) -> "Config":
