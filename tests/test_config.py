@@ -26,9 +26,12 @@ def test_load_config_env_override(monkeypatch: MonkeyPatch) -> None:
             "ssl": "false",
             "userid": "overridden userid",
         },
+        "sentry": {
+            "sentry_url": "overridden sentry url",
+        },
     }
 
-    no_prefix_sections = []
+    no_prefix_sections = ["sentry"]
 
     for section, env in overrides.items():
         for var, value in env.items():

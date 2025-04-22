@@ -37,7 +37,7 @@ class SentryConfig(pydantic.BaseModel):
 
 class Config(pydantic.BaseModel):
     pulse: PulseConfig
-    sentry: SentryConfig | None = None
+    sentry: SentryConfig = SentryConfig(sentry_url="")
     clones: ClonesConfig
     tracked_repositories: list[TrackedRepository]
     branch_mappings: list[BranchMapping]
@@ -52,6 +52,10 @@ class Config(pydantic.BaseModel):
             self._update_config_from_env(
                 f"Pulse {config_field}", self.pulse, config_field, env_var
             )
+
+        self._update_config_from_env(
+            "Sentry URL", self.sentry, "sentry_url", "SENTRY_URL"
+        )
 
         tracked_urls = [tracked_repo.url for tracked_repo in self.tracked_repositories]
         for mapping in self.branch_mappings:
