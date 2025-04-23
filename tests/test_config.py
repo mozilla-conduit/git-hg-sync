@@ -27,7 +27,7 @@ def test_load_config_env_override(monkeypatch: MonkeyPatch) -> None:
             "userid": "overridden userid",
         },
         "sentry": {
-            "sentry_url": "overridden sentry url",
+            "sentry_dsn": "overridden sentry_dsn",
         },
     }
 

@@ -86,9 +86,9 @@ def main() -> None:
         sys.exit(1)
 
     sentry_config = config.sentry
-    if sentry_config and sentry_config.sentry_url:
-        logger.info(f"sentry url: {sentry_config.sentry_url}")
-        sentry_sdk.init(sentry_config.sentry_url)
+    if sentry_config and sentry_config.sentry_dsn:
+        logger.info(f"Sentry DSN: {sentry_config.sentry_dsn}")
+        sentry_sdk.init(sentry_config.sentry_dsn)
     start_app(config, logger)
 
 
