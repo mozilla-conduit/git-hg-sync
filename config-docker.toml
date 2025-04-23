@@ -9,7 +9,7 @@ password = "guest"
 ssl = false
 
 [sentry]
-sentry_url = ""
+sentry_dsn = ""
 
 [clones]
 directory = "/clones"

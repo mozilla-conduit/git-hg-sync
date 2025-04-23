@@ -9,7 +9,7 @@ password = "<pulse-password>"
 ssl = true
 
 [sentry]
-sentry_url = ""
+sentry_dsn = ""
 
 [clones]
 directory = "../git_hg_sync_repos/"
