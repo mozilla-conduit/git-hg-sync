@@ -67,6 +67,24 @@ tags_destination_branch = "tags"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# BETA_<M> BASE and END tags to mozilla-beta
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_BETA_(\\d+)+_(BASE|END)$"
+destination_url = "ssh://hg.mozilla.org/betas/mozilla-beta/"
+tags_destination_branch = "tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# RELEASE_<M> BASE tags to mozilla-beta
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_RELEASE_(\\d+)+_BASE$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-beta/"
+tags_destination_branch = "tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
 
 #
 # ESRs
@@ -131,6 +149,24 @@ source_url = "https://github.com/mozilla-firefox/firefox"
 # <M>_<m>(_<p>...) BUILD and RELEASE tags to mozilla-release
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)_(BUILD\\d+|RELEASE)$"
 destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
+tags_destination_branch = "tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# RELEASE_<M> BASE and END tags to mozilla-release
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_RELEASE_(\\d+)+_(BASE|END)$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
+tags_destination_branch = "tags"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+# BETA_<M> BASE tags to mozilla-release
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_BETA_(\\d+)+_BASE$"
+destination_url = "ssh://hg.mozilla.org/betas/mozilla-release/"
 tags_destination_branch = "tags"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
