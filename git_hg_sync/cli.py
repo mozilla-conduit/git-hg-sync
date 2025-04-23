@@ -165,6 +165,15 @@ def set_subparser_fetchrepo(
         help="Fetch data from the selected source repository and its configured target",
     )
     add_repository_argument(subparser)
+    subparser.add_argument(
+        "-a",
+        "--fetch-all",
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        required=False,
+        default=False,
+        help="Fetch destination remotes in adition to the source url",
+    )
     subparser.set_defaults(func=fetchrepo)
 
 
@@ -185,16 +194,17 @@ def fetchrepo(
     logger.info(f"Setting up local clone for {repo.url} ...")
     repo_clone = syncer.get_clone_repo()
 
-    remotes = set()
-    for mapping in config.branch_mappings + config.tag_mappings:
-        if mapping.source_url != repo.url:
-            continue
-        remotes.add(mapping.destination_url)
+    if args.fetch_all:
+        remotes = set()
+        for mapping in config.branch_mappings + config.tag_mappings:
+            if mapping.source_url != repo.url:
+                continue
+            remotes.add(mapping.destination_url)
 
-    for remote in remotes:
-        logger.info(f"Fetching commits from remote {remote} ...")
-        cinnabar_remote = f"hg::{remote}"
-        syncer.fetch_all_from_remote(repo_clone, cinnabar_remote)
+        for remote in remotes:
+            logger.info(f"Fetching commits from remote {remote} ...")
+            cinnabar_remote = f"hg::{remote}"
+            syncer.fetch_all_from_remote(repo_clone, cinnabar_remote)
 
 
 def main() -> None:
