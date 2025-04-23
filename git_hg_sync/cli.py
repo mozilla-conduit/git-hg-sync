@@ -59,6 +59,7 @@ def config(
     logger: commandline.StructuredLogger,
     args: argparse.Namespace,  # noqa: ARG001
 ) -> None:
+    """Output the currently selected configuration, with environment-overrides."""
     logger.info("Dumping config ...")
     pprint(config)
 
@@ -88,6 +89,7 @@ def set_subparser_dequeue(
 def dequeue(
     config: Config, logger: commandline.StructuredLogger, args: argparse.Namespace
 ) -> None:
+    """Remove a message matching the parameters from the Pulse queue."""
     queue = _queue(config.pulse)
 
     logger.info(
@@ -108,7 +110,6 @@ def _queue(pulse_config: PulseConfig) -> SimpleQueue:
     connection = get_connection(pulse_config)
     return connection.SimpleQueue(
         pulse_config.queue,
-        # exchange_opts={"name": pulse_config.exchange, "type": "topic"},
     )
 
 
@@ -170,6 +171,7 @@ def set_subparser_fetchrepo(
 def fetchrepo(
     config: Config, logger: commandline.StructuredLogger, args: argparse.Namespace
 ) -> None:
+    """Fetch repository data ahead of time."""
     repo = None
     for repo in config.tracked_repositories:
         if repo.url == args.repository_url:
