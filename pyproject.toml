@@ -17,6 +17,7 @@ dependencies = [
     "pydantic",
     "pytest>=8.3.4",
     "sentry_sdk",
+    "devtools",
 ]
 
 [project.scripts]

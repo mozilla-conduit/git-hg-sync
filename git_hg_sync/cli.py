@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+from devtools import pprint
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,25 @@ def add_repository_argument(parser: argparse.ArgumentParser) -> None:
         required=True,
         help="URL of the repository for which to delete a message",
     )
+
+
+###
+# config
+###
+
+
+def set_subparser_config(subparsers: Any) -> None:
+    subparser = subparsers.add_parser("config")
+    subparser.set_defaults(func=config)
+
+
+def config(
+    config: Config,
+    logger: commandline.StructuredLogger,
+    args: argparse.Namespace,  # noqa: ARG001
+) -> None:
+    logger.info("Dumping config ...")
+    pprint(config)
 
 
 ###
@@ -130,6 +150,7 @@ def main() -> None:
     parser = get_parser()
     subparsers = parser.add_subparsers(required=True)
 
+    set_subparser_config(subparsers)
     set_subparser_dequeue(subparsers)
 
     args = parser.parse_args()
