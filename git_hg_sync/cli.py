@@ -3,10 +3,10 @@
 import argparse
 import os
 import sys
-from devtools import pprint
 from pathlib import Path
 from typing import Any
 
+from devtools import pprint
 from kombu.simple import SimpleQueue
 from mozlog import commandline
 from pydantic import ValidationError
@@ -14,6 +14,7 @@ from pydantic import ValidationError
 from git_hg_sync.__main__ import get_connection
 from git_hg_sync.config import Config, PulseConfig
 from git_hg_sync.pulse_worker import PulseWorker
+from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -37,7 +38,7 @@ def add_repository_argument(parser: argparse.ArgumentParser) -> None:
         "--repository-url",
         type=str,
         required=True,
-        help="URL of the repository for which to delete a message",
+        help="URL of the repository to process",
     )
 
 
@@ -146,12 +147,54 @@ def _remove_push_message(
     return 1
 
 
+###
+# fetchrepo
+###
+
+
+def set_subparser_fetchrepo(
+    subparsers: Any,
+) -> None:
+    subparser = subparsers.add_parser("fetchrepo")
+    add_repository_argument(subparser)
+    subparser.set_defaults(func=fetchrepo)
+
+
+def fetchrepo(
+    config: Config, logger: commandline.StructuredLogger, args: argparse.Namespace
+) -> None:
+    repo = None
+    for repo in config.tracked_repositories:
+        if repo.url == args.repository_url:
+            break
+    if not repo or repo.url != args.repository_url:
+        logger.error(f"Can't find repo for url {args.repository_url}")
+        sys.exit(1)
+
+    syncer = RepoSynchronizer(config.clones.directory / repo.name, repo.url)
+
+    logger.info(f"Setting up local clone for {repo.url} ...")
+    repo_clone = syncer.get_clone_repo()
+
+    remotes = set()
+    for mapping in config.branch_mappings + config.tag_mappings:
+        if mapping.source_url != repo.url:
+            continue
+        remotes.add(mapping.destination_url)
+
+    for remote in remotes:
+        logger.info(f"Fetching commits from remote {remote} ...")
+        cinnabar_remote = f"hg::{remote}"
+        syncer.fetch_all_from_remote(repo_clone, cinnabar_remote)
+
+
 def main() -> None:
     parser = get_parser()
     subparsers = parser.add_subparsers(required=True)
 
     set_subparser_config(subparsers)
     set_subparser_dequeue(subparsers)
+    set_subparser_fetchrepo(subparsers)
 
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args)

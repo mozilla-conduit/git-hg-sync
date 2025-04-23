@@ -30,7 +30,7 @@ class RepoSynchronizer:
         self._clone_directory = clone_directory
         self._src_remote = url
 
-    def _get_clone_repo(self) -> Repo:
+    def get_clone_repo(self) -> Repo:
         """Get a GitPython Repo object pointing to a git clone of the source
         remote."""
         if self._clone_directory.exists():
@@ -47,7 +47,7 @@ class RepoSynchronizer:
     def _commit_has_mercurial_metadata(self, repo: Repo, git_commit: str) -> bool:
         return not all(char == "0" for char in self._git2hg(repo, git_commit))
 
-    def _fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
+    def fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
         try:
             repo.git.fetch([remote])
         except exc.GitCommandError as e:
@@ -60,7 +60,7 @@ class RepoSynchronizer:
     ) -> None:
         logger.info(f"Syncing {operations} to {destination_url} ...")
         try:
-            repo = self._get_clone_repo()
+            repo = self.get_clone_repo()
         except PermissionError as exc:
             raise PermissionError(
                 f"Failed to create local clone from {destination_url}"
@@ -71,7 +71,7 @@ class RepoSynchronizer:
         # Ensure we have all commits from destination repository
         retry(
             "fetching commits from destination",
-            lambda: self._fetch_all_from_remote(repo, destination_remote),
+            lambda: self.fetch_all_from_remote(repo, destination_remote),
         )
 
         # Get commits we want to send to destination repository
