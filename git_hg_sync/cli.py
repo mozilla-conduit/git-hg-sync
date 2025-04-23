@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
-import json
-import logging
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from kombu.simple import SimpleQueue
 from mozlog import commandline
 from pydantic import ValidationError
 
 from git_hg_sync.__main__ import get_connection
-from git_hg_sync.config import Config
+from git_hg_sync.config import Config, PulseConfig
 from git_hg_sync.pulse_worker import PulseWorker
 
 
@@ -28,6 +27,10 @@ def get_parser() -> argparse.ArgumentParser:
         default=Path(env_config),
         help="Configuration file path.",
     )
+    return parser
+
+
+def add_repository_argument(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "-r",
         "--repository-url",
@@ -35,17 +38,56 @@ def get_parser() -> argparse.ArgumentParser:
         required=True,
         help="URL of the repository for which to delete a message",
     )
-    parser.add_argument(
+
+
+###
+# dequeue
+##
+
+
+def set_subparser_dequeue(
+    subparsers: Any,
+) -> None:
+    subparser = subparsers.add_parser("dequeue")
+    add_repository_argument(subparser)
+    subparser.add_argument(
         "-p",
         "--push-id",
         type=int,
         required=True,
         help="ID of the Push to delete",
     )
-    return parser
+    subparser.set_defaults(func=dequeue)
 
 
-def remove_push_message(
+def dequeue(
+    config: Config, logger: commandline.StructuredLogger, args: argparse.Namespace
+) -> None:
+    queue = _queue(config.pulse)
+
+    logger.info(
+        f"Removing push message {args.push_id} for repository {args.repository_url} ..."
+    )
+    try:
+        count = _remove_push_message(queue, logger, args.repository_url, args.push_id)
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Error removing message from queue: {e.__class__}, {e}")
+        sys.exit(1)
+    else:
+        logger.info(f"Removed {count} message for {args.repository_url}")
+    finally:
+        queue.close()
+
+
+def _queue(pulse_config: PulseConfig) -> SimpleQueue:
+    connection = get_connection(pulse_config)
+    return connection.SimpleQueue(
+        pulse_config.queue,
+        # exchange_opts={"name": pulse_config.exchange, "type": "topic"},
+    )
+
+
+def _remove_push_message(
     queue: SimpleQueue,
     logger: commandline.StructuredLogger,
     repository_url: str,
@@ -86,6 +128,10 @@ def remove_push_message(
 
 def main() -> None:
     parser = get_parser()
+    subparsers = parser.add_subparsers(required=True)
+
+    set_subparser_dequeue(subparsers)
+
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args)
 
@@ -96,25 +142,7 @@ def main() -> None:
         logger.error(f"Invalid configuration: {e}")
         sys.exit(1)
 
-    pulse_config = config.pulse
-    connection = get_connection(pulse_config)
-    queue = connection.SimpleQueue(
-        pulse_config.queue,
-        # exchange_opts={"name": pulse_config.exchange, "type": "topic"},
-    )
-
-    logger.info(
-        f"Removing push message {args.push_id} for repository {args.repository_url} ..."
-    )
-    try:
-        count = remove_push_message(queue, logger, args.repository_url, args.push_id)
-    except Exception as e:
-        logger.error(f"Error removing message from queue: {e.__class__}, {e}")
-        sys.exit(1)
-    else:
-        logger.info(f"Removed {count} message for {args.repository_url}")
-    finally:
-        queue.close()
+    args.func(config, logger, args)
 
 
 if __name__ == "__main__":
