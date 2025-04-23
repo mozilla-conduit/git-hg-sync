@@ -48,7 +48,9 @@ def add_repository_argument(parser: argparse.ArgumentParser) -> None:
 
 
 def set_subparser_config(subparsers: Any) -> None:
-    subparser = subparsers.add_parser("config")
+    subparser = subparsers.add_parser(
+        "config", help="Show the contents of the configuration"
+    )
     subparser.set_defaults(func=config)
 
 
@@ -69,7 +71,9 @@ def config(
 def set_subparser_dequeue(
     subparsers: Any,
 ) -> None:
-    subparser = subparsers.add_parser("dequeue")
+    subparser = subparsers.add_parser(
+        "dequeue", help="Remove a message from the Pulse queue"
+    )
     add_repository_argument(subparser)
     subparser.add_argument(
         "-p",
@@ -155,7 +159,10 @@ def _remove_push_message(
 def set_subparser_fetchrepo(
     subparsers: Any,
 ) -> None:
-    subparser = subparsers.add_parser("fetchrepo")
+    subparser = subparsers.add_parser(
+        "fetchrepo",
+        help="Fetch data from the selected source repository and its configured target",
+    )
     add_repository_argument(subparser)
     subparser.set_defaults(func=fetchrepo)
 

@@ -22,6 +22,7 @@ dependencies = [
 
 [project.scripts]
 git-hg-sync = "git_hg_sync.__main__:main"
+git-hg-cli = "git_hg_sync.cli:main"
 
 [tool.ruff]
 lint.select = [
