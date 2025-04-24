@@ -147,6 +147,15 @@ sets up the necessary environment.
 The private key should be pass in a format suitable for `ssh-add`(1) via the
 SSH_PRIVATE_KEY environment variable.
 
+### CLI tool
+
+For ad-hoc manipulation, the `git-hg-cli` tool is available. It supports the
+following commands:
+
+* `config`
+* `dequeue`
+* `fetchrepo`
+
 ## Build and test
 
 Format and test/lint code:
