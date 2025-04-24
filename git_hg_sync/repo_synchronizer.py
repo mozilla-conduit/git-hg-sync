@@ -49,7 +49,7 @@ class RepoSynchronizer:
 
     def fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
         try:
-            repo.git.fetch([remote])
+            repo.git.execute(["git", "-c", "cinnabar.graft=true", "fetch", remote])
         except exc.GitCommandError as e:
             # can't fetch if repo is empty
             if "fatal: couldn't find remote ref HEAD" in e.stderr:
@@ -68,11 +68,7 @@ class RepoSynchronizer:
 
         destination_remote = f"hg::{destination_url}"
 
-        # Ensure we have all commits from destination repository
-        retry(
-            "fetching commits from destination",
-            lambda: self.fetch_all_from_remote(repo, destination_remote),
-        )
+        self._ensure_cinnabar_metadata(repo, destination_remote)
 
         # Get commits we want to send to destination repository
         commits_to_fetch = [operation.source_commit for operation in operations]
@@ -162,6 +158,30 @@ class RepoSynchronizer:
         retry(
             "pushing branch and tags to destination",
             lambda: repo.git.push(*push_args),
+        )
+
+    def _ensure_cinnabar_metadata(self, repo: Repo, destination_remote: str) -> None:
+        """Ensure we have all commits from destination repository.
+
+        This sets up the correct cinnabar hg2git/git2hg mappings (including
+        cinnabar.graft support).
+        """
+
+        # This is needed only on first initialisation of the repository, as subsequent
+        # pushes update the metadata locally.
+
+        # Repo.git_dir is a PathLike union which is either a str, or a smarter thing. We
+        # assume the less smart one.
+        cinnabar_metadata_dir = Path(repo.git_dir) / "refs/cinnabar/metadata"
+        if cinnabar_metadata_dir.exists():
+            logger.debug(
+                f"Cinnabar metadata already present in  {cinnabar_metadata_dir}, not updating"
+            )
+            return
+
+        retry(
+            "fetching commits from destination",
+            lambda: self.fetch_all_from_remote(repo, destination_remote),
         )
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:

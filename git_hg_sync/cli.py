@@ -199,11 +199,25 @@ def fetchrepo(
     repo_clone.git.fetch([repo.url])
 
     if args.fetch_all:
-        remotes = set()
+        # We use a set for efficient lookup, but we want to keep the order from the
+        # configuration file.
+        remote_set = set()
+        remotes = []
         for mapping in config.branch_mappings + config.tag_mappings:
             if mapping.source_url != repo.url:
                 continue
-            remotes.add(mapping.destination_url)
+            if "\\" in mapping.destination_url:
+                logger.info(
+                    f"Skipping remote {mapping.destination_url} due to dynamic replacements"
+                )
+                continue
+            if mapping.destination_url in remote_set:
+                continue
+
+            remote_set.add(mapping.destination_url)
+            remotes.append(mapping.destination_url)
+
+        logger.debug(f"Remotes to fetch: {remotes} ...")
 
         for remote in remotes:
             logger.info(f"Fetching commits from remote {remote} ...")
