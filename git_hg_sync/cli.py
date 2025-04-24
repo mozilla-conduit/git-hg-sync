@@ -209,6 +209,7 @@ def fetchrepo(
 
 def main() -> None:
     parser = get_parser()
+    commandline.add_logging_group(parser)
     subparsers = parser.add_subparsers(required=True)
 
     set_subparser_config(subparsers)
