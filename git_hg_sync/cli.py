@@ -189,17 +189,35 @@ def fetchrepo(
         logger.error(f"Can't find repo for url {args.repository_url}")
         sys.exit(1)
 
-    syncer = RepoSynchronizer(config.clones.directory / repo.name, repo.url)
+    clone_path = config.clones.directory / repo.name
+    syncer = RepoSynchronizer(clone_path, repo.url)
 
-    logger.info(f"Setting up local clone for {repo.url} ...")
+    logger.info(f"Setting up local clone for {repo.url} in {clone_path} ...")
     repo_clone = syncer.get_clone_repo()
 
+    logger.info(f"Fetching commits from {repo.url} ...")
+    repo_clone.git.fetch([repo.url])
+
     if args.fetch_all:
-        remotes = set()
+        # We use a set for efficient lookup, but we want to keep the order from the
+        # configuration file.
+        remote_set = set()
+        remotes = []
         for mapping in config.branch_mappings + config.tag_mappings:
             if mapping.source_url != repo.url:
                 continue
-            remotes.add(mapping.destination_url)
+            if "\\" in mapping.destination_url:
+                logger.info(
+                    f"Skipping remote {mapping.destination_url} due to dynamic replacements"
+                )
+                continue
+            if mapping.destination_url in remote_set:
+                continue
+
+            remote_set.add(mapping.destination_url)
+            remotes.append(mapping.destination_url)
+
+        logger.debug(f"Remotes to fetch: {remotes} ...")
 
         for remote in remotes:
             logger.info(f"Fetching commits from remote {remote} ...")
@@ -209,6 +227,7 @@ def fetchrepo(
 
 def main() -> None:
     parser = get_parser()
+    commandline.add_logging_group(parser)
     subparsers = parser.add_subparsers(required=True)
 
     set_subparser_config(subparsers)

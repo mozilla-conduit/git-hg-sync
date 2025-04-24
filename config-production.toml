@@ -25,6 +25,20 @@ directory = "/clones"
 name = "firefox"
 url = "https://github.com/mozilla-firefox/firefox"
 
+
+#
+# MOZILLA-UNIFIED
+#
+# We don't sync to this repository, but we put it here first to fetch all
+# references early, with the benefit of bundles.
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
+destination_url = "https://hg.mozilla.org/mozilla-unified/"
+destination_branch = "default"
+
+
 #
 # AUTOLAND
 #
@@ -108,14 +122,14 @@ destination_branch = "\\1"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "main"
-destination_url = "ssh://hg.mozilla.org/releases/mozilla-central/"
+destination_url = "ssh://hg.mozilla.org/mozilla-central/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 # BETA_<M> and NIGHTLY_<M> tags to m-c
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org/releases/mozilla-central/"
+destination_url = "ssh://hg.mozilla.org/mozilla-central/"
 tags_destination_branch = "tags"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
@@ -175,6 +189,21 @@ destination_branch = "\\1"
 [[tracked_repositories]]
 name = "infra-testing"
 url = "https://github.com/mozilla-firefox/infra-testing"
+
+#
+# MOZILLA-UNIFIED
+#
+# We don't sync to this repository, but we put it here first to fetch all
+# references early, with the benefit of bundles.
+#
+# XXX: For this to work, https://github.com/mozilla-firefox/infra-testing needs
+# to have all commits presents on https://github.com/mozilla-firefox/firefox.
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/infra-testing"
+branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
+destination_url = "https://hg.mozilla.org/mozilla-unified/"
+destination_branch = "default"
 
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"
