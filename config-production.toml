@@ -25,6 +25,20 @@ directory = "/clones"
 name = "firefox"
 url = "https://github.com/mozilla-firefox/firefox"
 
+
+#
+# MOZILLA-UNIFIED
+#
+# We don't sync to this repository, but we put it here first to fetch all
+# references early, with the benefit of bundles.
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox"
+branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
+destination_url = "https://hg.mozilla.org/mozilla-unified/"
+destination_branch = "default"
+
+
 #
 # AUTOLAND
 #
@@ -139,6 +153,18 @@ destination_branch = "\\1"
 [[tracked_repositories]]
 name = "infra-testing"
 url = "https://github.com/mozilla-firefox/infra-testing"
+
+#
+# MOZILLA-UNIFIED
+#
+# We don't sync to this repository, but we put it here first to fetch all
+# references early, with the benefit of bundles.
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/infra-testing"
+branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
+destination_url = "https://hg.mozilla.org/mozilla-unified/"
+destination_branch = "default"
 
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"

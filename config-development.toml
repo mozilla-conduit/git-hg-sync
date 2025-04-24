@@ -22,6 +22,18 @@ directory = "/clones"
 name = "ff-test"
 url = "https://github.com/mozilla-conduit/ff-test"
 
+#
+# MOZILLA-UNIFIED
+#
+# We don't sync to this repository, but we put it here first to fetch all
+# references early, with the benefit of bundles.
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
+destination_url = "https://hg.mozilla.org/mozilla-unified/"
+destination_branch = "default"
+
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-conduit/ff-test"
 branch_pattern = "dev"
