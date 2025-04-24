@@ -90,14 +90,14 @@ destination_branch = "\\1"
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 branch_pattern = "main"
-destination_url = "ssh://hg.mozilla.org/releases/mozilla-central/"
+destination_url = "ssh://hg.mozilla.org/mozilla-central/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox"
 # BETA_<M> and NIGHTLY_<M> tags to m-c
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
-destination_url = "ssh://hg.mozilla.org/releases/mozilla-central/"
+destination_url = "ssh://hg.mozilla.org/mozilla-central/"
 tags_destination_branch = "tags"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
