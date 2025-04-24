@@ -12,7 +12,7 @@ routing_key = "gitpushes"
 queue = "queue/githgsyncstage/pushes"
 
 [sentry]
-sentry_url = ""
+sentry_dsn = ""
 
 [clones]
 directory = "/clones"

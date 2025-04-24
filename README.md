@@ -85,7 +85,7 @@ configuration file can be specified with the `--config` (`-c`) option.
 It contains 6 main sections:
 
 - `pulse` holds the exchange configuration (can be overridden by environment, see below)
-- `sentry` contains the `sentry_url` for monitoring
+- `sentry` contains the `sentry_dsn` for monitoring
 - `clones` allows to set the `directory` in which local work clones will be created
 - `tracked_repositories` provides `name` and source `url` for Git repos to track
 - `branch_mappings` describes which Git repo and branches should be sync to which Hg repo
