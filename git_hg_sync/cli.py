@@ -189,10 +189,14 @@ def fetchrepo(
         logger.error(f"Can't find repo for url {args.repository_url}")
         sys.exit(1)
 
-    syncer = RepoSynchronizer(config.clones.directory / repo.name, repo.url)
+    clone_path = config.clones.directory / repo.name
+    syncer = RepoSynchronizer(clone_path, repo.url)
 
-    logger.info(f"Setting up local clone for {repo.url} ...")
+    logger.info(f"Setting up local clone for {repo.url} in {clone_path} ...")
     repo_clone = syncer.get_clone_repo()
+
+    logger.info(f"Fetching commits from {repo.url} ...")
+    repo_clone.git.fetch([repo.url])
 
     if args.fetch_all:
         remotes = set()
