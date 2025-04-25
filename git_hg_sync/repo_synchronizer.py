@@ -116,18 +116,23 @@ class RepoSynchronizer:
         # Create tag branches locally
         tag_branches = {op.tags_destination_branch for op in tag_ops}
         for tag_branch in tag_branches:
-            retry(
-                "getting tag branch from destination",
-                # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
-                partial(
-                    repo.git.fetch,
-                    [
-                        "-f",
-                        destination_remote,
-                        f"refs/heads/branches/{tag_branch}/tip:{tag_branch}",
-                    ],
-                ),
-            )
+            remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
+            if repo.git.execute(
+                ["git", "ls-remote", destination_remote, remote_tag_ref],
+                stdout_as_string=True,
+            ):
+                retry(
+                    "getting tag branch from destination",
+                    # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
+                    partial(
+                        repo.git.fetch,
+                        [
+                            "-f",
+                            destination_remote,
+                            f"{remote_tag_ref}:{tag_branch}",
+                        ],
+                    ),
+                )
             push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
 
         # Create tags
