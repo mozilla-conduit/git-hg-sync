@@ -30,7 +30,7 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/ff-test"
-tag_pattern = "^(DEV)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
+tag_pattern = "^(FIREFOX|DEV)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 tags_destination_branch = "dev-tags"
 # Default
