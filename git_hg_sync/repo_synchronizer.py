@@ -188,9 +188,9 @@ class RepoSynchronizer:
 
         logger.debug(f"Push arguments: {push_args}")
 
-        if len(push_args) < 2:
+        if len(push_args) == 1:
             logger.warning(
-                "No explicit references to push resulted from processing this message."
+                "Missing push arguments: no explicit references to push resulted from processing this message."
             )
             return
 
