@@ -108,12 +108,13 @@ class RepoSynchronizer:
                     + push_args,
                 ),
             )
+
         # Handle tag operations
         tag_ops: list[SyncTagOperation] = [
             op for op in operations if isinstance(op, SyncTagOperation)
         ]
 
-        # Create tag branches locally
+        # Update tag branches, or create them locally
         tag_branches = {op.tags_destination_branch for op in tag_ops}
         for tag_branch in tag_branches:
             remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
@@ -122,7 +123,7 @@ class RepoSynchronizer:
                 stdout_as_string=True,
             ):
                 retry(
-                    "getting tag branch from destination",
+                    "fetching tag branch from destination",
                     # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
                     partial(
                         repo.git.fetch,
@@ -133,6 +134,20 @@ class RepoSynchronizer:
                         ],
                     ),
                 )
+            elif not repo.git.branch("-l", tag_branch):
+                logger.info(f"Creating {tag_branch} for tags ...")
+                # Create the tags branch at the very first commit present on HG
+                # We have no certain way to know what the default branch's name is,
+                # so we take a leap of faith. If this fails, the tags branch can be
+                # created manually instead.
+                base_commit = repo.git.log(
+                    "-1",
+                    "--reverse",
+                    "--format=%H",
+                    "refs/cinnabar/refs/heads/branches/default/tip",
+                )
+                repo.git.branch(tag_branch, base_commit)
+
             push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
 
         # Create tags
