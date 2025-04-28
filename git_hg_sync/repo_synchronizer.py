@@ -150,12 +150,21 @@ class RepoSynchronizer:
 
             push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
 
+        tags = repo.git.cinnabar(["tag", "--list"])
+
         # Create tags
         for tag_operation in tag_ops:
+            if tag_operation.tag in tags:
+                logger.warning(
+                    f"Tag {tag_operation.tag} already exists on {destination_url}, skipping ..."
+                )
+                continue
+
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
                 raise MercurialMetadataNotFoundError(tag_operation)
+
             hg_sha = self._git2hg(repo, tag_operation.source_commit)
             tag_message = f"No bug - Tagging {hg_sha} with {tag_operation.tag} {tag_operation.tag_message_suffix}"
             try:

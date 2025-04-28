@@ -101,7 +101,42 @@ def test_sync_process_(
     assert "No bug - Tagging" in tag_log
     assert tag_suffix in tag_log
     assert tag in tag_log
-    assert hg_rev(hg_remote_repo_path, branch) in tag_log
+    assert hg_rev(hg_destination, branch) in tag_log
+
+
+def test_sync_process_duplicate_tags(
+    git_source: Repo,
+    hg_destination: Path,
+    tmp_path: Path,
+) -> None:
+    tag_branch = "tags"
+    tag = "mytag"
+    tag_suffix = "some suffix"
+
+    repo = Repo(git_source)
+
+    git_commit_sha = repo.rev_parse("HEAD")
+
+    # Sync new commit with mercurial repository
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncTagOperation(
+            source_commit=git_commit_sha,
+            tag=tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
+        ),
+    ]
+
+    request_user = "request_user@example.com"
+    syncrepos.sync(str(hg_destination), operations, request_user)
+    # Re-run the operation
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # test tag commit message
+    tag_log = hg_log(hg_destination, tag_branch, ["-T", "{desc}"])
+    assert tag in tag_log
 
 
 def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
