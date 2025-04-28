@@ -148,11 +148,10 @@ class RepoSynchronizer:
                 )
                 repo.git.branch(tag_branch, base_commit)
 
-            push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
-
         tags = repo.git.cinnabar(["tag", "--list"])
 
         # Create tags
+        tag_branches_to_push = set()
         for tag_operation in tag_ops:
             if tag_operation.tag in tags:
                 logger.warning(
@@ -182,7 +181,19 @@ class RepoSynchronizer:
             except Exception as e:
                 raise RepoSyncError(tag_operation, e) from e
 
+            tag_branches_to_push.add(tag_operation.tags_destination_branch)
+
+        for tag_branch in tag_branches_to_push:
+            push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
+
         logger.debug(f"Push arguments: {push_args}")
+
+        if len(push_args) < 2:
+            logger.warning(
+                "No explicit references to push resulted from processing this message."
+            )
+            return
+
         # Push commits, branches and tags to destination
         retry(
             "pushing branch and tags to destination",
