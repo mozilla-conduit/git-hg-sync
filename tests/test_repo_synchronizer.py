@@ -21,13 +21,18 @@ def tracked_repositories() -> list[TrackedRepository]:
     ]
 
 
-def test_sync_process_(
-    tmp_path: Path,
-) -> None:
-    # Create a remote mercurial repository
+@pytest.fixture
+def hg_destination(tmp_path: Path) -> Path:
     hg_remote_repo_path = tmp_path / "hg-remotes" / "myrepo"
     hg_remote_repo_path.mkdir(parents=True)
     subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
+
+    return hg_remote_repo_path
+
+
+@pytest.fixture
+def git_source(hg_destination: Path, tmp_path: Path) -> Path:
+    # Create a remote mercurial repository
 
     # Create a remote git repository
     git_remote_repo_path = tmp_path / "git-remotes" / "myrepo"
@@ -38,34 +43,42 @@ def test_sync_process_(
     repo.index.add([foo_path])
     repo.index.commit("add foo.txt")
 
-    branch = "bar"
-    tag_branch = "tags"
-    tag = "mytag"
-    tag_suffix = "some suffix"
-
     # Push to mercurial repository
     subprocess.run(
         [
             "git",
             "push",
-            "hg::" + str(hg_remote_repo_path),
+            "hg::" + str(hg_destination),
             "master:refs/heads/branches/bar/tip",
         ],
         cwd=git_remote_repo_path,
         check=True,
     )
 
-    # Create a branch in mercurial repository for tags to live in
+    return git_remote_repo_path
+
+
+def test_sync_process_(
+    git_source: Repo,
+    hg_destination: Path,
+    tmp_path: Path,
+) -> None:
+    branch = "bar"
+    tag_branch = "tags"
+    tag = "mytag"
+    tag_suffix = "some suffix"
+
+    repo = Repo(git_source)
 
     # Create a new commit on git repo
-    bar_path = git_remote_repo_path / "bar.txt"
+    bar_path = git_source / "bar.txt"
     bar_path.write_text("BAR CONTENT")
     repo.index.add([bar_path])
-    git_commit_sha = repo.index.commit("add bar.txt").hexsha
+    git_commit_sha = repo.index.commit("add bar.txt")
 
     # Sync new commit with mercurial repository
     git_local_repo_path = tmp_path / "clones" / "myrepo"
-    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_remote_repo_path))
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncBranchOperation(source_commit=git_commit_sha, destination_branch=branch),
         SyncTagOperation(
@@ -77,14 +90,14 @@ def test_sync_process_(
     ]
 
     request_user = "request_user@example.com"
-    syncrepos.sync(str(hg_remote_repo_path), operations, request_user)
+    syncrepos.sync(str(hg_destination), operations, request_user)
 
     # test
-    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", branch)
-    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", tag)
+    assert "BAR CONTENT" in hg_cat(hg_destination, "bar.txt", branch)
+    assert "BAR CONTENT" in hg_cat(hg_destination, "bar.txt", tag)
 
     # test tag commit message
-    tag_log = hg_log(hg_remote_repo_path, tag_branch, ["-T", "{desc}"])
+    tag_log = hg_log(hg_destination, tag_branch, ["-T", "{desc}"])
     assert "No bug - Tagging" in tag_log
     assert tag_suffix in tag_log
     assert tag in tag_log
