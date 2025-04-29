@@ -207,13 +207,13 @@ destination_branch = "default"
 
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"
-branch_pattern = ".*"
+branch_pattern = "autoland"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/infra-testing/"
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing"
-tag_pattern = ".*"
+tag_pattern = "TAGTESTING.*"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/infra-testing/"
 tags_destination_branch = "tags"
 # Default
