@@ -108,12 +108,13 @@ class RepoSynchronizer:
                     + push_args,
                 ),
             )
+
         # Handle tag operations
         tag_ops: list[SyncTagOperation] = [
             op for op in operations if isinstance(op, SyncTagOperation)
         ]
 
-        # Create tag branches locally
+        # Update tag branches, or create them locally
         tag_branches = {op.tags_destination_branch for op in tag_ops}
         for tag_branch in tag_branches:
             remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
@@ -122,7 +123,7 @@ class RepoSynchronizer:
                 stdout_as_string=True,
             ):
                 retry(
-                    "getting tag branch from destination",
+                    "fetching tag branch from destination",
                     # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
                     partial(
                         repo.git.fetch,
@@ -133,14 +134,36 @@ class RepoSynchronizer:
                         ],
                     ),
                 )
-            push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
+            elif not repo.git.branch("-l", tag_branch):
+                logger.info(f"Creating {tag_branch} for tags ...")
+                # Create the tags branch at the very first commit present on HG
+                # We have no certain way to know what the default branch's name is,
+                # so we take a leap of faith. If this fails, the tags branch can be
+                # created manually instead.
+                base_commit = repo.git.log(
+                    "-1",
+                    "--reverse",
+                    "--format=%H",
+                    "refs/cinnabar/refs/heads/branches/default/tip",
+                )
+                repo.git.branch(tag_branch, base_commit)
+
+        tags = repo.git.cinnabar(["tag", "--list"])
 
         # Create tags
+        tag_branches_to_push = set()
         for tag_operation in tag_ops:
+            if tag_operation.tag in tags:
+                logger.warning(
+                    f"Tag {tag_operation.tag} already exists on {destination_url}, skipping ..."
+                )
+                continue
+
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
                 raise MercurialMetadataNotFoundError(tag_operation)
+
             hg_sha = self._git2hg(repo, tag_operation.source_commit)
             tag_message = f"No bug - Tagging {hg_sha} with {tag_operation.tag} {tag_operation.tag_message_suffix}"
             try:
@@ -158,7 +181,19 @@ class RepoSynchronizer:
             except Exception as e:
                 raise RepoSyncError(tag_operation, e) from e
 
+            tag_branches_to_push.add(tag_operation.tags_destination_branch)
+
+        for tag_branch in tag_branches_to_push:
+            push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
+
         logger.debug(f"Push arguments: {push_args}")
+
+        if len(push_args) == 1:
+            logger.warning(
+                "Missing push arguments: no explicit references to push resulted from processing this message."
+            )
+            return
+
         # Push commits, branches and tags to destination
         retry(
             "pushing branch and tags to destination",
