@@ -23,7 +23,7 @@ def retry(
             action_text = f" {action}" if action else ""
             if attempt < tries:
                 logger.error(
-                    f"Failed attempt{action_text} [{attempt}/{tries}]. Retrying..."
+                    f"Failed attempt{action_text} [{attempt}/{tries}] failed with error: {type(exc).__name__}: {exc}. Retrying..."
                 )
                 if delay > 0:
                     time.sleep(delay)
