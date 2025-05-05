@@ -104,6 +104,47 @@ def test_sync_process_(
     assert hg_rev(hg_destination, branch) in tag_log
 
 
+def test_sync_process_ancestor(
+    git_source: Repo,
+    hg_destination: Path,
+    tmp_path: Path,
+) -> None:
+    branch = "bar"
+
+    repo = Repo(git_source)
+
+    # Create a new commit on git repo
+    bar_path = git_source / "bar.txt"
+    bar_path.write_text("BAR CONTENT")
+    repo.index.add([bar_path])
+    git_commit_sha1 = repo.index.commit("add bar.txt").hexsha
+
+    baz_path = git_source / "baz.txt"
+    baz_path.write_text("BAZ CONTENT")
+    repo.index.add([baz_path])
+    git_commit_sha2 = repo.index.commit("add baz.txt").hexsha
+
+    # Sync new commit with mercurial repository
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncBranchOperation(source_commit=git_commit_sha2, destination_branch=branch),
+    ]
+
+    request_user = "request_user@example.com"
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # Sync an earlier commit.
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncBranchOperation(source_commit=git_commit_sha1, destination_branch=branch),
+    ]
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # test
+    assert "BAR CONTENT" in hg_cat(hg_destination, "bar.txt", branch)
+    assert "BAZ CONTENT" in hg_cat(hg_destination, "baz.txt", branch)
+
+
 def test_sync_process_duplicate_tags(
     git_source: Repo,
     hg_destination: Path,

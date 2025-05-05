@@ -61,10 +61,10 @@ class RepoSynchronizer:
         logger.info(f"Syncing {operations} to {destination_url} ...")
         try:
             repo = self.get_clone_repo()
-        except PermissionError as exc:
+        except PermissionError as e:
             raise PermissionError(
                 f"Failed to create local clone from {destination_url}"
-            ) from exc
+            ) from e
 
         destination_remote = f"hg::{destination_url}"
 
@@ -83,12 +83,36 @@ class RepoSynchronizer:
             op for op in operations if isinstance(op, SyncBranchOperation)
         ]
         for branch_operation in branch_ops:
+            destination_ref = (
+                f"refs/heads/branches/{branch_operation.destination_branch}/tip"
+            )
+            # If the source_commit is already an ancestor of the destination branch, we
+            # silently skip it, as it should be a NoOp, but would fail as the push would
+            # not be a fast-forward.
             try:
-                push_args.append(
-                    f"{branch_operation.source_commit}:refs/heads/branches/{branch_operation.destination_branch}/tip"
-                )
-            except Exception as e:
-                raise RepoSyncError(branch_operation, e) from e
+                breakpoint()
+                if repo.git.execute(
+                    [
+                        "git",
+                        "merge-base",
+                        "--is-ancestor",
+                        branch_operation.source_commit,
+                        destination_ref,
+                    ]
+                ):
+                    logger.warning(
+                        f"Source commit {branch_operation.source_commit} is already an ancestor of the current tip at {destination_url}, skipping ..."
+                    )
+                    continue
+            except exc.GitCommandError as e:
+                if f"Not a valid object name {destination_ref}" in e.stderr:
+                    # The target branch doesn't exist yet, we'll create it soon.
+                    pass
+                else:
+                    raise RepoSyncError(
+                        f"Error checking ancestry of {branch_operation.source_commit} to {destination_ref}"
+                    ) from e
+            push_args.append(f"{branch_operation.source_commit}:{destination_ref}")
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
         logger.debug(f"{REQUEST_USER_ENV_VAR} set to {request_user}")
