@@ -114,9 +114,8 @@ class RepoSynchronizer:
             op for op in operations if isinstance(op, SyncTagOperation)
         ]
 
-        # Update tag branches, or create them locally
-        tag_branches = {op.tags_destination_branch for op in tag_ops}
-        for tag_branch in tag_branches:
+        for tag_operation in tag_ops:
+            tag_branch = tag_operation.tags_destination_branch
             remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
             if repo.git.execute(
                 ["git", "ls-remote", destination_remote, remote_tag_ref],
@@ -135,18 +134,13 @@ class RepoSynchronizer:
                     ),
                 )
             elif not repo.git.branch("-l", tag_branch):
-                logger.info(f"Creating {tag_branch} for tags ...")
-                # Create the tags branch at the very first commit present on HG
-                # We have no certain way to know what the default branch's name is,
-                # so we take a leap of faith. If this fails, the tags branch can be
-                # created manually instead.
-                base_commit = repo.git.log(
-                    "-1",
-                    "--reverse",
-                    "--format=%H",
-                    "refs/cinnabar/refs/heads/branches/default/tip",
-                )
-                repo.git.branch(tag_branch, base_commit)
+                logger.info(f"Creating branch {tag_branch} to receive tags ...")
+                # Create the tags branch at the first commit to be tagged.
+                # The history prior to the tag doesn't matter much, but we know that
+                # the commit to tag will be present in the target repo (unless the configuration
+                # is incorrect). It's as good
+                # a base as any.
+                repo.git.branch(tag_branch, tag_operation.source_commit)
 
         tags = repo.git.cinnabar(["tag", "--list"])
 
