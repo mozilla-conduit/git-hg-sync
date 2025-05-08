@@ -41,7 +41,7 @@ class Config(pydantic.BaseModel):
     clones: ClonesConfig
     tracked_repositories: list[TrackedRepository]
     branch_mappings: list[BranchMapping]
-    tag_mappings: list[TagMapping]
+    tag_mappings: list[TagMapping] = []
 
     @pydantic.model_validator(mode="after")
     def verify_all_mappings_reference_tracked_repositories(

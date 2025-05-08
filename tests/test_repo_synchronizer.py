@@ -74,7 +74,7 @@ def test_sync_process_(
     bar_path = git_source / "bar.txt"
     bar_path.write_text("BAR CONTENT")
     repo.index.add([bar_path])
-    git_commit_sha = repo.index.commit("add bar.txt")
+    git_commit_sha = repo.index.commit("add bar.txt").hexsha
 
     # Sync new commit with mercurial repository
     git_local_repo_path = tmp_path / "clones" / "myrepo"
