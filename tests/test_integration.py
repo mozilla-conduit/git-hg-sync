@@ -73,17 +73,6 @@ def test_full_app(
 
     assert "FOO CONTENT" in hg_cat(hg_remote_repo_path, "foo.txt", "default")
 
-    # Create a branch in mercurial repository for tags to live in
-    subprocess.run(["hg", "branch", "tags"], cwd=hg_remote_repo_path, check=True)
-    tags_branch_test_file = hg_remote_repo_path / "README.md"
-    tags_branch_test_file.write_text("This branch contains tags.")
-    subprocess.run(
-        ["hg", "add", str(tags_branch_test_file)], cwd=hg_remote_repo_path, check=True
-    )
-    subprocess.run(
-        ["hg", "commit", "-m", "create tag branch"], cwd=hg_remote_repo_path, check=True
-    )
-
     bar_path = git_remote_repo_path / "bar.txt"
     bar_path.write_text("BAR CONTENT")
     repo.index.add([bar_path])
