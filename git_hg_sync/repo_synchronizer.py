@@ -83,45 +83,47 @@ class RepoSynchronizer:
             op for op in operations if isinstance(op, SyncBranchOperation)
         ]
         for branch_operation in branch_ops:
-            destination_ref = (
-                f"refs/heads/branches/{branch_operation.destination_branch}/tip"
-            )
-            # If the source_commit is already an ancestor of the destination branch, we
-            # silently skip it, as it should be a NoOp, but would fail as the push would
-            # not be a fast-forward.
-            try:
-                cinnabar_destination_ref = f"refs/cinnabar/{destination_ref}"
-                destination_exists = destination_ref in repo.git.execute(
-                    ["git", "ls-remote", destination_remote, destination_ref],
-                    stdout_as_string=True,
-                )
-                retval, _, _ = repo.git.execute(
+            # Here, we use `<BRANCH>/<SHA1>` rather than `tip` to work around inherent
+            # limitations in the mapping between Git and Hg references.
+            #
+            # We could use `<BRANCH>/tip`, which would work in most cases. However, when
+            # reprocessing old messages (as is sometimes necessary to recover from
+            # issues), we may find ourselves processing a push for a commit which is now
+            # an ancestor of the current `tip`. In this situation, git would refuse to
+            # push, claiming it's not a fast-forward.
+            #
+            # To handle this case, we push each commit to a separate reference matching
+            # their own SHA1. Those references only exist on the git side, so their name
+            # doesn't impact what gets created on the Mercurial side. [The name of the
+            # branch matters with `cinnabar.experiments=branch`, but not the name of the
+            # final reference.]
+            #
+            # Mercurial maintains `tip` automatically to be the latest new commit (and
+            # we only allow single heads on pushable repositories, which guarantees it's
+            # the furthest from the root).
+            #
+            destination_ref = f"refs/heads/branches/{branch_operation.destination_branch}/${branch_operation.source_commit}"
+            # We only push the commit if it's not already present, because Mercurial
+            # refuses pushes which don't change anything.
+            if self._commit_has_mercurial_metadata(
+                repo, branch_operation.source_commit
+            ):
+                # Resolving the HG SHA is not sufficient, because we may know it from
+                # another repository, so we need to make sure it's not already present here.
+                hg_sha = self._git2hg(repo, branch_operation.source_commit)
+                if hg_sha not in repo.git.execute(
                     [
                         "git",
-                        "merge-base",
-                        "--is-ancestor",
-                        branch_operation.source_commit,
-                        cinnabar_destination_ref,
+                        "ls-remote",
+                        destination_remote,
+                        f"refs/heads/branches/{branch_operation.destination_branch}/{hg_sha}",
                     ],
-                    with_extended_output=True,
-                    with_exceptions=False,
-                )
-                commit_is_ancestor = retval == 0
-                if destination_exists and commit_is_ancestor:
-                    logger.warning(
-                        f"Source commit {branch_operation.source_commit} is already an ancestor of the current tip at {destination_url}, skipping ..."
+                    stdout_as_string=True,
+                ):
+                    logger.info(
+                        f"Commit {branch_operation.source_commit} is already present on {destination_remote}, skipping ..."
                     )
                     continue
-            except exc.GitCommandError as e:
-                if f"Not a valid object name {cinnabar_destination_ref}" in e.stderr:
-                    # The target branch doesn't exist yet, we'll create it soon.
-                    logger.info(
-                        f"Destination {destination_ref} doesn't exist on {destination_url} yet, it will be created"
-                    )
-                else:
-                    raise RepoSyncError(
-                        f"Error checking ancestry of {branch_operation.source_commit} to {destination_ref}"
-                    ) from e
             push_args.append(f"{branch_operation.source_commit}:{destination_ref}")
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
@@ -130,7 +132,7 @@ class RepoSynchronizer:
         # Add mercurial metadata to new commits from synced branches
         # Some of these commits could be tagged in the same synchronization and
         # tagging can only be done on a commit that already have mercurial
-        # metadata
+        # metadata.
         if len(push_args) > 1:
             retry(
                 "adding mercurial metadata to git commits",
