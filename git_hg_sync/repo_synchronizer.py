@@ -90,24 +90,34 @@ class RepoSynchronizer:
             # silently skip it, as it should be a NoOp, but would fail as the push would
             # not be a fast-forward.
             try:
-                breakpoint()
-                if repo.git.execute(
+                cinnabar_destination_ref = f"refs/cinnabar/{destination_ref}"
+                destination_exists = destination_ref in repo.git.execute(
+                    ["git", "ls-remote", destination_remote, destination_ref],
+                    stdout_as_string=True,
+                )
+                retval, _, _ = repo.git.execute(
                     [
                         "git",
                         "merge-base",
                         "--is-ancestor",
                         branch_operation.source_commit,
-                        destination_ref,
-                    ]
-                ):
+                        cinnabar_destination_ref,
+                    ],
+                    with_extended_output=True,
+                    with_exceptions=False,
+                )
+                commit_is_ancestor = retval == 0
+                if destination_exists and commit_is_ancestor:
                     logger.warning(
                         f"Source commit {branch_operation.source_commit} is already an ancestor of the current tip at {destination_url}, skipping ..."
                     )
                     continue
             except exc.GitCommandError as e:
-                if f"Not a valid object name {destination_ref}" in e.stderr:
+                if f"Not a valid object name {cinnabar_destination_ref}" in e.stderr:
                     # The target branch doesn't exist yet, we'll create it soon.
-                    pass
+                    logger.info(
+                        f"Destination {destination_ref} doesn't exist on {destination_url} yet, it will be created"
+                    )
                 else:
                     raise RepoSyncError(
                         f"Error checking ancestry of {branch_operation.source_commit} to {destination_ref}"
@@ -121,7 +131,7 @@ class RepoSynchronizer:
         # Some of these commits could be tagged in the same synchronization and
         # tagging can only be done on a commit that already have mercurial
         # metadata
-        if branch_ops:
+        if len(push_args) > 1:
             retry(
                 "adding mercurial metadata to git commits",
                 lambda: repo.git.execute(
@@ -141,7 +151,7 @@ class RepoSynchronizer:
         for tag_operation in tag_ops:
             tag_branch = tag_operation.tags_destination_branch
             remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
-            if repo.git.execute(
+            if remote_tag_ref in repo.git.execute(
                 ["git", "ls-remote", destination_remote, remote_tag_ref],
                 stdout_as_string=True,
             ):
@@ -227,7 +237,11 @@ class RepoSynchronizer:
 
         # This is needed only on first initialisation of the repository, as subsequent
         # pushes update the metadata locally.
-
+        #
+        # WARNING: While we make a direct reference to `refs/cinnabar` here, it MUST NOT
+        # be used explicitely in subsequent git operations. This set of references get
+        # updated on every `fetch`, and is therefore not stable enough to be trusted.
+        #
         # Repo.git_dir is a PathLike union which is either a str, or a smarter thing. We
         # assume the less smart one.
         cinnabar_metadata_dir = Path(repo.git_dir) / "refs/cinnabar/metadata"
