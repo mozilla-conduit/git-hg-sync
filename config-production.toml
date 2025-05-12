@@ -194,7 +194,7 @@ url = "https://github.com/mozilla-firefox/infra-testing.git"
 source_url = "https://github.com/mozilla-firefox/infra-testing.git"
 branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
 destination_url = "https://hg.mozilla.org/mozilla-unified/"
-destination_branch = "default"
+destination_branch = "NOT_A_VALID_BRANCH"
 
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing.git"
