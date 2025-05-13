@@ -111,7 +111,7 @@ class RepoSynchronizer:
                 # Resolving the HG SHA is not sufficient, because we may know it from
                 # another repository, so we need to make sure it's not already present here.
                 hg_sha = self._git2hg(repo, branch_operation.source_commit)
-                if hg_sha not in repo.git.execute(
+                if hg_sha in repo.git.execute(
                     [
                         "git",
                         "ls-remote",

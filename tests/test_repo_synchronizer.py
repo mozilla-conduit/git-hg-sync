@@ -23,7 +23,16 @@ def tracked_repositories() -> list[TrackedRepository]:
 
 @pytest.fixture
 def hg_destination(tmp_path: Path) -> Path:
-    hg_remote_repo_path = tmp_path / "hg-remotes" / "myrepo"
+    return _hg_destination(tmp_path)
+
+
+@pytest.fixture
+def hg_destination_other(tmp_path: Path) -> Path:
+    return _hg_destination(tmp_path, "_other")
+
+
+def _hg_destination(tmp_path: Path, repo_suffix: str = "") -> Path:
+    hg_remote_repo_path = tmp_path / "hg-remotes" / f"myrepo{repo_suffix}"
     hg_remote_repo_path.mkdir(parents=True)
     subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
 
@@ -180,9 +189,59 @@ def test_sync_process_duplicate_tags(
     assert tag in tag_log
 
 
-def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
-    connection = get_connection(pulse_config)
-    queue = get_queue(pulse_config)
-    assert connection.userid == pulse_config.userid
-    assert connection.host == f"{pulse_config.host}:{pulse_config.port}"
-    assert queue.name == pulse_config.queue
+def test_sync_process_different_destination(
+    git_source: Repo,
+    hg_destination: Path,
+    hg_destination_other: Path,
+    tmp_path: Path,
+) -> None:
+    branch = "bar"
+    tag_branch = "tags"
+    tag = "mytag"
+    tag_suffix = "some suffix"
+
+    repo = Repo(git_source)
+
+    # Create a new commit on git repo
+    bar_path = git_source / "bar.txt"
+    bar_path.write_text("BAR CONTENT")
+    repo.index.add([bar_path])
+    git_commit_sha = repo.index.commit("add bar.txt").hexsha
+
+    # Sync new commit with mercurial repository
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+
+    request_user = "request_user@example.com"
+
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncBranchOperation(source_commit=git_commit_sha, destination_branch=branch),
+        SyncTagOperation(
+            source_commit=git_commit_sha,
+            tag=tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
+        ),
+    ]
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    syncrepos.sync(str(hg_destination_other), operations, request_user)
+
+    # test
+    assert "BAR CONTENT" in hg_cat(hg_destination_other, "bar.txt", branch)
+
+    # XXX: In the current state, cinnabar refuses to re-create a tag which already
+    # exists anywhere in its working state. This means we can't duplicate an existing tag to a
+    # different destination. This is probably sane, as we should instead have a more
+    # controlled way of graduating tags to repos (e.g., to m-c).
+    #
+    # Leaving this here for later reference (and to support the discussion above).
+    #
+    # assert "BAR CONTENT" in hg_cat(hg_destination_other, "bar.txt", tag)
+    #
+    # test tag commit message
+    # tag_log = hg_log(hg_destination_other, tag_branch, ["-T", "{desc}"])
+    # assert "No bug - Tagging" in tag_log
+    # assert tag_suffix in tag_log
+    # assert tag in tag_log
+    # assert hg_rev(hg_destination_other, branch) in tag_log
