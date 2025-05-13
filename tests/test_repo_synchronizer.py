@@ -103,6 +103,9 @@ def test_sync_process_(
     assert tag in tag_log
     assert hg_rev(hg_destination, branch) in tag_log
 
+    tag_author = hg_log(hg_destination, tag_branch, ["-T", "{author}"])
+    assert request_user in tag_author
+
 
 def test_sync_process_duplicate_tags(
     git_source: Repo,
