@@ -245,3 +245,11 @@ def test_sync_process_different_destination(
     # assert tag_suffix in tag_log
     # assert tag in tag_log
     # assert hg_rev(hg_destination_other, branch) in tag_log
+
+
+def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
+    connection = get_connection(pulse_config)
+    queue = get_queue(pulse_config)
+    assert connection.userid == pulse_config.userid
+    assert connection.host == f"{pulse_config.host}:{pulse_config.port}"
+    assert queue.name == pulse_config.queue
