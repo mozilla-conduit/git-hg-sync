@@ -61,10 +61,10 @@ class RepoSynchronizer:
         logger.info(f"Syncing {operations} to {destination_url} ...")
         try:
             repo = self.get_clone_repo()
-        except PermissionError as exc:
+        except PermissionError as e:
             raise PermissionError(
                 f"Failed to create local clone from {destination_url}"
-            ) from exc
+            ) from e
 
         destination_remote = f"hg::{destination_url}"
 
@@ -83,12 +83,48 @@ class RepoSynchronizer:
             op for op in operations if isinstance(op, SyncBranchOperation)
         ]
         for branch_operation in branch_ops:
-            try:
-                push_args.append(
-                    f"{branch_operation.source_commit}:refs/heads/branches/{branch_operation.destination_branch}/tip"
-                )
-            except Exception as e:
-                raise RepoSyncError(branch_operation, e) from e
+            # Here, we use `<BRANCH>/<SHA1>` rather than `tip` to work around inherent
+            # limitations in the mapping between Git and Hg references.
+            #
+            # We could use `<BRANCH>/tip`, which would work in most cases. However, when
+            # reprocessing old messages (as is sometimes necessary to recover from
+            # issues), we may find ourselves processing a push for a commit which is now
+            # an ancestor of the current `tip`. In this situation, git would refuse to
+            # push, claiming it's not a fast-forward.
+            #
+            # To handle this case, we push each commit to a separate reference matching
+            # their own SHA1. Those references only exist on the git side, so their name
+            # doesn't impact what gets created on the Mercurial side. [The name of the
+            # branch matters with `cinnabar.experiments=branch`, but not the name of the
+            # final reference.]
+            #
+            # Mercurial maintains `tip` automatically to be the latest new commit (and
+            # we only allow single heads on pushable repositories, which guarantees it's
+            # the furthest from the root).
+            #
+            destination_ref = f"refs/heads/branches/{branch_operation.destination_branch}/${branch_operation.source_commit}"
+            # We only push the commit if it's not already present, because Mercurial
+            # refuses pushes which don't change anything.
+            if self._commit_has_mercurial_metadata(
+                repo, branch_operation.source_commit
+            ):
+                # Resolving the HG SHA is not sufficient, because we may know it from
+                # another repository, so we need to make sure it's not already present here.
+                hg_sha = self._git2hg(repo, branch_operation.source_commit)
+                if hg_sha in repo.git.execute(
+                    [
+                        "git",
+                        "ls-remote",
+                        destination_remote,
+                        f"refs/heads/branches/{branch_operation.destination_branch}/{hg_sha}",
+                    ],
+                    stdout_as_string=True,
+                ):
+                    logger.info(
+                        f"Commit {branch_operation.source_commit} is already present on {destination_remote}, skipping ..."
+                    )
+                    continue
+            push_args.append(f"{branch_operation.source_commit}:{destination_ref}")
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
         logger.debug(f"{REQUEST_USER_ENV_VAR} set to {request_user}")
@@ -96,8 +132,8 @@ class RepoSynchronizer:
         # Add mercurial metadata to new commits from synced branches
         # Some of these commits could be tagged in the same synchronization and
         # tagging can only be done on a commit that already have mercurial
-        # metadata
-        if branch_ops:
+        # metadata.
+        if len(push_args) > 1:
             retry(
                 "adding mercurial metadata to git commits",
                 lambda: repo.git.execute(
@@ -117,7 +153,7 @@ class RepoSynchronizer:
         for tag_operation in tag_ops:
             tag_branch = tag_operation.tags_destination_branch
             remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
-            if repo.git.execute(
+            if remote_tag_ref in repo.git.execute(
                 ["git", "ls-remote", destination_remote, remote_tag_ref],
                 stdout_as_string=True,
             ):
@@ -203,7 +239,11 @@ class RepoSynchronizer:
 
         # This is needed only on first initialisation of the repository, as subsequent
         # pushes update the metadata locally.
-
+        #
+        # WARNING: While we make a direct reference to `refs/cinnabar` here, it MUST NOT
+        # be used explicitely in subsequent git operations. This set of references get
+        # updated on every `fetch`, and is therefore not stable enough to be trusted.
+        #
         # Repo.git_dir is a PathLike union which is either a str, or a smarter thing. We
         # assume the less smart one.
         cinnabar_metadata_dir = Path(repo.git_dir) / "refs/cinnabar/metadata"
