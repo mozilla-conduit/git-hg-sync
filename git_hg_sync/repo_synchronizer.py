@@ -92,9 +92,12 @@ class RepoSynchronizer:
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
         os.environ["GIT_AUTHOR_EMAIL"] = request_user
-        # We don't have the author name in the Pulse message, so we reuse the email
+        # We don't have the author name in the Pulse message, so we guess from the email
         # address.
-        os.environ["GIT_AUTHOR_NAME"] = request_user
+        userinfo = request_user
+        if "@" in userinfo:
+            userinfo, _ = request_user.split("@")
+        os.environ["GIT_AUTHOR_NAME"] = userinfo
         logger.debug(f"{REQUEST_USER_ENV_VAR} and GIT_AUTHOR_* set to {request_user}")
 
         # Add mercurial metadata to new commits from synced branches
