@@ -202,6 +202,13 @@ branch_pattern = "autoland"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/infra-testing/"
 destination_branch = "default"
 
+# Relbranch syncing on infra-testing.
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/infra-testing.git"
+branch_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+_\\d+_X)_RELBRANCH)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/infra-testing/"
+destination_branch = "\\1"
+
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/infra-testing.git"
 tag_pattern = ".+"
