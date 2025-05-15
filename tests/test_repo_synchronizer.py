@@ -58,7 +58,7 @@ def git_source(hg_destination: Path, tmp_path: Path) -> Path:
     return git_remote_repo_path
 
 
-def test_sync_process_(
+def test_sync_process(
     git_source: Repo,
     hg_destination: Path,
     tmp_path: Path,
@@ -90,6 +90,7 @@ def test_sync_process_(
     ]
 
     request_user = "request_user@example.com"
+    user_info = "request_user"  # The part before the @ in request_user.
     syncrepos.sync(str(hg_destination), operations, request_user)
 
     # test
@@ -102,6 +103,9 @@ def test_sync_process_(
     assert tag_suffix in tag_log
     assert tag in tag_log
     assert hg_rev(hg_destination, branch) in tag_log
+
+    tag_author = hg_log(hg_destination, tag_branch, ["-T", "{author}"])
+    assert f"{user_info} <{request_user}>" in tag_author
 
 
 def test_sync_process_duplicate_tags(
