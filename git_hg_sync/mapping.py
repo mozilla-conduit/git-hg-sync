@@ -105,13 +105,16 @@ class TagMapping(Mapping):
             if not self._tag_pattern.match(tag_name):
                 continue
             destination_url = re.sub(self._tag_pattern, self.destination_url, tag_name)
+            tags_destination_branch = re.sub(
+                self._tag_pattern, self.tags_destination_branch, tag_name
+            )
             matches.append(
                 MappingMatch(
                     destination_url=destination_url,
                     operation=SyncTagOperation(
                         tag=tag_name,
                         source_commit=commit,
-                        tags_destination_branch=self.tags_destination_branch,
+                        tags_destination_branch=tags_destination_branch,
                         tag_message_suffix=self.tag_message_suffix,
                     ),
                 )
