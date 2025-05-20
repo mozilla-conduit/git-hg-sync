@@ -41,4 +41,4 @@ def index() -> flask.Response:
 
 if __name__ == "__main__":
     logging.getLogger("werkzeug").setLevel(logging.INFO)
-    app.run(port=os.environ.get("PORT", 8000), debug=False)
+    app.run(port=int(os.environ.get("PORT", "8000")), debug=False)
