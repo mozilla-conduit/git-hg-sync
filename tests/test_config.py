@@ -111,7 +111,7 @@ def test_branch_mapping(
             "{directory}/git-remotes/firefox-releases",
             "FIREFOX_12_1_0esr_BUILD1",
             ["{directory}/hg-remotes/mozilla-esr12"],
-            ["tags", "tags-esr12"],
+            ["tags-esr12"],
         ),
     ],
 )
