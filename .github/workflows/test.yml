@@ -18,9 +18,10 @@ jobs:
           chmod a+w tests_output
 
       - name: Setup docker-compose
-        uses: hoverkraft-tech/compose-action@v2.0.1
-        with:
-          compose-file: "docker-compose.yaml"
+        uses: docker/setup-compose-action@v1
+
+      - name: Build containers
+        run: docker compose build
 
       - name: Execute tests in the running services
         run: |
