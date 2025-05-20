@@ -27,3 +27,17 @@ source_url = "{directory}/git-remotes/firefox-releases"
 tag_pattern = "^FIREFOX_(\\d+)_(\\d+)(_\\d+)?esr_(BUILD\\d+|RELEASE)$"
 destination_url = "{directory}/hg-remotes/mozilla-esr\\1"
 tags_destination_branch = "tags"
+
+
+[[branch_mappings]]
+source_url = "{directory}/git-remotes/firefox-releases"
+branch_pattern = "^(esr\\d+)$"
+destination_url = "{directory}/hg-remotes/mozilla-\\1"
+destination_branch = "mozilla-\\1"
+
+[[tag_mappings]]
+
+source_url = "{directory}/git-remotes/firefox-releases"
+tag_pattern = "^FIREFOX_(\\d+)_(\\d+)(_\\d+)?esr_(BUILD\\d+|RELEASE)$"
+destination_url = "{directory}/hg-remotes/mozilla-esr\\1"
+tags_destination_branch = "tags-esr\\1"

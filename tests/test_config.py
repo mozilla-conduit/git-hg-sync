@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from pytest import MonkeyPatch
+import pytest
 
 from git_hg_sync.config import Config
+from git_hg_sync.events import Push
 
 HERE = Path(__file__).parent
 
@@ -14,7 +15,7 @@ def test_load_config() -> None:
     assert config.branch_mappings[0].destination_branch == "default"
 
 
-def test_load_config_env_override(monkeypatch: MonkeyPatch) -> None:
+def test_load_config_env_override(monkeypatch: pytest.MonkeyPatch) -> None:
     overrides = {
         "pulse": {
             "exchange": "overridden exchange",
@@ -48,3 +49,105 @@ def test_load_config_env_override(monkeypatch: MonkeyPatch) -> None:
             assert getattr(section_config, var) == value, (
                 f"Configuration not overridden for {section}.{var}"
             )
+
+
+@pytest.mark.parametrize(
+    "source_url,source_branch,expected_urls,expected_branches",
+    [
+        ("not-a-match", "doesn't matter", [], []),
+        ("{directory}/git-remotes/firefox-releases", "not-a-match", [], []),
+        (
+            "{directory}/git-remotes/firefox-releases",
+            "esr12",
+            ["{directory}/hg-remotes/mozilla-esr12"],
+            ["default", "mozilla-esr12"],
+        ),
+    ],
+)
+def test_branch_mapping(
+    source_url: str,
+    source_branch: str,
+    expected_urls: list[str],
+    expected_branches: list[str],
+) -> None:
+    config = Config.from_file(HERE / "data" / "config.toml")
+
+    event = Push(
+        repo_url=source_url,
+        branches={source_branch: "commitsha"},
+        # What's below is not important for the test.
+        push_id=1,
+        push_json_url="push_json_url",
+        time=0,
+        user="user",
+    )
+
+    operations = {}
+
+    for mapping in config.branch_mappings:
+        if matches := mapping.match(event):
+            for match in matches:
+                operations.setdefault(match.destination_url, []).append(match.operation)
+
+    destination_urls = list(operations)
+    destination_branches = [
+        sync_branch_operation.destination_branch
+        for url in operations
+        for sync_branch_operation in operations[url]
+    ]
+
+    assert destination_urls == expected_urls
+    assert destination_branches == expected_branches
+
+    # tags_mappings = config.tag_mappings
+
+
+@pytest.mark.parametrize(
+    "source_url,tag,expected_urls,expected_branches",
+    [
+        ("not-a-match", "doesn't matter", [], []),
+        ("{directory}/git-remotes/firefox-releases", "not-a-match", [], []),
+        (
+            "{directory}/git-remotes/firefox-releases",
+            "FIREFOX_12_1_0esr_BUILD1",
+            ["{directory}/hg-remotes/mozilla-esr12"],
+            ["tags", "tags-esr12"],
+        ),
+    ],
+)
+def test_tag_mapping(
+    source_url: str,
+    tag: str,
+    expected_urls: list[str],
+    expected_branches: list[str],
+) -> None:
+    config = Config.from_file(HERE / "data" / "config.toml")
+
+    event = Push(
+        repo_url=source_url,
+        tags={tag: "commitsha"},
+        # What's below is not important for the test.
+        push_id=1,
+        push_json_url="push_json_url",
+        time=0,
+        user="user",
+    )
+
+    operations = {}
+
+    for mapping in config.tag_mappings:
+        if matches := mapping.match(event):
+            for match in matches:
+                operations.setdefault(match.destination_url, []).append(match.operation)
+
+    destination_urls = list(operations)
+    destination_tags = [
+        sync_tag_operation.tags_destination_branch
+        for url in operations
+        for sync_tag_operation in operations[url]
+    ]
+
+    assert destination_urls == expected_urls
+    assert destination_tags == expected_branches
+
+    # tags_mappings = config.tag_mappings
