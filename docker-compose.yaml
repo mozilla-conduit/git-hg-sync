@@ -46,7 +46,7 @@ services:
 
   test:
     <<: *sync_config
-    command: ["--junitxml=/tmp/tests_output/pytest.xml", "tests/"]
+    command: ["--junitxml=/tmp/tests_output/pytest.xml"]
     entrypoint: pytest
     volumes:
       - .:/app

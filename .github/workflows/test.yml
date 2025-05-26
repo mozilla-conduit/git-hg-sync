@@ -1,4 +1,4 @@
-name: Tests
+name: Tests & Lint
 
 on:
   pull_request:
@@ -6,21 +6,23 @@ on:
     branches: main
 
 jobs:
-  Pytest:
+  test:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-      - name: Install dependencies
+
+      - name: create coverage folder
         run: |
-          python -m pip install --upgrade pip pytest pytest-mock
-          pip install -e .
-          ./install_git-cinnabar.sh
-          echo "${{ github.workspace }}" >> $GITHUB_PATH
-      - name: Test with pytest
+          mkdir tests_output
+          chmod a+w tests_output
+
+      - name: Setup docker-compose
+        uses: docker/setup-compose-action@v1
+
+      - name: Build containers
+        run: docker compose build
+
+      - name: Execute tests in the running services
         run: |
-          pytest --junitxml=pytest.xml
+          docker compose run --rm test --junitxml=pytest.xml
