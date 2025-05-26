@@ -16,6 +16,7 @@ dependencies = [
     "mozlog",
     "pydantic",
     "pytest>=8.3.4",
+    "pytest-ruff",
     "sentry_sdk",
     "devtools",
 ]
@@ -23,6 +24,9 @@ dependencies = [
 [project.scripts]
 git-hg-sync = "git_hg_sync.__main__:main"
 git-hg-cli = "git_hg_sync.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "--ruff"
 
 [tool.ruff]
 lint.select = [
