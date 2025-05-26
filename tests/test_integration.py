@@ -95,6 +95,9 @@ def test_full_app(
         "user": "user",
         "push_json_url": "push_json_url",
     }
+    # With the test configuration, tag FIREFOX_128_0esr_RELEASE is mapped onto this
+    # branch.
+    tags_branch = "tags-esr128"
     pulse_utils.send_pulse_message(config.pulse, payload, purge=True)
 
     # execute app
@@ -102,10 +105,12 @@ def test_full_app(
 
     # test
     assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "default")
-    assert "FIREFOX_128_0esr_RELEASE" in hg_cat(hg_remote_repo_path, ".hgtags", "tags")
+    assert "FIREFOX_128_0esr_RELEASE" in hg_cat(
+        hg_remote_repo_path, ".hgtags", tags_branch
+    )
 
     # test tag commit message
-    tag_log = hg_log(hg_remote_repo_path, "tags", ["-T", "{desc}"])
+    tag_log = hg_log(hg_remote_repo_path, tags_branch, ["-T", "{desc}"])
     assert "No bug - Tagging" in tag_log
     assert "FIREFOX_128_0esr_RELEASE" in tag_log
     assert hg_rev(hg_remote_repo_path, "default") in tag_log
