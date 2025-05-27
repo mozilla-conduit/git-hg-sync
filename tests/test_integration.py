@@ -45,6 +45,13 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
 def test_full_app(
     tmp_path: Path,
 ) -> None:
+    # With the test configuration, our local branch and tags should map to those
+    # destinations.
+    local_branch = "esr128"
+    local_tag = "FIREFOX_128_0esr_RELEASE"
+    destination_branch = "default"
+    destination_tags_branch = "tags-esr128"
+
     # Create a remote mercurial repository
     hg_remote_repo_path = tmp_path / "hg-remotes" / "mozilla-esr128"
     hg_remote_repo_path.mkdir(parents=True)
@@ -59,19 +66,19 @@ def test_full_app(
     repo.index.add([foo_path])
     repo.index.commit("add foo.txt")
 
-    # Push to mercurial repository
+    # Push the base to mercurial repository
     subprocess.run(
         [
             "git",
             "push",
             "hg::" + str(hg_remote_repo_path),
-            "esr128:refs/heads/branches/default/tip",
+            f"{local_branch}:refs/heads/branches/{destination_branch}/tip",
         ],
         cwd=git_remote_repo_path,
         check=True,
     )
 
-    assert "FOO CONTENT" in hg_cat(hg_remote_repo_path, "foo.txt", "default")
+    assert "FOO CONTENT" in hg_cat(hg_remote_repo_path, "foo.txt", destination_branch)
 
     bar_path = git_remote_repo_path / "bar.txt"
     bar_path.write_text("BAR CONTENT")
@@ -88,29 +95,26 @@ def test_full_app(
     payload = {
         "type": "push",
         "repo_url": str(git_remote_repo_path),
-        "branches": {"esr128": git_commit_sha},
-        "tags": {"FIREFOX_128_0esr_RELEASE": git_commit_sha},
+        "branches": {local_branch: git_commit_sha},
+        "tags": {local_tag: git_commit_sha},
         "time": 0,
         "push_id": 0,
         "user": "user",
         "push_json_url": "push_json_url",
     }
-    # With the test configuration, tag FIREFOX_128_0esr_RELEASE is mapped onto this
-    # branch.
-    tags_branch = "tags-esr128"
     pulse_utils.send_pulse_message(config.pulse, payload, purge=True)
 
     # execute app
     start_app(config, get_proxy_logger("test"), one_shot=True)
 
     # test
-    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", "default")
+    assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", destination_branch)
     assert "FIREFOX_128_0esr_RELEASE" in hg_cat(
-        hg_remote_repo_path, ".hgtags", tags_branch
+        hg_remote_repo_path, ".hgtags", destination_tags_branch
     )
 
     # test tag commit message
-    tag_log = hg_log(hg_remote_repo_path, tags_branch, ["-T", "{desc}"])
+    tag_log = hg_log(hg_remote_repo_path, destination_tags_branch, ["-T", "{desc}"])
     assert "No bug - Tagging" in tag_log
     assert "FIREFOX_128_0esr_RELEASE" in tag_log
-    assert hg_rev(hg_remote_repo_path, "default") in tag_log
+    assert hg_rev(hg_remote_repo_path, destination_branch) in tag_log
