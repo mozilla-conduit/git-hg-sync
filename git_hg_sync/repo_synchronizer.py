@@ -241,7 +241,7 @@ class RepoSynchronizer:
         # pushes update the metadata locally.
         #
         # WARNING: While we make a direct reference to `refs/cinnabar` here, it MUST NOT
-        # be used explicitely in subsequent git operations. This set of references get
+        # be used explicitly in subsequent git operations. This set of references get
         # updated on every `fetch`, and is therefore not stable enough to be trusted.
         #
         # Repo.git_dir is a PathLike union which is either a str, or a smarter thing. We
