@@ -76,7 +76,7 @@ class RepoSynchronizer:
             "fetching source commits",
             lambda: repo.git.fetch([self._src_remote, *commits_to_fetch]),
         )
-        push_args = [destination_remote]
+        refs_to_push = []
 
         # Handle branch operations
         branch_ops: list[SyncBranchOperation] = [
@@ -84,7 +84,7 @@ class RepoSynchronizer:
         ]
         for branch_operation in branch_ops:
             try:
-                push_args.append(
+                refs_to_push.append(
                     f"{branch_operation.source_commit}:refs/heads/branches/{branch_operation.destination_branch}/tip"
                 )
             except Exception as e:
@@ -112,7 +112,8 @@ class RepoSynchronizer:
                     + ["-c", "cinnabar.data=force"]
                     + ["push"]
                     + ["--dry-run"]
-                    + push_args,
+                    + [destination_remote]
+                    + refs_to_push,
                 ),
             )
 
@@ -185,21 +186,24 @@ class RepoSynchronizer:
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
 
         for tag_branch in tag_branches_to_push:
-            push_args.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
+            refs_to_push.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
 
-        logger.debug(f"Push arguments: {push_args}")
-
-        if len(push_args) == 1:
+        if not refs_to_push:
             logger.warning(
-                "Missing push arguments: no explicit references to push resulted from processing this message."
+                "No explicit references to push resulted from processing this message."
             )
             return
 
-        # Push commits, branches and tags to destination
-        retry(
-            "pushing branch and tags to destination",
-            lambda: repo.git.push(*push_args),
-        )
+        logger.debug(f"References to push: {refs_to_push}")
+
+        for ref in refs_to_push:
+            # Push commits, branches and tags to destination
+            push_args = [destination_remote, ref]
+            logger.debug(f"Push arguments: {push_args}")
+            retry(
+                f"pushing ref to destination {ref}",
+                partial(repo.git.push, push_args),
+            )
 
     def _ensure_cinnabar_metadata(self, repo: Repo, destination_remote: str) -> None:
         """Ensure we have all commits from destination repository.

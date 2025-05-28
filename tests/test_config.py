@@ -58,9 +58,9 @@ def test_load_config_env_override(monkeypatch: pytest.MonkeyPatch) -> None:
         ("{directory}/git-remotes/firefox-releases", "not-a-match", [], []),
         (
             "{directory}/git-remotes/firefox-releases",
-            "esr12",
-            ["{directory}/hg-remotes/mozilla-esr12"],
-            ["default", "mozilla-esr12"],
+            "test12",
+            ["{directory}/hg-remotes/mozilla-test12"],
+            ["mozilla-test12"],
         ),
     ],
 )

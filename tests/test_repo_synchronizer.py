@@ -107,6 +107,24 @@ def test_sync_process(
     tag_author = hg_log(hg_destination, tag_branch, ["-T", "{author}"])
     assert f"{user_info} <{request_user}>" in tag_author
 
+    # We want to make sure we have pushed in multiple steps. Unfortunately, we cannot do
+    # it with a MagicMock on Git.push, as GitPython does Python magic to redirect
+    # commands to `git` without defining them as methods on the class.
+    #
+    # We expect to have pushed tags last, so only one file, .hgtags, should have been
+    # changed.
+    #
+    # So here's a very dodgy way of testing how many files the last push has touched.
+    # We check .hg/store/undo, and it should only list files impacted by the last push,
+    # as well as two metadata files.
+    with (hg_destination / ".hg" / "store" / "undo").open() as undo:
+        undo_log = undo.read()
+        assert '.hgtags' in undo_log
+        assert 'bar.txt' not in undo_log
+        assert len(undo_log.strip().split('\n')) == 3, (
+            "An unexpected number of files was changed in the last push"
+        )
+
 
 def test_sync_process_duplicate_tags(
     git_source: Repo,

@@ -23,7 +23,7 @@ destination_branch = "default"
 
 [[branch_mappings]]
 source_url = "{directory}/git-remotes/firefox-releases"
-branch_pattern = "^(esr\\d+)$"
+branch_pattern = "^(test\\d+)$"
 destination_url = "{directory}/hg-remotes/mozilla-\\1"
 destination_branch = "mozilla-\\1"
 
