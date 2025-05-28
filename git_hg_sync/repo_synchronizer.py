@@ -201,7 +201,7 @@ class RepoSynchronizer:
             push_args = [destination_remote, ref]
             logger.debug(f"Push arguments: {push_args}")
             retry(
-                "pushing branch and tags to destination",
+                f"pushing ref to destination {ref}",
                 partial(repo.git.push, push_args),
             )
 
