@@ -157,7 +157,7 @@ class RepoSynchronizer:
         for tag_operation in tag_ops:
             if tag_operation.tag in tags:
                 logger.warning(
-                    f"Tag {tag_operation.tag} already exists on {destination_url}, skipping ..."
+                    f"Tag {tag_operation.tag} already exists in Cinnabar, skipping ..."
                 )
                 continue
 
