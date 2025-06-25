@@ -122,34 +122,6 @@ class RepoSynchronizer:
             op for op in operations if isinstance(op, SyncTagOperation)
         ]
 
-        for tag_operation in tag_ops:
-            tag_branch = tag_operation.tags_destination_branch
-            remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
-            if repo.git.execute(
-                ["git", "ls-remote", destination_remote, remote_tag_ref],
-                stdout_as_string=True,
-            ):
-                retry(
-                    "fetching tag branch from destination",
-                    # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
-                    partial(
-                        repo.git.fetch,
-                        [
-                            "-f",
-                            destination_remote,
-                            f"{remote_tag_ref}:{tag_branch}",
-                        ],
-                    ),
-                )
-            elif not repo.git.branch("-l", tag_branch):
-                logger.info(f"Creating branch {tag_branch} to receive tags ...")
-                # Create the tags branch at the first commit to be tagged.
-                # The history prior to the tag doesn't matter much, but we know that
-                # the commit to tag will be present in the target repo (unless the configuration
-                # is incorrect). It's as good
-                # a base as any.
-                repo.git.branch(tag_branch, tag_operation.source_commit)
-
         tags = repo.git.cinnabar(["tag", "--list"])
 
         # Create tags
