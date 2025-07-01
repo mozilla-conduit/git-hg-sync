@@ -58,10 +58,12 @@ def git_source(hg_destination: Path, tmp_path: Path) -> Path:
     return git_remote_repo_path
 
 
+@pytest.mark.parametrize("existing_tags_branch", [False, True])
 def test_sync_process(
     git_source: Repo,
     hg_destination: Path,
     tmp_path: Path,
+    existing_tags_branch: bool,
 ) -> None:
     branch = "bar"
     tag_branch = "tags"
@@ -69,6 +71,22 @@ def test_sync_process(
     tag_suffix = "some suffix"
 
     repo = Repo(git_source)
+
+    if existing_tags_branch:
+        # Create a branch in mercurial repository for tags to live in
+        subprocess.run(["hg", "branch", tag_branch], cwd=hg_destination, check=True)
+        tags_branch_test_file = hg_destination / "README.md"
+        tags_branch_test_file.write_text("This branch contains tags.")
+        subprocess.run(
+            ["hg", "add", str(tags_branch_test_file)],
+            cwd=hg_destination,
+            check=True,
+        )
+        subprocess.run(
+            ["hg", "commit", "-m", f"create {tag_branch}"],
+            cwd=hg_destination,
+            check=True,
+        )
 
     # Create a new commit on git repo
     bar_path = git_source / "bar.txt"
@@ -119,9 +137,9 @@ def test_sync_process(
     # as well as two metadata files.
     with (hg_destination / ".hg" / "store" / "undo").open() as undo:
         undo_log = undo.read()
-        assert '.hgtags' in undo_log
-        assert 'bar.txt' not in undo_log
-        assert len(undo_log.strip().split('\n')) == 3, (
+        assert ".hgtags" in undo_log
+        assert "bar.txt" not in undo_log
+        assert len(undo_log.strip().split("\n")) == 3, (
             "An unexpected number of files was changed in the last push"
         )
 

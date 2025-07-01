@@ -124,6 +124,32 @@ class RepoSynchronizer:
             op for op in operations if isinstance(op, SyncTagOperation)
         ]
 
+        for tag_operation in tag_ops:
+            tag_branch = tag_operation.tags_destination_branch
+            # If the destination branch is not present locally, but exists remotely, we
+            # explicitly pull it.
+            if not repo.git.branch("-l", tag_branch) and repo.git.execute(
+                [
+                    "git",
+                    "ls-remote",
+                    destination_remote,
+                    self._cinnabar_branch(tag_branch),
+                ],
+                stdout_as_string=True,
+            ):
+                retry(
+                    f"fetching existing tag branch from {destination_remote}",
+                    # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
+                    partial(
+                        repo.git.fetch,
+                        [
+                            "-f",
+                            destination_remote,
+                            self._cinnabar_branch(tag_branch) + ":" + tag_branch,
+                        ],
+                    ),
+                )
+
         tags = repo.git.cinnabar(["tag", "--list"])
 
         # Create tags
@@ -173,6 +199,12 @@ class RepoSynchronizer:
         for ref in refs_to_push:
             # Push commits, branches and tags to destination
             push_args = [destination_remote, ref]
+            # Force-push the branch if it doesn't exist on the remote yet.
+            if not repo.git.execute(
+                ["git", "ls-remote", destination_remote, self._cinnabar_branch(ref)],
+                stdout_as_string=True,
+            ):
+                push_args.insert(1, "-f")
             logger.debug(f"Push arguments: {push_args}")
             retry(
                 f"pushing ref to destination {ref}",
