@@ -85,7 +85,9 @@ class RepoSynchronizer:
         for branch_operation in branch_ops:
             try:
                 refs_to_push.append(
-                    f"{branch_operation.source_commit}:refs/heads/branches/{branch_operation.destination_branch}/tip"
+                    branch_operation.source_commit
+                    + ":"
+                    + self._cinnabar_branch(branch_operation.destination_branch)
                 )
             except Exception as e:
                 raise RepoSyncError(branch_operation, e) from e
@@ -203,3 +205,6 @@ class RepoSynchronizer:
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:
         return repo.git.cinnabar(["git2hg", git_commit]).strip()
+
+    def _cinnabar_branch(self, branch: str) -> str:
+        return f"refs/heads/branches/{branch}/tip"
