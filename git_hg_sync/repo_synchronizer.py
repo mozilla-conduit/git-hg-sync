@@ -127,7 +127,7 @@ class RepoSynchronizer:
         for tag_operation in tag_ops:
             tag_branch = tag_operation.tags_destination_branch
             # If the destination branch is not present locally, but exists remotely, we
-            # explicitly pull it.
+            # explicitly fetch it.
             if not repo.git.branch("-l", tag_branch) and repo.git.execute(
                 [
                     "git",

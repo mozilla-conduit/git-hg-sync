@@ -104,3 +104,11 @@ destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-dev"
 tags_destination_branch = "tags-unified-1973880"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/test-repo"
+tag_pattern = "^(DEV)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
+tags_destination_branch = "tags-unified-1973880"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
