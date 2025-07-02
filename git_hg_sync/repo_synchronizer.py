@@ -204,7 +204,7 @@ class RepoSynchronizer:
                 ["git", "ls-remote", destination_remote, self._cinnabar_branch(ref)],
                 stdout_as_string=True,
             ):
-                push_args.insert(1, "-f")
+                push_args = ["-f"] + push_args
             logger.debug(f"Push arguments: {push_args}")
             retry(
                 f"pushing ref to destination {ref}",
