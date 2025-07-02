@@ -201,10 +201,10 @@ class RepoSynchronizer:
             push_args = [destination_remote, ref]
             # Force-push the branch if it doesn't exist on the remote yet.
             if not repo.git.execute(
-                ["git", "ls-remote", destination_remote, self._cinnabar_branch(ref)],
+                ["git", "ls-remote", destination_remote, ref.split(":")[1]],
                 stdout_as_string=True,
             ):
-                push_args.insert(1, "-f")
+                push_args = ["-f"] + push_args
             logger.debug(f"Push arguments: {push_args}")
             retry(
                 f"pushing ref to destination {ref}",
