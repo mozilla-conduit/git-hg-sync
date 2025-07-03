@@ -208,7 +208,7 @@ class RepoSynchronizer:
                 push_args = ["-f"] + push_args
             logger.debug(f"Push arguments: {push_args}")
             retry(
-                f"pushing ref to destination {ref}",
+                f"pushing ref {ref} to destination {destination_url}",
                 partial(repo.git.push, push_args),
             )
 
@@ -227,12 +227,12 @@ class RepoSynchronizer:
         cinnabar_metadata_dir = Path(repo.git_dir) / "refs/cinnabar/metadata"
         if cinnabar_metadata_dir.exists():
             logger.debug(
-                f"Cinnabar metadata already present in  {cinnabar_metadata_dir}, not updating"
+                f"Cinnabar metadata already present in {cinnabar_metadata_dir}, not updating"
             )
             return
 
         retry(
-            "fetching commits from destination",
+            f"fetching commits from {destination_remote}",
             lambda: self.fetch_all_from_remote(repo, destination_remote),
         )
 
