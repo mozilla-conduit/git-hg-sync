@@ -1,10 +1,12 @@
 import subprocess
 from pathlib import Path
+from unittest import mock
 
 import pytest
 from git import Repo
 from utils import hg_cat, hg_log, hg_rev
 
+from git_hg_sync import repo_synchronizer
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import PulseConfig, TrackedRepository
 from git_hg_sync.mapping import SyncBranchOperation, SyncTagOperation
@@ -148,7 +150,10 @@ def test_sync_process_duplicate_tags(
     git_source: Repo,
     hg_destination: Path,
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Processing duplicate tags should be a successful noop."""
+
     tag_branch = "tags"
     tag = "mytag"
     tag_suffix = "some suffix"
@@ -170,11 +175,33 @@ def test_sync_process_duplicate_tags(
     ]
 
     request_user = "request_user@example.com"
-    syncrepos.sync(str(hg_destination), operations, request_user)
-    # Re-run the operation
+
+    logger_mock = mock.MagicMock()
+    monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
     syncrepos.sync(str(hg_destination), operations, request_user)
 
-    # test tag commit message
+    # As we can't mock the GitPython logic, we inspect our debug logs instead.
+    assert any(
+        f"Push arguments: ['-f', 'hg::{hg_destination}', " in warning.args[0]
+        for warning in logger_mock.debug.call_args_list
+    ), "Expected a force-push of the non-existent tag branch on first run."
+
+    # Re-run the operation
+    second_logger_mock = mock.MagicMock()
+    monkeypatch.setattr(repo_synchronizer, "logger", second_logger_mock)
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # The last warning should tell us about the duplicate tags.
+    assert (
+        f"Tag {tag} already exists"
+        in second_logger_mock.warning.call_args_list[-1].args[0]
+    ), "Expected a warning about tag duplication."
+    assert any(
+        f"Push arguments: ['hg::{hg_destination}', " in warning.args[0]
+        for warning in second_logger_mock.debug.call_args_list
+    ), "Expected a non force-push of the now-existent tag branch on second run."
+
+    # Test the tag commit message.
     tag_log = hg_log(hg_destination, tag_branch, ["-T", "{desc}"])
     assert tag in tag_log
 
