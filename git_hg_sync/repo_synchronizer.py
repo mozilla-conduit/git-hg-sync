@@ -1,4 +1,5 @@
 import os
+import re
 from functools import partial
 from pathlib import Path
 
@@ -151,17 +152,9 @@ class RepoSynchronizer:
                     ),
                 )
 
-        tags = repo.git.cinnabar(["tag", "--list"])
-
         # Create tags
         tag_branches_to_push = set()
         for tag_operation in tag_ops:
-            if tag_operation.tag in tags:
-                logger.warning(
-                    f"Tag {tag_operation.tag} already exists in Cinnabar, skipping ..."
-                )
-                continue
-
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
@@ -181,6 +174,13 @@ class RepoSynchronizer:
                         tag_operation.source_commit,
                     ],
                 )
+            except GitCommandError as exc:
+                if re.search("ERROR tag .* already exists", exc.stderr):
+                    logger.warning(
+                        f"Tag {tag_operation.tag} already exists in Cinnabar, skipping for {destination_url}..."
+                    )
+                else:
+                    raise RepoSyncError(tag_operation, exc) from exc
             except Exception as exc:
                 raise RepoSyncError(tag_operation, exc) from exc
 
