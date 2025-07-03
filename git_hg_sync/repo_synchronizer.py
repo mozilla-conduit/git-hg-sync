@@ -1,8 +1,10 @@
 import os
+import re
 from functools import partial
 from pathlib import Path
 
-from git import Repo, exc
+from git import Repo
+from git.exc import GitCommandError
 from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
@@ -50,10 +52,10 @@ class RepoSynchronizer:
     def fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
         try:
             repo.git.execute(["git", "-c", "cinnabar.graft=true", "fetch", remote])
-        except exc.GitCommandError as e:
+        except GitCommandError as exc:
             # can't fetch if repo is empty
-            if "fatal: couldn't find remote ref HEAD" in e.stderr:
-                raise e
+            if "fatal: couldn't find remote ref HEAD" in exc.stderr:
+                raise exc
 
     def sync(
         self, destination_url: str, operations: list[SyncOperation], request_user: str
@@ -89,8 +91,8 @@ class RepoSynchronizer:
                     + ":"
                     + self._cinnabar_branch(branch_operation.destination_branch)
                 )
-            except Exception as e:
-                raise RepoSyncError(branch_operation, e) from e
+            except Exception as exc:
+                raise RepoSyncError(branch_operation, exc) from exc
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
         os.environ["GIT_AUTHOR_EMAIL"] = request_user
@@ -150,17 +152,9 @@ class RepoSynchronizer:
                     ),
                 )
 
-        tags = repo.git.cinnabar(["tag", "--list"])
-
         # Create tags
         tag_branches_to_push = set()
         for tag_operation in tag_ops:
-            if tag_operation.tag in tags:
-                logger.warning(
-                    f"Tag {tag_operation.tag} already exists in Cinnabar, skipping ..."
-                )
-                continue
-
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
@@ -180,8 +174,15 @@ class RepoSynchronizer:
                         tag_operation.source_commit,
                     ],
                 )
-            except Exception as e:
-                raise RepoSyncError(tag_operation, e) from e
+            except GitCommandError as exc:
+                if re.search("ERROR tag .* already exists", exc.stderr):
+                    logger.warning(
+                        f"Tag {tag_operation.tag} already exists in Cinnabar, skipping for {destination_url}..."
+                    )
+                else:
+                    raise RepoSyncError(tag_operation, exc) from exc
+            except Exception as exc:
+                raise RepoSyncError(tag_operation, exc) from exc
 
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
 
@@ -201,13 +202,13 @@ class RepoSynchronizer:
             push_args = [destination_remote, ref]
             # Force-push the branch if it doesn't exist on the remote yet.
             if not repo.git.execute(
-                ["git", "ls-remote", destination_remote, self._cinnabar_branch(ref)],
+                ["git", "ls-remote", destination_remote, ref.split(":")[1]],
                 stdout_as_string=True,
             ):
                 push_args = ["-f"] + push_args
             logger.debug(f"Push arguments: {push_args}")
             retry(
-                f"pushing ref to destination {ref}",
+                f"pushing ref {ref} to destination {destination_url}",
                 partial(repo.git.push, push_args),
             )
 
@@ -226,7 +227,7 @@ class RepoSynchronizer:
         cinnabar_metadata_dir = Path(repo.git_dir) / "refs/cinnabar/metadata"
         if cinnabar_metadata_dir.exists():
             logger.debug(
-                f"Cinnabar metadata already present in  {cinnabar_metadata_dir}, not updating"
+                f"Cinnabar metadata already present in {cinnabar_metadata_dir}, not updating"
             )
             return
 
