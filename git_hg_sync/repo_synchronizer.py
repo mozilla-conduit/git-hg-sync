@@ -2,7 +2,8 @@ import os
 from functools import partial
 from pathlib import Path
 
-from git import Repo, exc
+from git import Repo
+from git.exc import GitCommandError
 from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
@@ -50,10 +51,10 @@ class RepoSynchronizer:
     def fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
         try:
             repo.git.execute(["git", "-c", "cinnabar.graft=true", "fetch", remote])
-        except exc.GitCommandError as e:
+        except GitCommandError as exc:
             # can't fetch if repo is empty
-            if "fatal: couldn't find remote ref HEAD" in e.stderr:
-                raise e
+            if "fatal: couldn't find remote ref HEAD" in exc.stderr:
+                raise exc
 
     def sync(
         self, destination_url: str, operations: list[SyncOperation], request_user: str
@@ -89,8 +90,8 @@ class RepoSynchronizer:
                     + ":"
                     + self._cinnabar_branch(branch_operation.destination_branch)
                 )
-            except Exception as e:
-                raise RepoSyncError(branch_operation, e) from e
+            except Exception as exc:
+                raise RepoSyncError(branch_operation, exc) from exc
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
         os.environ["GIT_AUTHOR_EMAIL"] = request_user
@@ -180,8 +181,8 @@ class RepoSynchronizer:
                         tag_operation.source_commit,
                     ],
                 )
-            except Exception as e:
-                raise RepoSyncError(tag_operation, e) from e
+            except Exception as exc:
+                raise RepoSyncError(tag_operation, exc) from exc
 
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
 
