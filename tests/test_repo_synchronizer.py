@@ -198,7 +198,7 @@ def test_sync_process_duplicate_tags(
     monkeypatch.setattr(repo_synchronizer, "logger", second_logger_mock)
     syncrepos.sync(str(hg_destination), operations, request_user)
 
-    # The last warning should tell us about the duplicate tage.
+    # The last warning should tell us about the duplicate tags.
     assert (
         f"Tag {tag} already exists"
         in second_logger_mock.warning.call_args_list[-1].args[0]
