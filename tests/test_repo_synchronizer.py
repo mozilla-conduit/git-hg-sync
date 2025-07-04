@@ -215,6 +215,50 @@ def test_sync_process_duplicate_tags(
     assert tag in tag_log
 
 
+def test_sync_process_multiple_destinations(
+    make_hg_repo: Callable,
+    git_source: Repo,
+    hg_destination: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Processing the same tag to multiple destinations should update all repos."""
+    tag_branch = "tags"
+    tag = "mytag"
+    tag_suffix = "some suffix"
+
+    hg_destination2 = make_hg_repo(tmp_path, "second_repo")
+
+    repo = Repo(git_source)
+
+    git_commit_sha = repo.rev_parse("HEAD")
+
+    # Sync new commit with mercurial repository
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncTagOperation(
+            source_commit=git_commit_sha,
+            tag=tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
+        ),
+    ]
+
+    request_user = "request_user@example.com"
+
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # Sync the tags to the second repo.
+    logger_mock = mock.MagicMock()
+    monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
+    syncrepos.sync(str(hg_destination2), operations, request_user)
+
+    # Test the tag commit message.
+    tag_log = hg_log(hg_destination2, tag_branch, ["-T", "{desc}"])
+    assert tag in tag_log
+
+
 def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
     connection = get_connection(pulse_config)
     queue = get_queue(pulse_config)
