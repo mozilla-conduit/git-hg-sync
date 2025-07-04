@@ -1,10 +1,13 @@
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
+from unittest import mock
 
 import pytest
 from git import Repo
 from utils import hg_cat, hg_log, hg_rev
 
+from git_hg_sync import repo_synchronizer
 from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import PulseConfig, TrackedRepository
 from git_hg_sync.mapping import SyncBranchOperation, SyncTagOperation
@@ -22,12 +25,20 @@ def tracked_repositories() -> list[TrackedRepository]:
 
 
 @pytest.fixture
-def hg_destination(tmp_path: Path) -> Path:
-    hg_remote_repo_path = tmp_path / "hg-remotes" / "myrepo"
-    hg_remote_repo_path.mkdir(parents=True)
-    subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
+def make_hg_repo() -> Callable:
+    def _make_hg_repo(path: Path, repo_name: str) -> Path:
+        hg_remote_repo_path = path / "hg-remotes" / repo_name
+        hg_remote_repo_path.mkdir(parents=True)
+        subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
 
-    return hg_remote_repo_path
+        return hg_remote_repo_path
+
+    return _make_hg_repo
+
+
+@pytest.fixture
+def hg_destination(make_hg_repo: Callable, tmp_path: Path) -> Path:
+    return make_hg_repo(tmp_path, "myrepo")
 
 
 @pytest.fixture
@@ -58,10 +69,12 @@ def git_source(hg_destination: Path, tmp_path: Path) -> Path:
     return git_remote_repo_path
 
 
+@pytest.mark.parametrize("existing_tags_branch", [False, True])
 def test_sync_process(
     git_source: Repo,
     hg_destination: Path,
     tmp_path: Path,
+    existing_tags_branch: bool,
 ) -> None:
     branch = "bar"
     tag_branch = "tags"
@@ -69,6 +82,22 @@ def test_sync_process(
     tag_suffix = "some suffix"
 
     repo = Repo(git_source)
+
+    if existing_tags_branch:
+        # Create a branch in mercurial repository for tags to live in
+        subprocess.run(["hg", "branch", tag_branch], cwd=hg_destination, check=True)
+        tags_branch_test_file = hg_destination / "README.md"
+        tags_branch_test_file.write_text("This branch contains tags.")
+        subprocess.run(
+            ["hg", "add", str(tags_branch_test_file)],
+            cwd=hg_destination,
+            check=True,
+        )
+        subprocess.run(
+            ["hg", "commit", "-m", f"create {tag_branch}"],
+            cwd=hg_destination,
+            check=True,
+        )
 
     # Create a new commit on git repo
     bar_path = git_source / "bar.txt"
@@ -119,9 +148,9 @@ def test_sync_process(
     # as well as two metadata files.
     with (hg_destination / ".hg" / "store" / "undo").open() as undo:
         undo_log = undo.read()
-        assert '.hgtags' in undo_log
-        assert 'bar.txt' not in undo_log
-        assert len(undo_log.strip().split('\n')) == 3, (
+        assert ".hgtags" in undo_log
+        assert "bar.txt" not in undo_log
+        assert len(undo_log.strip().split("\n")) == 3, (
             "An unexpected number of files was changed in the last push"
         )
 
@@ -130,7 +159,10 @@ def test_sync_process_duplicate_tags(
     git_source: Repo,
     hg_destination: Path,
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Processing duplicate tags should be a successful noop."""
+
     tag_branch = "tags"
     tag = "mytag"
     tag_suffix = "some suffix"
@@ -152,12 +184,78 @@ def test_sync_process_duplicate_tags(
     ]
 
     request_user = "request_user@example.com"
-    syncrepos.sync(str(hg_destination), operations, request_user)
-    # Re-run the operation
+
+    logger_mock = mock.MagicMock()
+    monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
     syncrepos.sync(str(hg_destination), operations, request_user)
 
-    # test tag commit message
+    # As we can't mock the GitPython logic, we inspect our debug logs instead.
+    assert any(
+        f"Push arguments: ['-f', 'hg::{hg_destination}', " in warning.args[0]
+        for warning in logger_mock.debug.call_args_list
+    ), "Expected a force-push of the non-existent tag branch on first run."
+
+    # Re-run the operation
+    second_logger_mock = mock.MagicMock()
+    monkeypatch.setattr(repo_synchronizer, "logger", second_logger_mock)
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # The last warning should tell us about the duplicate tags.
+    assert (
+        f"Tag {tag} already exists"
+        in second_logger_mock.warning.call_args_list[-1].args[0]
+    ), "Expected a warning about tag duplication."
+    assert any(
+        f"Push arguments: ['hg::{hg_destination}', " in warning.args[0]
+        for warning in second_logger_mock.debug.call_args_list
+    ), "Expected a non force-push of the now-existent tag branch on second run."
+
+    # Test the tag commit message.
     tag_log = hg_log(hg_destination, tag_branch, ["-T", "{desc}"])
+    assert tag in tag_log
+
+
+def test_sync_process_multiple_destinations(
+    make_hg_repo: Callable,
+    git_source: Repo,
+    hg_destination: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Processing the same tag to multiple destinations should update all repos."""
+    tag_branch = "tags"
+    tag = "mytag"
+    tag_suffix = "some suffix"
+
+    hg_destination2 = make_hg_repo(tmp_path, "second_repo")
+
+    repo = Repo(git_source)
+
+    git_commit_sha = repo.rev_parse("HEAD")
+
+    # Sync new commit with mercurial repository
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncTagOperation(
+            source_commit=git_commit_sha,
+            tag=tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
+        ),
+    ]
+
+    request_user = "request_user@example.com"
+
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # Sync the tags to the second repo.
+    logger_mock = mock.MagicMock()
+    monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
+    syncrepos.sync(str(hg_destination2), operations, request_user)
+
+    # Test the tag commit message.
+    tag_log = hg_log(hg_destination2, tag_branch, ["-T", "{desc}"])
     assert tag in tag_log
 
 
