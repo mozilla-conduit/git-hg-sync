@@ -161,6 +161,8 @@ def test_sync_process_duplicate_tags(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Processing duplicate tags should be a successful noop."""
+
     tag_branch = "tags"
     tag = "mytag"
     tag_suffix = "some suffix"
