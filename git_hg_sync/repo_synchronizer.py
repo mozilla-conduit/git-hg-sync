@@ -226,9 +226,7 @@ class RepoSynchronizer:
         if repo.git.execute(
             ["git", "rev-parse", "--revs-only", "refs/cinnabar/metadata"]
         ):
-            logger.debug(
-                f"Cinnabar metadata already present in {cinnabar_metadata_dir}, not updating"
-            )
+            logger.debug("Cinnabar metadata already present, not updating")
             return
 
         retry(
