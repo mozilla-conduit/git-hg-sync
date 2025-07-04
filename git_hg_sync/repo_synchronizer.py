@@ -51,7 +51,9 @@ class RepoSynchronizer:
 
     def fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
         try:
-            repo.git.execute(["git", "-c", "cinnabar.graft=true", "fetch", remote])
+            repo.git.execute(
+                ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote]
+            )
         except GitCommandError as exc:
             # can't fetch if repo is empty
             if "fatal: couldn't find remote ref HEAD" in exc.stderr:
@@ -221,11 +223,9 @@ class RepoSynchronizer:
 
         # This is needed only on first initialisation of the repository, as subsequent
         # pushes update the metadata locally.
-
-        # Repo.git_dir is a PathLike union which is either a str, or a smarter thing. We
-        # assume the less smart one.
-        cinnabar_metadata_dir = Path(repo.git_dir) / "refs/cinnabar/metadata"
-        if cinnabar_metadata_dir.exists():
+        if repo.git.execute(
+            ["git", "rev-parse", "--revs-only", "refs/cinnabar/metadata"]
+        ):
             logger.debug(
                 f"Cinnabar metadata already present in {cinnabar_metadata_dir}, not updating"
             )
