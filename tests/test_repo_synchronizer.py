@@ -1,4 +1,5 @@
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 from unittest import mock
 
@@ -24,12 +25,20 @@ def tracked_repositories() -> list[TrackedRepository]:
 
 
 @pytest.fixture
-def hg_destination(tmp_path: Path) -> Path:
-    hg_remote_repo_path = tmp_path / "hg-remotes" / "myrepo"
-    hg_remote_repo_path.mkdir(parents=True)
-    subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
+def make_hg_repo() -> Callable:
+    def _make_hg_repo(path: Path, repo_name: str) -> Path:
+        hg_remote_repo_path = path / "hg-remotes" / repo_name
+        hg_remote_repo_path.mkdir(parents=True)
+        subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
 
-    return hg_remote_repo_path
+        return hg_remote_repo_path
+
+    return _make_hg_repo
+
+
+@pytest.fixture
+def hg_destination(make_hg_repo: Callable, tmp_path: Path) -> Path:
+    return make_hg_repo(tmp_path, "myrepo")
 
 
 @pytest.fixture
