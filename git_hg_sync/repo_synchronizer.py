@@ -62,6 +62,10 @@ class RepoSynchronizer:
             if "fatal: couldn't find remote ref HEAD" in e.stderr:
                 raise e
 
+        if remote.startswith("hg::"):
+            self._log_git_execute(repo,
+                ["git", "cinnabar", "fetch", "--tags"], verbose)
+
     @staticmethod
     def _log_git_execute(repo: Repo, command: list[str], verbose: bool = False) -> None:
         proc = repo.git.execute(
