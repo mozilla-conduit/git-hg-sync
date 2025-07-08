@@ -174,6 +174,15 @@ def set_subparser_fetchrepo(
         default=False,
         help="Fetch destination remotes in adition to the source url",
     )
+    subparser.add_argument(
+        "-v",
+        "--verbose",
+        type=bool,
+        action=argparse.BooleanOptionalAction,
+        required=False,
+        default=False,
+        help="Show output from subprocesses",
+    )
     subparser.set_defaults(func=fetchrepo)
 
 
@@ -196,7 +205,7 @@ def fetchrepo(
     repo_clone = syncer.get_clone_repo()
 
     logger.info(f"Fetching commits from {repo.url} ...")
-    repo_clone.git.fetch([repo.url])
+    syncer.fetch_all_from_remote(repo_clone, repo.url, args.verbose)
 
     if args.fetch_all:
         # We use a set for efficient lookup, but we want to keep the order from the
@@ -222,7 +231,7 @@ def fetchrepo(
         for remote in remotes:
             logger.info(f"Fetching commits from remote {remote} ...")
             cinnabar_remote = f"hg::{remote}"
-            syncer.fetch_all_from_remote(repo_clone, cinnabar_remote)
+            syncer.fetch_all_from_remote(repo_clone, cinnabar_remote, args.verbose)
 
 
 def main() -> None:
