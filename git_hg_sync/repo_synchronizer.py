@@ -1,8 +1,11 @@
+import io
 import os
+import threading
 from functools import partial
 from pathlib import Path
 
-from git import Repo, exc
+from git import Repo
+from git.exc import GitCommandError
 from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
@@ -47,13 +50,53 @@ class RepoSynchronizer:
     def _commit_has_mercurial_metadata(self, repo: Repo, git_commit: str) -> bool:
         return not all(char == "0" for char in self._git2hg(repo, git_commit))
 
-    def fetch_all_from_remote(self, repo: Repo, remote: str) -> None:
+    def fetch_all_from_remote(
+        self, repo: Repo, remote: str, verbose: bool = False
+    ) -> None:
         try:
-            repo.git.execute(["git", "-c", "cinnabar.graft=true", "fetch", remote])
-        except exc.GitCommandError as e:
+            self._log_git_execute(
+                repo,
+                ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote],
+                verbose,
+            )
+
+        except GitCommandError as e:
             # can't fetch if repo is empty
             if "fatal: couldn't find remote ref HEAD" in e.stderr:
                 raise e
+
+        if remote.startswith("hg::"):
+            self._log_git_execute(repo, ["git", "cinnabar", "fetch", "--tags"], verbose)
+
+    @staticmethod
+    def _log_git_execute(repo: Repo, command: list[str], verbose: bool = False) -> None:
+        proc = repo.git.execute(
+            command,
+            stdout_as_string=verbose,
+            as_process=verbose,
+        )
+        if verbose:
+            logger.info(f"Running `{' '.join(command)}` as PID {proc.pid}")
+
+            stdout_thread = threading.Thread(
+                target=RepoSynchronizer._stream_output,
+                args=(proc.stdout, f"{proc.pid}/STDOUT"),
+            )
+            stderr_thread = threading.Thread(
+                target=RepoSynchronizer._stream_output,
+                args=(proc.stderr, f"{proc.pid}/STDERR"),
+            )
+            stdout_thread.start()
+            stderr_thread.start()
+            stdout_thread.join()
+            stderr_thread.join()
+
+            proc.wait()
+
+    @staticmethod
+    def _stream_output(stream: io.BufferedReader, label: str) -> None:
+        for line in iter(stream.readline, b""):
+            logger.info(f"{label}: {line.decode().strip()}")
 
     def sync(
         self, destination_url: str, operations: list[SyncOperation], request_user: str
