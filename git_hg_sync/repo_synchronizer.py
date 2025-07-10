@@ -54,8 +54,11 @@ class RepoSynchronizer:
         self, repo: Repo, remote: str, verbose: bool = False
     ) -> None:
         try:
-            self._log_git_execute(repo,
-                ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote], verbose)
+            self._log_git_execute(
+                repo,
+                ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote],
+                verbose,
+            )
 
         except GitCommandError as e:
             # can't fetch if repo is empty
@@ -63,8 +66,7 @@ class RepoSynchronizer:
                 raise e
 
         if remote.startswith("hg::"):
-            self._log_git_execute(repo,
-                ["git", "cinnabar", "fetch", "--tags"], verbose)
+            self._log_git_execute(repo, ["git", "cinnabar", "fetch", "--tags"], verbose)
 
     @staticmethod
     def _log_git_execute(repo: Repo, command: list[str], verbose: bool = False) -> None:
@@ -76,15 +78,13 @@ class RepoSynchronizer:
         if verbose:
             logger.info(f"Running `{' '.join(command)}` as PID {proc.pid}")
 
-            def stream_output(stream: io.BufferedReader, label: str) -> None:
-                for line in iter(stream.readline, b""):
-                    logger.info(f"{label}: {line.decode().strip()}")
-
             stdout_thread = threading.Thread(
-                target=stream_output, args=(proc.stdout, f"{proc.pid}/STDOUT")
+                target=RepoSynchronizer._stream_output,
+                args=(proc.stdout, f"{proc.pid}/STDOUT"),
             )
             stderr_thread = threading.Thread(
-                target=stream_output, args=(proc.stderr, f"{proc.pid}/STDERR")
+                target=RepoSynchronizer._stream_output,
+                args=(proc.stderr, f"{proc.pid}/STDERR"),
             )
             stdout_thread.start()
             stderr_thread.start()
@@ -92,6 +92,11 @@ class RepoSynchronizer:
             stderr_thread.join()
 
             proc.wait()
+
+    @staticmethod
+    def _stream_output(stream: io.BufferedReader, label: str) -> None:
+        for line in iter(stream.readline, b""):
+            logger.info(f"{label}: {line.decode().strip()}")
 
     def sync(
         self, destination_url: str, operations: list[SyncOperation], request_user: str
