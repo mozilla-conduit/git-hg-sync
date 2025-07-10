@@ -89,9 +89,7 @@ class RepoSynchronizer:
         for branch_operation in branch_ops:
             try:
                 refs_to_push.append(
-                    branch_operation.source_commit
-                    + ":"
-                    + self._cinnabar_branch(branch_operation.destination_branch)
+                    f"{branch_operation.source_commit}:{self._cinnabar_branch(branch_operation.destination_branch)}"
                 )
             except Exception as exc:
                 raise RepoSyncError(branch_operation, exc) from exc
@@ -132,7 +130,8 @@ class RepoSynchronizer:
             tag_branch = tag_operation.tags_destination_branch
             # If the destination branch is not present locally, but exists remotely, we
             # explicitly fetch it.
-            if not repo.git.branch("-l", tag_branch) and repo.git.execute(
+            local_branch_exists = repo.git.branch("-l", tag_branch)
+            remote_branch_exists = repo.git.execute(
                 [
                     "git",
                     "ls-remote",
@@ -140,7 +139,8 @@ class RepoSynchronizer:
                     self._cinnabar_branch(tag_branch),
                 ],
                 stdout_as_string=True,
-            ):
+            )
+            if not local_branch_exists and remote_branch_exists:
                 retry(
                     f"fetching existing tag branch from {destination_remote}",
                     # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
@@ -149,7 +149,7 @@ class RepoSynchronizer:
                         [
                             "-f",
                             destination_remote,
-                            self._cinnabar_branch(tag_branch) + ":" + tag_branch,
+                            f"{self._cinnabar_branch(tag_branch)}:{tag_branch}",
                         ],
                     ),
                 )
@@ -189,7 +189,7 @@ class RepoSynchronizer:
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
 
         for tag_branch in tag_branches_to_push:
-            refs_to_push.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
+            refs_to_push.append(f"{tag_branch}:{self._cinnabar_branch(tag_branch)}")
 
         if not refs_to_push:
             logger.warning(
@@ -203,6 +203,7 @@ class RepoSynchronizer:
             # Push commits, branches and tags to destination
             push_args = [destination_remote, ref]
             # Force-push the branch if it doesn't exist on the remote yet.
+            # This is necessary to create new branches, more specifically for tags.
             if not repo.git.execute(
                 ["git", "ls-remote", destination_remote, ref.split(":")[1]],
                 stdout_as_string=True,
