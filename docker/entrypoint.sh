@@ -10,10 +10,11 @@ export GIT_SSH_COMMAND="ssh -oStrictHostKeyChecking=accept-new -l ${SSH_USERNAME
 
 case "${1:-}" in
   "bash"|"sh")
-    exec ${1}
+    exec "${@}"
     ;;
   "exec")
-    exec ${2:-bash}
+    shift
+    exec "${@:-bash}"
     ;;
   *)
     # start web server (for dockerflow)

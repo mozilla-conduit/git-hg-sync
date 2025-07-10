@@ -17,6 +17,7 @@ dependencies = [
     "pydantic",
     "pytest>=8.3.4",
     "pytest-ruff",
+    "pytest-cov",
     "sentry_sdk",
     "devtools",
 ]
@@ -26,7 +27,7 @@ git-hg-sync = "git_hg_sync.__main__:main"
 git-hg-cli = "git_hg_sync.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "--ruff"
+addopts = "--ruff --cov --cov-report html"
 
 [tool.ruff]
 lint.select = [

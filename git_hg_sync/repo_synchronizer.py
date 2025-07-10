@@ -1,5 +1,6 @@
 import io
 import os
+import re
 import threading
 from functools import partial
 from pathlib import Path
@@ -60,10 +61,10 @@ class RepoSynchronizer:
                 verbose,
             )
 
-        except GitCommandError as e:
+        except GitCommandError as exc:
             # can't fetch if repo is empty
-            if "fatal: couldn't find remote ref HEAD" in e.stderr:
-                raise e
+            if "fatal: couldn't find remote ref HEAD" in exc.stderr:
+                raise exc
 
         if remote.startswith("hg::"):
             self._log_git_execute(repo, ["git", "cinnabar", "fetch", "--tags"], verbose)
@@ -128,10 +129,10 @@ class RepoSynchronizer:
         for branch_operation in branch_ops:
             try:
                 refs_to_push.append(
-                    f"{branch_operation.source_commit}:refs/heads/branches/{branch_operation.destination_branch}/tip"
+                    f"{branch_operation.source_commit}:{self._cinnabar_branch(branch_operation.destination_branch)}"
                 )
-            except Exception as e:
-                raise RepoSyncError(branch_operation, e) from e
+            except Exception as exc:
+                raise RepoSyncError(branch_operation, exc) from exc
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
         os.environ["GIT_AUTHOR_EMAIL"] = request_user
@@ -167,43 +168,35 @@ class RepoSynchronizer:
 
         for tag_operation in tag_ops:
             tag_branch = tag_operation.tags_destination_branch
-            remote_tag_ref = f"refs/heads/branches/{tag_branch}/tip"
-            if repo.git.execute(
-                ["git", "ls-remote", destination_remote, remote_tag_ref],
+            # If the destination branch is not present locally, but exists remotely, we
+            # explicitly fetch it.
+            local_branch_exists = repo.git.branch("-l", tag_branch)
+            remote_branch_exists = repo.git.execute(
+                [
+                    "git",
+                    "ls-remote",
+                    destination_remote,
+                    self._cinnabar_branch(tag_branch),
+                ],
                 stdout_as_string=True,
-            ):
+            )
+            if not local_branch_exists and remote_branch_exists:
                 retry(
-                    "fetching tag branch from destination",
+                    f"fetching existing tag branch from {destination_remote}",
                     # https://docs.python-guide.org/writing/gotchas/#late-binding-closures
                     partial(
                         repo.git.fetch,
                         [
                             "-f",
                             destination_remote,
-                            f"{remote_tag_ref}:{tag_branch}",
+                            f"{self._cinnabar_branch(tag_branch)}:{tag_branch}",
                         ],
                     ),
                 )
-            elif not repo.git.branch("-l", tag_branch):
-                logger.info(f"Creating branch {tag_branch} to receive tags ...")
-                # Create the tags branch at the first commit to be tagged.
-                # The history prior to the tag doesn't matter much, but we know that
-                # the commit to tag will be present in the target repo (unless the configuration
-                # is incorrect). It's as good
-                # a base as any.
-                repo.git.branch(tag_branch, tag_operation.source_commit)
-
-        tags = repo.git.cinnabar(["tag", "--list"])
 
         # Create tags
         tag_branches_to_push = set()
         for tag_operation in tag_ops:
-            if tag_operation.tag in tags:
-                logger.warning(
-                    f"Tag {tag_operation.tag} already exists on {destination_url}, skipping ..."
-                )
-                continue
-
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
@@ -223,13 +216,20 @@ class RepoSynchronizer:
                         tag_operation.source_commit,
                     ],
                 )
-            except Exception as e:
-                raise RepoSyncError(tag_operation, e) from e
+            except GitCommandError as exc:
+                if re.search("ERROR tag .* already exists", exc.stderr):
+                    logger.warning(
+                        f"Tag {tag_operation.tag} already exists in Cinnabar, skipping for {destination_url}..."
+                    )
+                else:
+                    raise RepoSyncError(tag_operation, exc) from exc
+            except Exception as exc:
+                raise RepoSyncError(tag_operation, exc) from exc
 
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
 
         for tag_branch in tag_branches_to_push:
-            refs_to_push.append(f"{tag_branch}:refs/heads/branches/{tag_branch}/tip")
+            refs_to_push.append(f"{tag_branch}:{self._cinnabar_branch(tag_branch)}")
 
         if not refs_to_push:
             logger.warning(
@@ -242,9 +242,16 @@ class RepoSynchronizer:
         for ref in refs_to_push:
             # Push commits, branches and tags to destination
             push_args = [destination_remote, ref]
+            # Force-push the branch if it doesn't exist on the remote yet.
+            # This is necessary to create new branches, more specifically for tags.
+            if not repo.git.execute(
+                ["git", "ls-remote", destination_remote, ref.split(":")[1]],
+                stdout_as_string=True,
+            ):
+                push_args = ["-f"] + push_args
             logger.debug(f"Push arguments: {push_args}")
             retry(
-                f"pushing ref to destination {ref}",
+                f"pushing ref {ref} to destination {destination_url}",
                 partial(repo.git.push, push_args),
             )
 
@@ -257,20 +264,19 @@ class RepoSynchronizer:
 
         # This is needed only on first initialisation of the repository, as subsequent
         # pushes update the metadata locally.
-
-        # Repo.git_dir is a PathLike union which is either a str, or a smarter thing. We
-        # assume the less smart one.
-        cinnabar_metadata_dir = Path(repo.git_dir) / "refs/cinnabar/metadata"
-        if cinnabar_metadata_dir.exists():
-            logger.debug(
-                f"Cinnabar metadata already present in  {cinnabar_metadata_dir}, not updating"
-            )
+        if repo.git.execute(
+            ["git", "rev-parse", "--revs-only", "refs/cinnabar/metadata"]
+        ):
+            logger.debug("Cinnabar metadata already present, not updating")
             return
 
         retry(
-            "fetching commits from destination",
+            f"fetching commits from {destination_remote}",
             lambda: self.fetch_all_from_remote(repo, destination_remote),
         )
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:
         return repo.git.cinnabar(["git2hg", git_commit]).strip()
+
+    def _cinnabar_branch(self, branch: str) -> str:
+        return f"refs/heads/branches/{branch}/tip"
