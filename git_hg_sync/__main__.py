@@ -88,7 +88,7 @@ def main() -> None:
     sentry_config = config.sentry
     if sentry_config and sentry_config.sentry_dsn:
         logger.info(f"Sentry DSN: {sentry_config.sentry_dsn}")
-        sentry_sdk.init(sentry_config.sentry_dsn)
+        sentry_sdk.init(sentry_config.sentry_dsn, max_value_length=4096)
     start_app(config, logger)
 
 

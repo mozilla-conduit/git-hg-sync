@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import sentry_sdk
 from devtools import pprint
 from kombu.simple import SimpleQueue
 from mozlog import commandline
@@ -97,8 +98,9 @@ def dequeue(
     )
     try:
         count = _remove_push_message(queue, logger, args.repository_url, args.push_id)
-    except Exception as e:  # noqa: BLE001
-        logger.error(f"Error removing message from queue: {e.__class__}, {e}")
+    except Exception as exc:  # noqa: BLE001
+        sentry_sdk.capture_exception(exc)
+        logger.error(f"Error removing message from queue: {exc.__class__}, {exc}")
         sys.exit(1)
     else:
         logger.info(f"Removed {count} message for {args.repository_url}")

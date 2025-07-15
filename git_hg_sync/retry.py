@@ -1,6 +1,7 @@
 import time
 from collections.abc import Callable
 
+import sentry_sdk
 from mozlog import get_proxy_logger
 
 logger = get_proxy_logger("retry")
@@ -44,6 +45,7 @@ def retry(
             callback()
             break
         except Exception as exc:
+            sentry_sdk.capture_exception(exc)
             action_text = f" {action}" if action else ""
             if attempt < tries:
                 logger.warning(
