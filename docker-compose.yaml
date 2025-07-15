@@ -20,7 +20,7 @@ services:
     environment:
       - EMAIL='docker@sync'
       - RABBITMQ=true
-      - TRACEMALLOC=10
+      - TRACEMALLOC=1
     depends_on:
       sync_init:
         condition: service_completed_successfully
