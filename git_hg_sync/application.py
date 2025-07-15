@@ -86,6 +86,7 @@ class Application:
         )
 
     def _handle_event(self, event: Event) -> None:
+        self._trace_malloc()
         if event.repo_url not in self._repo_synchronizers:
             logger.warning(f"Ignoring event for untracked repository: {event.repo_url}")
             return
@@ -95,6 +96,7 @@ class Application:
             case _:
                 raise NotImplementedError()
 
+    def _trace_malloc(self) -> None:
         self._event_count += 1
         if not self._event_count % 10:
             self._event_count = 0
