@@ -6,6 +6,7 @@ import sys
 from collections.abc import Sequence
 from types import FrameType
 
+import sentry_sdk
 from mozlog import get_proxy_logger
 
 from git_hg_sync import PID_FILEPATH
@@ -65,6 +66,7 @@ class Application:
             try:
                 synchronizer.sync(destination, operations, push_event.user)
             except Exception as exc:
+                sentry_sdk.capture_exception(exc)
                 error_data = json.dumps(
                     {
                         "destination_url": destination,
