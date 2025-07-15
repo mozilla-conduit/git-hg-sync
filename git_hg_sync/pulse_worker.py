@@ -24,6 +24,8 @@ class PulseWorker(ConsumerMixin):
     event_handler: EventHandler | None
     """Function that will be called whenever an event is received"""
 
+    consumer: kombu.Consumer | None = None
+
     def __init__(
         self,
         connection: kombu.Connection,
@@ -50,11 +52,12 @@ class PulseWorker(ConsumerMixin):
         consumer_class: type[kombu.Consumer],
         _channel: Any,
     ) -> list[kombu.Consumer]:
-        consumer = consumer_class(
-            self.task_queue, auto_declare=False, callbacks=[self.on_task]
-        )
-        logger.debug(f"Using consumer {consumer=}")
-        return [consumer]
+        if not self.consumer:
+            self.consumer = consumer_class(
+                self.task_queue, auto_declare=False, callbacks=[self.on_task]
+            )
+            logger.debug(f"Created consumer {self.consumer=}")
+        return [self.consumer]
 
     def on_connection_error(self, exc: Exception, interval: int) -> None:
         logger.error(f"Connection error: {exc=}, retrying in {interval}s ...")
