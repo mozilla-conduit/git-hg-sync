@@ -3,6 +3,7 @@ import json
 import os
 import signal
 import sys
+import tracemalloc
 from collections.abc import Sequence
 from types import FrameType
 
@@ -19,6 +20,8 @@ logger = get_proxy_logger(__name__)
 
 
 class Application:
+    _event_count: int = 0
+
     def __init__(
         self,
         worker: PulseWorker,
@@ -85,6 +88,7 @@ class Application:
         )
 
     def _handle_event(self, event: Event) -> None:
+        self._trace_malloc()
         if event.repo_url not in self._repo_synchronizers:
             logger.warning(f"Ignoring event for untracked repository: {event.repo_url}")
             return
@@ -93,3 +97,12 @@ class Application:
                 self._handle_push_event(event)
             case _:
                 raise NotImplementedError()
+
+    def _trace_malloc(self) -> None:
+        self._event_count += 1
+        if not self._event_count % 10:
+            self._event_count = 0
+            if tracemalloc.is_tracing():
+                snapshot = tracemalloc.take_snapshot()
+                for i, stat in enumerate(snapshot.statistics("filename")[:5], 1):
+                    logger.info(f"tracemalloc {i=} {stat=}")
