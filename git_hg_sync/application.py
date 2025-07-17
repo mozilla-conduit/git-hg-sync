@@ -105,4 +105,4 @@ class Application:
             if tracemalloc.is_tracing():
                 snapshot = tracemalloc.take_snapshot()
                 for i, stat in enumerate(snapshot.statistics("filename")[:5], 1):
-                    logger.info("tracemalloc", i=i, stat=str(stat))
+                    logger.info(f"tracemalloc {i=} {stat=}")
