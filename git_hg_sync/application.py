@@ -20,6 +20,8 @@ logger = get_proxy_logger(__name__)
 
 class Application:
     _event_count: int = 0
+    _prev_snapshot = None
+    _snapshot = None
 
     def __init__(
         self,
@@ -101,6 +103,21 @@ class Application:
         if not self._event_count % 10:
             self._event_count = 0
             if tracemalloc.is_tracing():
-                snapshot = tracemalloc.take_snapshot()
-                for i, stat in enumerate(snapshot.statistics("filename")[:5], 1):
-                    logger.info(f"tracemalloc {i=} {stat=}")
+                self._snapshot = tracemalloc.take_snapshot()
+
+                for i, stat in enumerate(
+                    self._snapshot.statistics("lineno")[:25],
+                    1,
+                ):
+                    logger.info(
+                        f"tracemalloc absolute, {i}, {stat.traceback[0].filename}, {stat.traceback[0].lineno}, {stat.size / 1024}, {stat.count}"
+                    )
+                if self._prev_snapshot:
+                    for i, stat in enumerate(
+                        self._snapshot.compare_to(self._prev_snapshot, "lineno")[:25],
+                        1,
+                    ):
+                        logger.info(
+                            f"tracemalloc diff, {i}, {stat.traceback[0].filename}, {stat.traceback[0].lineno}, {stat.size_diff / 1024}, {stat.count_diff}"
+                        )
+                self._prev_snapshot = self._snapshot
