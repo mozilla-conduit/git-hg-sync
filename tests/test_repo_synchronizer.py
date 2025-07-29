@@ -72,7 +72,7 @@ def git_source(hg_destination: Path, tmp_path: Path) -> Path:
 
 @pytest.mark.parametrize("existing_tags_branch", [False, True])
 def test_sync_process(
-    git_source: Repo,
+    git_source: Path,
     hg_destination: Path,
     tmp_path: Path,
     existing_tags_branch: bool,
@@ -157,7 +157,7 @@ def test_sync_process(
 
 
 def test_sync_process_duplicate_tags(
-    git_source: Repo,
+    git_source: Path,
     hg_destination: Path,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -217,7 +217,7 @@ def test_sync_process_duplicate_tags(
 
 
 def test_sync_process_no_duplicate_tags_on_error(
-    git_source: Repo,
+    git_source: Path,
     hg_destination: Path,
     tmp_path: Path,
 ) -> None:
@@ -278,7 +278,7 @@ pretxnchangegroup.reject = /bin/false
 
 def test_sync_process_multiple_destinations(
     make_hg_repo: Callable,
-    git_source: Repo,
+    git_source: Path,
     hg_destination: Path,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
