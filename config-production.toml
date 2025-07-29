@@ -59,7 +59,6 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
-# <M>_<m>(_<p>...)b<n> BUILD and RELEASE tags to mozilla-beta
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
 destination_url = "ssh://hg.mozilla.org/releases/mozilla-beta/"
 tags_destination_branch = "tags-unified"
@@ -111,7 +110,6 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
-# NIGHTLY_<M> tags to m-c
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
 destination_url = "ssh://hg.mozilla.org/mozilla-central/"
 tags_destination_branch = "tags-unified"
@@ -130,7 +128,6 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
-# <M>_<m>(_<p>...) BUILD and RELEASE tags to mozilla-release
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
 destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
 tags_destination_branch = "tags-unified"
