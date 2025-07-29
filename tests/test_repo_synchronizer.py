@@ -5,6 +5,7 @@ from unittest import mock
 
 import pytest
 from git import Repo
+from git.exc import GitCommandError
 from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync import repo_synchronizer
@@ -71,7 +72,7 @@ def git_source(hg_destination: Path, tmp_path: Path) -> Path:
 
 @pytest.mark.parametrize("existing_tags_branch", [False, True])
 def test_sync_process(
-    git_source: Repo,
+    git_source: Path,
     hg_destination: Path,
     tmp_path: Path,
     existing_tags_branch: bool,
@@ -105,7 +106,7 @@ def test_sync_process(
     repo.index.add([bar_path])
     git_commit_sha = repo.index.commit("add bar.txt").hexsha
 
-    # Sync new commit with mercurial repository
+    # Sync new commit with mercurial repository.
     git_local_repo_path = tmp_path / "clones" / "myrepo"
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
     operations: list[SyncBranchOperation | SyncTagOperation] = [
@@ -156,7 +157,7 @@ def test_sync_process(
 
 
 def test_sync_process_duplicate_tags(
-    git_source: Repo,
+    git_source: Path,
     hg_destination: Path,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -215,9 +216,66 @@ def test_sync_process_duplicate_tags(
     assert tag in tag_log
 
 
+def test_sync_process_no_duplicate_tags_on_error(
+    git_source: Path,
+    hg_destination: Path,
+    tmp_path: Path,
+) -> None:
+    """Reprocessing a tag message after a failure should not lead to duplicate tags."""
+
+    tag_branch = "tags"
+    tag = "mytag"
+    tag_suffix = "some suffix"
+
+    repo = Repo(git_source)
+
+    git_commit_sha = repo.rev_parse("HEAD")
+
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncTagOperation(
+            source_commit=git_commit_sha,
+            tag=tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
+        ),
+    ]
+
+    request_user = "request_user@example.com"
+
+    # Make the target repo unwriteable,, so the next syncs fail.
+    failhook = "[hooks]\npretxnchangegroup.reject = /bin/false"
+    hgrc = hg_destination / ".hg" / "hgrc"
+    with Path.open(hgrc, "w") as f:
+        f.write(failhook)
+
+    with pytest.raises(GitCommandError):
+        syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # Re-run the operation without the blocking hook.
+    hgrc.unlink()
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    # Test the tag commit message.
+    git_tag_log = Repo(str(git_local_repo_path)).git.execute(
+        ["git", "log", "--oneline", tag_branch]
+    )
+    assert len(git_tag_log.strip().split("\n")) == 1, (
+        "Found more than one commit on the tags branch in the Git workdir"
+    )
+
+    # Test the tag commit message.
+    hg_tag_log = hg_log(hg_destination, f"..{tag_branch}", ["-T", "{desc}\n"])
+    assert len(hg_tag_log.strip().split("\n")) == 1, (
+        "Found more than one commit on the tags branch in Mercurial"
+    )
+
+
 def test_sync_process_multiple_destinations(
     make_hg_repo: Callable,
-    git_source: Repo,
+    git_source: Path,
     hg_destination: Path,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
