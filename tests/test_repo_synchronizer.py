@@ -246,10 +246,7 @@ def test_sync_process_no_duplicate_tags_on_error(
     request_user = "request_user@example.com"
 
     # Make the target repo unwriteable,, so the next syncs fail.
-    failhook = """
-[hooks]
-pretxnchangegroup.reject = /bin/false
-    """
+    failhook = "[hooks]\npretxnchangegroup.reject = /bin/false"
     hgrc = hg_destination / ".hg" / "hgrc"
     with Path.open(hgrc, "w") as f:
         f.write(failhook)
