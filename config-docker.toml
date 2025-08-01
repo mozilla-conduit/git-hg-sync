@@ -6,6 +6,7 @@ exchange = "exchange/git-hg-sync/test"
 routing_key = "git-hg-sync"
 queue = "queue/git-hg-sync/sync"
 password = "guest"
+heartbeat = 30
 ssl = false
 
 [sentry]
