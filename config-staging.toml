@@ -9,6 +9,7 @@ password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
 exchange = "exchange/landostage/pushes"
 routing_key = "gitpushes"
 # The Consumer declares the queue and binds it to the exchange.
+heartbeat = 30
 queue = "queue/githgsyncstage/pushes"
 
 [sentry]
