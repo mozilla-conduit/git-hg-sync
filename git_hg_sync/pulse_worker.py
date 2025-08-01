@@ -21,8 +21,9 @@ class EntityTypeError(Exception):
 
 
 class PulseWorker(ConsumerMixin):
-    event_handler: EventHandler | None
     """Function that will be called whenever an event is received"""
+
+    event_handler: EventHandler | None
 
     def __init__(
         self,
