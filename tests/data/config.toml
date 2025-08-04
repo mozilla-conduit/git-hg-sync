@@ -6,6 +6,7 @@ exchange = "exchange/guest/test"
 routing_key = "#"
 queue = "queue/guest/test"
 password = "guest"
+heartbeat = 30
 ssl = false
 
 [clones]

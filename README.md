@@ -137,6 +137,7 @@ variables:
 - PULSE_QUEUE
 - PULSE_ROUTING_KEY
 - PULSE_SSL (needs to be an empty string to be False, otherwise True)
+- PULSE_HEARTBEAT (needs to be an integer)
 - PULSE_USERID
 
 ### SSH key
