@@ -31,7 +31,7 @@ def get_connection(config: PulseConfig) -> Connection:
         port=config.port,
         userid=config.userid,
         password=config.password,
-        heartbeat=5,
+        heartbeat=2,
         ssl=config.ssl,
     )
 
