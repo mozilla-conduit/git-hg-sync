@@ -116,8 +116,7 @@ def test_no_duplicated_ack_messages(
     test_config: Config,
     get_payload: Callable,
 ) -> None:
-    """This tests checkes that a long-running message is not processed more than
-    once.
+    """This tests checks that long-running messages are not processed more than once.
 
     It may also timeout, which is likely indicative of the same issue.
     """
