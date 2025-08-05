@@ -40,11 +40,52 @@ destination_branch = "\\1"
 
 [[tag_mappings]]
 source_url = "https://github.com/mozilla-conduit/ff-test"
-tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 tags_destination_branch = "tags-unified-1973880"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)b\\d+_(BUILD\\d+|RELEASE)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
+tags_destination_branch = "tags-unified-1973880"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
+tags_destination_branch = "tags-unified-1973880"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)_(BUILD\\d+|RELEASE)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
+tags_destination_branch = "tags-unified-1973880"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+(_\\d+)+)b\\d+_(BUILD\\d+|RELEASE)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
+tags_destination_branch = "tags-unified-1973880"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_RELEASE_(\\d+)+_(BASE|END)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
+tags_destination_branch = "tags-unified-1973880"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
 
 [[tracked_repositories]]
 name = "test-repo-github"
