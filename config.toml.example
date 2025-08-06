@@ -6,6 +6,7 @@ exchange = "exchange/<username>/test"
 routing_key = ""
 queue = "queue/<username>/test"
 password = "<pulse-password>"
+heartbeat = 30
 ssl = true
 
 [sentry]

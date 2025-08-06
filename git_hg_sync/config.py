@@ -19,6 +19,7 @@ class PulseConfig(pydantic.BaseModel):
     routing_key: str
     queue: str
     password: str
+    heartbeat: int
     ssl: bool
 
 

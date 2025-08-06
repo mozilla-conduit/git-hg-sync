@@ -1,7 +1,10 @@
 import os
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
+from time import sleep
 from typing import Any
+from unittest import mock
 
 import kombu
 import pulse_utils
@@ -12,23 +15,15 @@ from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config, PulseConfig
+from git_hg_sync.pulse_worker import PulseWorker
 
 NO_RABBITMQ = os.getenv("RABBITMQ") != "true"
 HERE = Path(__file__).parent
 
 
 @pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
-def test_send_and_receive(pulse_config: PulseConfig) -> None:
-    payload = {
-        "type": "push",
-        "repo_url": "repo.git",
-        "branches": {},
-        "tags": {},
-        "time": 0,
-        "push_id": 0,
-        "user": "user",
-        "push_json_url": "push_json_url",
-    }
+def test_send_and_receive(pulse_config: PulseConfig, get_payload: Callable) -> None:
+    payload = get_payload()
 
     def callback(body: Any, message: kombu.Message) -> None:
         message.ack()
@@ -44,6 +39,7 @@ def test_send_and_receive(pulse_config: PulseConfig) -> None:
 @pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
 def test_full_app(
     tmp_path: Path,
+    get_payload: Callable,
 ) -> None:
     # With the test configuration, our local branch and tags should map to those
     # destinations.
@@ -92,16 +88,11 @@ def test_full_app(
 
     # send message
     config = Config.from_file(tmp_path / "config.toml")
-    payload = {
-        "type": "push",
-        "repo_url": str(git_remote_repo_path),
-        "branches": {local_branch: git_commit_sha},
-        "tags": {local_tag: git_commit_sha},
-        "time": 0,
-        "push_id": 0,
-        "user": "user",
-        "push_json_url": "push_json_url",
-    }
+    payload = get_payload(
+        repo_url=str(git_remote_repo_path),
+        branches={local_branch: git_commit_sha},
+        tags={local_tag: git_commit_sha},
+    )
     pulse_utils.send_pulse_message(config.pulse, payload, purge=True)
 
     # execute app
@@ -118,3 +109,33 @@ def test_full_app(
     assert "No bug - Tagging" in tag_log
     assert "FIREFOX_128_0esr_RELEASE" in tag_log
     assert hg_rev(hg_remote_repo_path, destination_branch) in tag_log
+
+
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
+def test_no_duplicated_ack_messages(
+    test_config: Config,
+    get_payload: Callable,
+) -> None:
+    """This test checks that long-running messages are not processed more than once.
+
+    It may also timeout, which is likely indicative of the same issue.
+    """
+    payload = get_payload()
+
+    wait = 30
+
+    connection = get_connection(test_config.pulse)
+    queue = get_queue(test_config.pulse)
+    queue(connection).queue_declare()
+    queue(connection).queue_bind()
+
+    worker = PulseWorker(connection, queue, one_shot=True)
+
+    callback = mock.MagicMock()
+    callback.side_effect = lambda _event: sleep(wait)
+    worker.event_handler = callback
+
+    pulse_utils.send_pulse_message(test_config.pulse, payload, purge=True)
+    worker.run()
+
+    callback.assert_called_once()
