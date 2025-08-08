@@ -130,20 +130,20 @@ def _remove_push_message(
     body = message.payload
     payload = body.get("payload")
     if not payload:
-        logger.warning(f"No payload in {message}, rejecting")
-        message.reject()
+        logger.warning(f"No payload in {message}, requeueing")
+        message.requeue()
         return 0
 
     try:
         push = PulseWorker.parse_entity(payload)
     except:
-        logger.warning(f"Cannot parse message {message}, rejecting")
-        message.reject()
+        logger.warning(f"Cannot parse message {message}, requeueing")
+        message.requeue()
         raise
 
     if push.repo_url != repository_url or push.push_id != push_id:
-        logger.warning(f"Message not matching deletion criteria: {message}, rejecting")
-        message.reject()
+        logger.warning(f"Message not matching deletion criteria: {message}, requeueing")
+        message.requeue()
         return 0
 
     print(f"{message.payload}")
