@@ -56,10 +56,13 @@ class RepoSynchronizer:
         self, repo: Repo, remote: str, verbose: bool = False
     ) -> None:
         try:
-            self._log_git_execute(
-                repo,
-                ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote],
-                verbose,
+            retry(
+                f"fetching changes and tags from {remote}",
+                lambda: self._log_git_execute(
+                    repo,
+                    ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote],
+                    verbose,
+                ),
             )
 
         except GitCommandError as exc:
@@ -68,7 +71,12 @@ class RepoSynchronizer:
                 raise exc
 
         if remote.startswith("hg::"):
-            self._log_git_execute(repo, ["git", "cinnabar", "fetch", "--tags"], verbose)
+            retry(
+                f"fetching Hg tags with cinnabar from {remote}",
+                lambda: self._log_git_execute(
+                    repo, ["git", "cinnabar", "fetch", "--tags"], verbose
+                ),
+            )
 
     @staticmethod
     def _log_git_execute(repo: Repo, command: list[str], verbose: bool = False) -> None:
@@ -173,15 +181,20 @@ class RepoSynchronizer:
             # If the destination branch is not present locally, but exists remotely, we
             # explicitly fetch it.
             local_branch_exists = repo.git.branch("-l", tag_branch)
-            remote_branch_exists = repo.git.execute(
-                [
-                    "git",
-                    "ls-remote",
-                    destination_remote,
-                    self._cinnabar_branch(tag_branch),
-                ],
-                stdout_as_string=True,
+            remote_branch_exists = retry(
+                "checking if tag branch already exists remotely",
+                partial(
+                    repo.git.execute,
+                    [
+                        "git",
+                        "ls-remote",
+                        destination_remote,
+                        self._cinnabar_branch(tag_branch),
+                    ],
+                    stdout_as_string=True,
+                ),
             )
+
             if not local_branch_exists and remote_branch_exists:
                 retry(
                     f"fetching existing tag branch from {destination_remote}",
@@ -247,9 +260,13 @@ class RepoSynchronizer:
             push_args = [destination_remote, ref]
             # Force-push the branch if it doesn't exist on the remote yet.
             # This is necessary to create new branches, more specifically for tags.
-            if not repo.git.execute(
-                ["git", "ls-remote", destination_remote, ref.split(":")[1]],
-                stdout_as_string=True,
+            if not retry(
+                "checking if destination branch needs to be created",
+                partial(
+                    repo.git.execute,
+                    ["git", "ls-remote", destination_remote, ref.split(":")[1]],
+                    stdout_as_string=True,
+                ),
             ):
                 push_args = ["-f"] + push_args
             logger.debug(f"Push arguments: {push_args}")
