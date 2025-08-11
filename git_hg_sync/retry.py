@@ -1,5 +1,6 @@
 import time
 from collections.abc import Callable
+from typing import Any
 
 import sentry_sdk
 from mozlog import get_proxy_logger
@@ -13,7 +14,7 @@ def retry(
     *,
     tries: int = 2,
     delay: float = 0.25,
-) -> None:
+) -> Any:
     """Run a `callback` up to `tries` times with a `delay` between Exceptions.
 
     The `callback` can be a closure built from a lambda function if needed.
@@ -42,8 +43,7 @@ def retry(
     logger.debug(action)
     for attempt in range(1, tries + 1):
         try:
-            callback()
-            break
+            return callback()
         except Exception as exc:
             sentry_sdk.capture_exception(exc)
             action_text = f" {action}" if action else ""
@@ -59,3 +59,7 @@ def retry(
                     exc_info=True,
                 )
                 raise
+
+    raise Exception(
+        "The retryable callback should have either succeeded or raised, so we should not be here."
+    )
