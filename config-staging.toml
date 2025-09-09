@@ -21,16 +21,16 @@ directory = "/clones"
 
 [[tracked_repositories]]
 name = "ff-test"
-url = "https://github.com/mozilla-conduit/ff-test"
+url = "https://github.com/mozilla-conduit/ff-test.git"
 
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-conduit/ff-test"
+source_url = "https://github.com/mozilla-conduit/ff-test.git"
 branch_pattern = "stage"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-stage"
 destination_branch = "default"
 
 [[tag_mappings]]
-source_url = "https://github.com/mozilla-conduit/ff-test"
+source_url = "https://github.com/mozilla-conduit/ff-test.git"
 tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-stage"
 tags_destination_branch = "stage-tags"
@@ -40,16 +40,16 @@ tags_destination_branch = "stage-tags"
 
 [[tracked_repositories]]
 name = "test-repo-github"
-url = "https://github.com/mozilla-conduit/test-repo"
+url = "https://github.com/mozilla-conduit/test-repo.git"
 
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-conduit/test-repo"
+source_url = "https://github.com/mozilla-conduit/test-repo.git"
 branch_pattern = "stage"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
 destination_branch = "default"
 
 [[tag_mappings]]
-source_url = "https://github.com/mozilla-conduit/test-repo"
+source_url = "https://github.com/mozilla-conduit/test-repo.git"
 tag_pattern = "^(STAGE)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-stage"
 tags_destination_branch = "stage-tags"

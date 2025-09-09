@@ -21,10 +21,10 @@ directory = "/clones"
 
 [[tracked_repositories]]
 name = "ff-test"
-url = "https://github.com/mozilla-conduit/ff-test"
+url = "https://github.com/mozilla-conduit/ff-test.git"
 
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-conduit/ff-test"
+source_url = "https://github.com/mozilla-conduit/ff-test.git"
 branch_pattern = "dev"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 destination_branch = "default"
@@ -33,14 +33,14 @@ destination_branch = "default"
 # relbranches
 #
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-conduit/ff-test"
+source_url = "https://github.com/mozilla-conduit/ff-test.git"
 # <M>_<m>_X RELBRANCH to mozilla-release matching branch
 branch_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_ESR_(\\d+)(_\\d+_X)_RELBRANCH)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 destination_branch = "\\1"
 
 [[tag_mappings]]
-source_url = "https://github.com/mozilla-conduit/ff-test"
+source_url = "https://github.com/mozilla-conduit/ff-test.git"
 tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 tags_destination_branch = "tags-unified-1973880"
@@ -49,16 +49,16 @@ tags_destination_branch = "tags-unified-1973880"
 
 [[tracked_repositories]]
 name = "test-repo-github"
-url = "https://github.com/mozilla-conduit/test-repo"
+url = "https://github.com/mozilla-conduit/test-repo.git"
 
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-conduit/test-repo"
+source_url = "https://github.com/mozilla-conduit/test-repo.git"
 branch_pattern = "dev"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-dev"
 destination_branch = "default"
 
 [[tag_mappings]]
-source_url = "https://github.com/mozilla-conduit/test-repo"
+source_url = "https://github.com/mozilla-conduit/test-repo.git"
 tag_pattern = "^(DEV)_(BETA|NIGHTLY)_(\\d+)_(BASE|END)$"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/test-repo-github-dev"
 tags_destination_branch = "tags-unified-1973880"
