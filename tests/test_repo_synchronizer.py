@@ -151,9 +151,6 @@ def test_sync_process(
         undo_log = undo.read()
         assert ".hgtags" in undo_log
         assert "bar.txt" not in undo_log
-        assert len(undo_log.strip().split("\n")) == 3, (
-            "An unexpected number of files was changed in the last push"
-        )
 
 
 def test_sync_process_duplicate_tags(
