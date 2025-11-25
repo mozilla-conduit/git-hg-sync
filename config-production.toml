@@ -3,7 +3,7 @@
 host = "pulse.mozilla.org"
 port = 5671
 ssl = true
-userid = "githgsyncprod"
+userid = "SET THIS IN PULSE_USERID ENV VARIABLE"
 password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
 # The exchange is declared by the Producer.
 exchange = "exchange/landoprod/pushes"
