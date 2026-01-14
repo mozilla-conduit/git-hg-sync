@@ -2,10 +2,10 @@
   "bindings": [
     {
       "arguments": {},
-      "destination": "queue/git-hg-sync/sync",
+      "destination": "queue/guest/test",
       "destination_type": "queue",
-      "routing_key": "git-hg-sync",
-      "source": "exchange/git-hg-sync/test",
+      "routing_key": "#",
+      "source": "exchange/guest/test",
       "vhost": "/"
     }
   ],
@@ -15,8 +15,8 @@
       "auto_delete": false,
       "durable": true,
       "internal": false,
-      "name": "exchange/git-hg-sync/test",
-      "type": "direct",
+      "name": "exchange/guest/test",
+      "type": "topic",
       "vhost": "/"
     }
   ],
@@ -44,7 +44,7 @@
       "arguments": {},
       "auto_delete": false,
       "durable": true,
-      "name": "queue/git-hg-sync/sync",
+      "name": "queue/guest/test",
       "vhost": "/"
     }
   ],
