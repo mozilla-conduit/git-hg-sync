@@ -52,7 +52,10 @@ class PulseWorker(ConsumerMixin):
         _channel: Any,
     ) -> list[kombu.Consumer]:
         consumer = consumer_class(
-            self.task_queue, auto_declare=False, callbacks=[self.on_task]
+            self.task_queue,
+            auto_declare=False,
+            callbacks=[self.on_task],
+            prefetch_count=1,
         )
         logger.debug(f"Using consumer {consumer=}")
         return [consumer]
