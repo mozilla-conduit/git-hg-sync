@@ -45,7 +45,7 @@ class Application:
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
-        logger.debug(f"Handling push event: {push_event}")
+        logger.debug(f"Handling event {push_event}")
         synchronizer = self._repo_synchronizers[push_event.repo_url]
         operations_by_destination: dict[str, list[SyncOperation]] = {}
 
