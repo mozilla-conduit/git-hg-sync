@@ -55,6 +55,9 @@ class PulseWorker(ConsumerMixin):
             self.task_queue,
             auto_declare=False,
             callbacks=[self.on_task],
+            # We only fetch one message at a time in case processing it fails.
+            # This allows us to ensure strict ordering, by re-receiving the same message
+            # on the next loop after having requeued it after failure.
             prefetch_count=1,
         )
         logger.debug(f"Using consumer {consumer=}")
