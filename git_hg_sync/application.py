@@ -78,7 +78,7 @@ class Application:
                     exc_info=True,
                 )
                 raise exc
-        logger.info(f"Successfully handled event: {push_event}")
+        logger.info(f"Successfully handled event {push_event}")
 
     def _handle_event(self, event: Event) -> None:
         if event.repo_url not in self._repo_synchronizers:
