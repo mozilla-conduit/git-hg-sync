@@ -21,7 +21,7 @@ class Push(BaseModel):
     push_json_url: str
 
     def __str__(self) -> str:
-        return f"{self.push_id} for {self.repo_url}"
+        return f"Push {self.push_id} for {self.repo_url}"
 
     @model_validator(mode="after")
     def check_branch_tags(self) -> Self:
