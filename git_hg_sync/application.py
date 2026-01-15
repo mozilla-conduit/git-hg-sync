@@ -74,7 +74,7 @@ class Application:
                     }
                 )
                 logger.warning(
-                    f"An error prevented completion of the following sync operations from push event {push_event_str}. {error_data}",
+                    f"An error prevented completion of the following sync operations from push event {push_event}. {error_data}",
                     exc_info=True,
                 )
                 raise exc
