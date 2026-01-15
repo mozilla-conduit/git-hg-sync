@@ -57,7 +57,7 @@ class Application:
                     ).append(match.operation)
 
         if not operations_by_destination:
-            logger.warning(f"No operation for push event: {push_event}")
+            logger.warning(f"No operation for event {push_event}")
             return
 
         for destination, operations in operations_by_destination.items():
