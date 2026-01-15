@@ -45,9 +45,7 @@ class Application:
         self._worker.run()
 
     def _handle_push_event(self, push_event: Push) -> None:
-        logger.debug(
-            f"Handling push event: {push_event.push_id} for {push_event.repo_url}"
-        )
+        logger.debug(f"Handling event {push_event}")
         synchronizer = self._repo_synchronizers[push_event.repo_url]
         operations_by_destination: dict[str, list[SyncOperation]] = {}
 
@@ -59,7 +57,7 @@ class Application:
                     ).append(match.operation)
 
         if not operations_by_destination:
-            logger.warning(f"No operation for {push_event}")
+            logger.warning(f"No operation for event {push_event}")
             return
 
         for destination, operations in operations_by_destination.items():
@@ -76,13 +74,11 @@ class Application:
                     }
                 )
                 logger.warning(
-                    f"An error prevented completion of the following sync operations. {error_data}",
+                    f"An error prevented completion of the following sync operations from event {push_event}. {error_data}",
                     exc_info=True,
                 )
                 raise exc
-        logger.info(
-            f"Successfully handled event: {push_event.push_id} for {push_event.repo_url}"
-        )
+        logger.info(f"Successfully handled event {push_event}")
 
     def _handle_event(self, event: Event) -> None:
         if event.repo_url not in self._repo_synchronizers:

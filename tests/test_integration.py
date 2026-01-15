@@ -15,6 +15,7 @@ from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config, PulseConfig
+from git_hg_sync.events import Event
 from git_hg_sync.pulse_worker import PulseWorker
 
 NO_RABBITMQ = os.getenv("RABBITMQ") != "true"
@@ -139,3 +140,47 @@ def test_no_duplicated_ack_messages(
     worker.run()
 
     callback.assert_called_once()
+
+
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
+def test_messages_in_order(
+    test_config: Config,
+    get_payload: Callable,
+) -> None:
+    """This test checks that long-running messages are not processed more than once.
+
+    It may also timeout, which is likely indicative of the same issue.
+    """
+    connection = get_connection(test_config.pulse)
+    queue = get_queue(test_config.pulse)
+    queue(connection).queue_declare()
+    queue(connection).queue_bind()
+
+    worker = PulseWorker(connection, queue, one_shot=False)
+
+    events_log = []
+
+    def event_handler(event: Event) -> None:
+        push_id = event.push_id
+        already_seen = push_id in events_log
+
+        events_log.append(push_id)
+
+        # Terminate the worker after processing the expected number of messages.
+        if len(events_log) == 4:
+            worker.should_stop = True
+
+        if not already_seen:
+            raise Exception("Not seen yet")
+
+    worker.event_handler = event_handler
+
+    pulse_utils.send_pulse_message(
+        test_config.pulse, get_payload(push_id=0), purge=True
+    )
+    pulse_utils.send_pulse_message(
+        test_config.pulse, get_payload(push_id=1), purge=False
+    )
+    worker.run()
+
+    assert events_log == [0, 0, 1, 1]

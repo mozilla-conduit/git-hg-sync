@@ -20,6 +20,9 @@ class Push(BaseModel):
     user: str
     push_json_url: str
 
+    def __str__(self) -> str:
+        return f"Push {self.push_id} for {self.repo_url}"
+
     @model_validator(mode="after")
     def check_branch_tags(self) -> Self:
         """Check that at least one of branches or tags is not empty."""

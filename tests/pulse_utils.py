@@ -39,7 +39,7 @@ def send_pulse_message(
     connection.connect()
 
     with connection:
-        ex = kombu.Exchange(exchange, type="direct")
+        ex = kombu.Exchange(exchange, type="topic")
         queue = kombu.Queue(
             name=queue_name,
             exchange=exchange,
@@ -48,7 +48,7 @@ def send_pulse_message(
             exclusive=False,
             auto_delete=False,
         )
-        queue(connection).declare()
+        queue(connection).queue_declare()
         if purge:
             channel = connection.channel()
             channel.queue_purge(queue.name)
