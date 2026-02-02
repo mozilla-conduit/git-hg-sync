@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-VER=3f0a8a4c35b5be88ddc229c0dd099b99c67483ce
+VER=71ac248b7dd7b56ac2cfe764c914a6a3025ea5af
 
 curl https://raw.githubusercontent.com/glandium/git-cinnabar/${VER}/download.py -o download.py
 chmod u+x download.py
