@@ -56,6 +56,15 @@ services:
     networks:
       - pulse_network
 
+  pip-compile:
+    <<: *sync_config
+    command: ["--verbose", "--all-build-deps", "--allow-unsafe", "--extra=dev", "--generate-hashes", "--output-file=requirements.txt", "pyproject.toml"]
+    entrypoint: pip-compile
+    volumes:
+      - .:/app
+    profiles:
+      - pip-compile
+
   pulse:
     image: rabbitmq:3-management-alpine
     volumes:

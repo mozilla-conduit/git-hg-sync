@@ -172,6 +172,12 @@ $ docker compose run --rm test
 $ docker compose down
 ```
 
+## Update requirements
+
+```console
+$ docker compose run --rm pip-compile
+```
+
 ## Known limitations
 
 - Merge commits cannot be pushed to mercurial repositories;

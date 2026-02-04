@@ -22,15 +22,8 @@ COPY install_git-cinnabar.sh .
 RUN ./install_git-cinnabar.sh \
     && mv git-cinnabar git-remote-hg /usr/bin/
 
-# install test dependencies
-RUN pip install -U pip pytest pytest-mock pip-tools
-
-# setup just the venv so changes to the source won't require a full venv
-# rebuild
-COPY --chown=app:app README.md .
-COPY --chown=app:app pyproject.toml .
-RUN pip-compile --verbose pyproject.toml \
-    && pip install -r requirements.txt
+COPY --chown=app:app requirements.txt .
+RUN pip install -r requirements.txt
 
 RUN mkdir -p /clones \
   && chown app:app /clones
@@ -39,6 +32,7 @@ RUN mkdir -p /clones \
 COPY docker/hgrc /etc/mercurial/hgrc
 COPY docker/entrypoint.sh /entrypoint.sh
 COPY --chown=app:app . /app
+
 # Make the install editable so we can mount the local source into a container based on this image.
 RUN pip install -e /app
 USER app
