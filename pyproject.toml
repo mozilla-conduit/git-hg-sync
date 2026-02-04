@@ -23,7 +23,7 @@ dependencies = [
 dev = [
     # Pin due to https://github.com/jazzband/pip-tools/issues/2319, 
     # otherwise pip-compile doesn't work in the container.
-    "pip<26.0",
+    "pip<27.0",
 
     "pip-tools",
     "pytest>=8.3.4",
