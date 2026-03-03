@@ -46,7 +46,17 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/thunderbird/infra-testing.git"
-# (BETA|NIGHTLY)_(\d+)_(BASE|END)
+# (NIGHTLY)_(\d+)_(BASE|END)
+# (BETA)_(\d+)_(BASE|END)
+# (RELEASE)_(\d+)_(BASE|END)
+# tag_pattern = "^(THUNDERBIRD)_.*$"
+# destination_url = "ssh://hg.mozilla.org/releases/comm-beta/"
+# RELEASES
+# tag_pattern = "^(THUNDERBIRD)_.*$"
+# destination_url = "ssh://hg.mozilla.org/releases/comm-release/"
+# ESR
+# tag_pattern = "^(THUNDERBIRD)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
+# destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\2/"
 tag_pattern = ".+"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/comm-infra-testing/"
 tags_destination_branch = "tags-testing"
