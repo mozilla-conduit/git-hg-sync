@@ -46,17 +46,31 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/thunderbird/infra-testing.git"
-# (NIGHTLY)_(\d+)_(BASE|END)
-# (BETA)_(\d+)_(BASE|END)
-# (RELEASE)_(\d+)_(BASE|END)
-# tag_pattern = "^(THUNDERBIRD)_.*$"
+
+# comm-central:
+# tag_pattern = ".+"
+# destination_url = "ssh://hg.mozilla.org/comm-central"
+# tags_destination_branch = "tags-testing"
+
+# comm-beta:
+# tag_pattern = "(^THUNDERBIRD|NIGHTLY|BETA|RELEASE)_.*$"
 # destination_url = "ssh://hg.mozilla.org/releases/comm-beta/"
-# RELEASES
-# tag_pattern = "^(THUNDERBIRD)_.*$"
+# tags_destination_branch = "tags-unified"
+
+# comm-release:
+# tag_pattern = "(^THUNDERBIRD|NIGHTLY|BETA|RELEASE)_.*$"
 # destination_url = "ssh://hg.mozilla.org/releases/comm-release/"
-# ESR
+# tags_destination_branch = "tags-unified"
+
+# comm-esrXXX
 # tag_pattern = "^(THUNDERBIRD)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
 # destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\2/"
+# tags_destination_branch = "tags-unified"
+# ...
+# tag_pattern = "^ESR_(\\d+)_BASE$"
+# destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\1/"
+# tags_destination_branch = "tags-unified"
+
 tag_pattern = ".+"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/comm-infra-testing/"
 tags_destination_branch = "tags-testing"
