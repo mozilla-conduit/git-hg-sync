@@ -24,7 +24,7 @@ directory = "/clones"
 
 [[tracked_repositories]]
 name = "firefox"
-url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
+url = "https://github.com/mozilla-firefox/firefox.git"
 
 
 #
@@ -34,15 +34,115 @@ url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
 # references early, with the benefit of bundles.
 #
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
+source_url = "https://github.com/mozilla-firefox/firefox.git"
 branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
 destination_url = "https://hg.mozilla.org/mozilla-unified/"
 destination_branch = "NOT_A_VALID_BRANCH"
 
+#
+# AUTOLAND
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+branch_pattern = "autoland"
+destination_url = "ssh://hg.mozilla.org/integration/autoland/"
+destination_branch = "default"
+
+
+#
+# BETA
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+branch_pattern = "beta"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-beta/"
+destination_branch = "default"
+
 [[tag_mappings]]
-source_url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
-tag_pattern = "THIS_SHOULD_MATCH_NOTHING"
-destination_url = "https://hg.mozilla.org/mozilla-unified/"
-tags_destination_branch = "NOT_A_VALID_BRANCH"
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-beta/"
+tags_destination_branch = "tags-unified"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+
+#
+# ESRs
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+# esr<M> branches to mozilla-esr<M>
+branch_pattern = "^(esr\\d+)$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-\\1/"
+destination_branch = "default"
+
+# We can only sync the tags branch to ESR when an ESR-specific tag is added.
+# When such a sync happens, all non-ESR tags currently present on that branch
+# will also be pushed to the target ESR repo.
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+# <M>_<m>(_<p>...)esr BUILD and RELEASE tags to mozilla-esr<M>
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-esr\\2/"
+tags_destination_branch = "tags-unified"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+#
+# ESR relbranches
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+# ESR_<M>_<m>_X RELBRANCH to mozilla-esr<M> matching branch
+branch_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_ESR_(\\d+)(_\\d+_X)_RELBRANCH)$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-esr\\3/"
+destination_branch = "\\1"
+
+
+#
+# MOZILLA-CENTRAL
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+branch_pattern = "main"
+destination_url = "ssh://hg.mozilla.org/mozilla-central/"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
+destination_url = "ssh://hg.mozilla.org/mozilla-central/"
+tags_destination_branch = "tags-unified"
+# Default
+# tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+
+#
+# RELEASE
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+branch_pattern = "release"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
+tags_destination_branch = "tags-unified"
+# # Default
+# #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+#
+# RELEASE relbranches
+#
+[[branch_mappings]]
+source_url = "https://github.com/mozilla-firefox/firefox.git"
+# <M>_<m>_X RELBRANCH to mozilla-release matching branch
+branch_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_(\\d+_\\d+_X)_RELBRANCH)$"
+destination_url = "ssh://hg.mozilla.org/releases/mozilla-release/"
+destination_branch = "\\1"
+
+
