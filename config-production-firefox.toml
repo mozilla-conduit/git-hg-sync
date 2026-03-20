@@ -7,7 +7,7 @@ userid = "SET THIS IN PULSE_USERID ENV VARIABLE"
 password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
 # The exchange is declared by the Producer.
 exchange = "exchange/landoprod/pushes"
-routing_key = "gitpushes"
+routing_key = "gitpushes.firefox"
 # The Consumer declares the queue and binds it to the exchange.
 heartbeat = 30
 queue = "queue/githgsyncprod/pushes"
@@ -24,7 +24,7 @@ directory = "/clones"
 
 [[tracked_repositories]]
 name = "firefox"
-url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
+url = "https://github.com/mozilla-firefox/firefox.git_NOT_IN_USE"
 
 
 #
@@ -34,13 +34,13 @@ url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
 # references early, with the benefit of bundles.
 #
 [[branch_mappings]]
-source_url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
+source_url = "https://github.com/mozilla-firefox/firefox.git_NOT_IN_USE"
 branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
 destination_url = "https://hg.mozilla.org/mozilla-unified/"
 destination_branch = "NOT_A_VALID_BRANCH"
 
 [[tag_mappings]]
-source_url = "https://github.com/mozilla-firefox/firefox.git_NOT_YET_IN_USE"
+source_url = "https://github.com/mozilla-firefox/firefox.git_NOT_IN_USE"
 tag_pattern = "THIS_SHOULD_MATCH_NOTHING"
 destination_url = "https://hg.mozilla.org/mozilla-unified/"
 tags_destination_branch = "NOT_A_VALID_BRANCH"
