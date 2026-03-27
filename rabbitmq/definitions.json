@@ -4,7 +4,7 @@
       "arguments": {},
       "destination": "queue/guest/test",
       "destination_type": "queue",
-      "routing_key": "#",
+      "routing_key": "default",
       "source": "exchange/guest/test",
       "vhost": "/"
     }

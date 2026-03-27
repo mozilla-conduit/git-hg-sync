@@ -27,12 +27,13 @@ def pulse_config() -> PulseConfig:
         host="pulse",
         port=5672,
         exchange="exchange/guest/test",
-        routing_key="#",
+        routing_key="default",
         queue="queue/guest/test",
         password="guest",
         heartbeat=30,
         ssl=False,
     )
+
 
 @pytest.fixture
 def test_config(pulse_config: PulseConfig) -> Config:
@@ -40,25 +41,36 @@ def test_config(pulse_config: PulseConfig) -> Config:
         pulse=pulse_config,
         clones=ClonesConfig(directory=Path("clones")),
         tracked_repositories=[
-            TrackedRepository(name="mozilla-central", url="https://github.com/mozilla-firefox/firefox.git"),
+            TrackedRepository(
+                name="mozilla-central",
+                url="https://github.com/mozilla-firefox/firefox.git",
+            ),
         ],
-        branch_mappings=[BranchMapping(
-            branch_pattern = '.*',
-            source_url = "https://github.com/mozilla-firefox/firefox.git",
-            destination_url = 'destination_url',
-            destination_branch  = 'destination_branch',
-        )],
+        branch_mappings=[
+            BranchMapping(
+                branch_pattern=".*",
+                source_url="https://github.com/mozilla-firefox/firefox.git",
+                destination_url="destination_url",
+                destination_branch="destination_branch",
+            )
+        ],
     )
+
 
 @pytest.fixture
 def get_payload() -> Callable:
-
-    def get_payload(**kwargs: dict) -> dict:
+    def get_payload(
+        request: pytest.FixtureRequest | None = None, **kwargs: dict
+    ) -> dict:
         """Return a default payload, with override via kwargs."""
+        repo_url = "repo.git"
+        if request:
+            repo_url = request.node.name
+
         payload = {
             "type": "push",
-            "repo_url": "repo.git",
-            "branches": { "main": 40 * "0"},
+            "repo_url": repo_url,
+            "branches": {"main": 40 * "0"},
             "tags": {},
             "time": 0,
             "push_id": 0,

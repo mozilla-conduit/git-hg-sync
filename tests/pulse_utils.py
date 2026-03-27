@@ -13,11 +13,14 @@ HERE = Path(__file__).parent
 
 def send_pulse_message(
     pulse_config: PulseConfig, payload: Any, purge: bool = False
-) -> None:
+) -> tuple[kombu.Connection, kombu.Queue]:
     """Send a pulse message
     The routing key will be constructed from the repository URL.
     The Pulse message will be constructed from the specified payload
     and sent to the requested exchange.
+
+    This function takes care of declaring and binding a Queue, so it can purge it before
+    the start of the test. It returns the Connectiond and Queue for use by the caller.
     """
     userid = pulse_config.userid
     password = pulse_config.password
@@ -40,6 +43,9 @@ def send_pulse_message(
 
     with connection:
         ex = kombu.Exchange(exchange, type="topic")
+
+        # Declare the queue prior to sending, so we can purge it of potential spurious
+        # messages from previous tests.
         queue = kombu.Queue(
             name=queue_name,
             exchange=exchange,
@@ -69,6 +75,8 @@ def send_pulse_message(
 
         print(f"publishing message to {exchange}")
         producer.publish(data)
+
+    return (connection, queue)
 
 
 if __name__ == "__main__":

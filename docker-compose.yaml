@@ -53,6 +53,9 @@ services:
       - ./tests_output:/app/tests_output:z
     profiles:
       - test
+    depends_on:
+      pulse:
+        condition: service_healthy
     networks:
       - pulse_network
 
