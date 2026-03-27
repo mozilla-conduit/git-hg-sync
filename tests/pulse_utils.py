@@ -20,7 +20,7 @@ def send_pulse_message(
     and sent to the requested exchange.
 
     This function takes care of declaring and binding a Queue, so it can purge it before
-    the start of the test. It returns the Connectiond and Queue for use by the caller.
+    the start of the test. It returns the Connection and Queue for use by the caller.
     """
     userid = pulse_config.userid
     password = pulse_config.password
