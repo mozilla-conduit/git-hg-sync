@@ -10,7 +10,7 @@ exchange = "exchange/landoprod/pushes"
 routing_key = "gitpushes.thunderbird"
 # The Consumer declares the queue and binds it to the exchange.
 heartbeat = 30
-queue = "queue/githgsyncprod/pushes"
+queue = "queue/githgsyncprod/pushes.thunderbird"
 
 [sentry]
 sentry_dsn = ""
