@@ -7,10 +7,10 @@ userid = "SET THIS IN PULSE_USERID ENV VARIABLE"
 password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
 # The exchange is declared by the Producer.
 exchange = "exchange/landoprod/pushes"
-routing_key = "gitpushes"
+routing_key = "gitpushes.thunderbird"
 # The Consumer declares the queue and binds it to the exchange.
 heartbeat = 30
-queue = "queue/githgsyncprod/pushes"
+queue = "queue/githgsyncprod/pushes.thunderbird"
 
 [sentry]
 sentry_dsn = ""
@@ -24,7 +24,8 @@ directory = "/clones"
 
 [[tracked_repositories]]
 name = "thunderbird-infra-testing"
-url = "https://github.com/thunderbird/infra-testing.git"
+url = "https://github.com/thunderbird/infra-testing.git_NOT_IN_USE"
+
 
 #
 # COMM-UNIFIED
@@ -33,46 +34,15 @@ url = "https://github.com/thunderbird/infra-testing.git"
 # references early, with the benefit of bundles.
 #
 [[branch_mappings]]
-source_url = "https://github.com/thunderbird/infra-testing.git"
+source_url = "https://github.com/thunderbird/infra-testing.git_NOT_IN_USE"
 branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
 destination_url = "https://hg.mozilla.org/comm-unified/"
 destination_branch = "NOT_A_VALID_BRANCH"
 
-[[branch_mappings]]
-source_url = "https://github.com/thunderbird/infra-testing.git"
-branch_pattern = "main"
-destination_url = "ssh://hg.mozilla.org/conduit-testing/comm-infra-testing/"
-destination_branch = "default"
-
 [[tag_mappings]]
-source_url = "https://github.com/thunderbird/infra-testing.git"
-
-# comm-central:
-# tag_pattern = ".+"
-# destination_url = "ssh://hg.mozilla.org/comm-central"
-# tags_destination_branch = "tags-testing"
-
-# comm-beta:
-# tag_pattern = "(^THUNDERBIRD|NIGHTLY|BETA|RELEASE)_.*$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-beta/"
-# tags_destination_branch = "tags-unified"
-
-# comm-release:
-# tag_pattern = "(^THUNDERBIRD|NIGHTLY|BETA|RELEASE)_.*$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-release/"
-# tags_destination_branch = "tags-unified"
-
-# comm-esrXXX
-# tag_pattern = "^(THUNDERBIRD)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\2/"
-# tags_destination_branch = "tags-unified"
-# ...
-# tag_pattern = "^ESR_(\\d+)_BASE$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\1/"
-# tags_destination_branch = "tags-unified"
-
-tag_pattern = ".+"
-destination_url = "ssh://hg.mozilla.org/conduit-testing/comm-infra-testing/"
-tags_destination_branch = "tags-testing"
+source_url = "https://github.com/thunderbird/infra-testing.git_NOT_IN_USE"
+tag_pattern = "THIS_SHOULD_MATCH_NOTHING"
+destination_url = "https://hg.mozilla.org/comm-unified/"
+tags_destination_branch = "NOT_A_VALID_BRANCH"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
