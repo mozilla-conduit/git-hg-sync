@@ -36,7 +36,7 @@ def get_connection(config: PulseConfig) -> Connection:
     )
 
 
-def get_queue(config: Config | PulseConfig) -> Queue:
+def get_queue(config: PulseConfig) -> Queue:
     exchange = Exchange(config.exchange, type="topic")
     return Queue(
         name=config.queue,

@@ -22,22 +22,76 @@ NO_RABBITMQ = os.getenv("RABBITMQ") != "true"
 HERE = Path(__file__).parent
 
 
-@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
-def test_send_and_receive(pulse_config: PulseConfig, get_payload: Callable) -> None:
-    payload = get_payload()
+@pytest.mark.parametrize(
+    "queue_key",
+    (
+        (""),  # Use the default from the config.
+        ("one"),
+        ("two.three"),
+    ),
+)
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without RabbitMQ")
+def test_send_and_receive(
+    request: pytest.FixtureRequest,
+    pulse_config: PulseConfig,
+    get_payload: Callable,
+    queue_key: str,
+) -> None:
+    payload = get_payload(request=request)
+
+    if queue_key:
+        pulse_config.routing_key = queue_key
+        pulse_config.queue = f"{pulse_config.queue}-{queue_key}"
 
     def callback(body: Any, message: kombu.Message) -> None:
         message.ack()
         assert body["payload"] == payload
 
-    pulse_utils.send_pulse_message(pulse_config, payload, purge=True)
-    connection = get_connection(pulse_config)
-    queue = get_queue(pulse_config)
+    # Create queue and bindings prior to sending.
+    _, _ = _setup_connection_and_queue(pulse_config)
+
+    connection, queue = pulse_utils.send_pulse_message(
+        pulse_config, payload, purge=True
+    )
+
     with connection.Consumer(queue, auto_declare=False, callbacks=[callback]):
         connection.drain_events(timeout=5)
 
 
-@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without RabbitMQ")
+@pytest.mark.parametrize(
+    "send_key,queue_key",
+    (
+        ("three", "three.four"),
+        ("five.six", "five"),
+    ),
+)
+def test_send_and_receive_routing_key_mismatch(
+    pulse_config: PulseConfig, get_payload: Callable, send_key: str, queue_key: str
+) -> None:
+    payload = get_payload()
+
+    def callback(_body: Any, _message: kombu.Message) -> None:
+        raise AssertionError("No message should be received")
+
+    pulse_config.routing_key = queue_key
+    # We need to create a unique queue for this binding.
+    pulse_config.queue = f"{pulse_config.queue}-{send_key}-{queue_key}"
+
+    pulse_config_sender = pulse_config.model_copy()
+    pulse_config_sender.routing_key = send_key
+
+    connection, queue = _setup_connection_and_queue(pulse_config)
+    pulse_utils.send_pulse_message(pulse_config_sender, payload, purge=True)
+
+    with (
+        connection.Consumer(queue, auto_declare=False, callbacks=[callback]),
+        pytest.raises(TimeoutError),
+    ):
+        connection.drain_events(timeout=5)
+
+
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without RabbitMQ")
 def test_full_app(
     tmp_path: Path,
     get_payload: Callable,
@@ -112,7 +166,7 @@ def test_full_app(
     assert hg_rev(hg_remote_repo_path, destination_branch) in tag_log
 
 
-@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without RabbitMQ")
 def test_no_duplicated_ack_messages(
     test_config: Config,
     get_payload: Callable,
@@ -125,10 +179,7 @@ def test_no_duplicated_ack_messages(
 
     wait = 30
 
-    connection = get_connection(test_config.pulse)
-    queue = get_queue(test_config.pulse)
-    queue(connection).queue_declare()
-    queue(connection).queue_bind()
+    connection, queue = _setup_connection_and_queue(test_config.pulse)
 
     worker = PulseWorker(connection, queue, one_shot=True)
 
@@ -142,7 +193,7 @@ def test_no_duplicated_ack_messages(
     callback.assert_called_once()
 
 
-@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without rabbitMq")
+@pytest.mark.skipif(NO_RABBITMQ, reason="This test doesn't work without RabbitMQ")
 def test_messages_in_order(
     test_config: Config,
     get_payload: Callable,
@@ -151,10 +202,7 @@ def test_messages_in_order(
 
     It may also timeout, which is likely indicative of the same issue.
     """
-    connection = get_connection(test_config.pulse)
-    queue = get_queue(test_config.pulse)
-    queue(connection).queue_declare()
-    queue(connection).queue_bind()
+    connection, queue = _setup_connection_and_queue(test_config.pulse)
 
     worker = PulseWorker(connection, queue, one_shot=False)
 
@@ -184,3 +232,13 @@ def test_messages_in_order(
     worker.run()
 
     assert events_log == [0, 0, 1, 1]
+
+
+def _setup_connection_and_queue(
+    pulse_config: PulseConfig,
+) -> tuple[kombu.Connection, kombu.Queue]:
+    connection = get_connection(pulse_config)
+    queue = get_queue(pulse_config)
+    queue(connection).queue_declare()
+    queue(connection).queue_bind()
+    return connection, queue
