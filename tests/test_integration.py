@@ -47,6 +47,9 @@ def test_send_and_receive(
         message.ack()
         assert body["payload"] == payload
 
+    # Create queue and bindings prior to sending.
+    _, _ = _setup_connection_and_queue(pulse_config)
+
     connection, queue = pulse_utils.send_pulse_message(
         pulse_config, payload, purge=True
     )
