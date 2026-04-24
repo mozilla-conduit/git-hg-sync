@@ -7,10 +7,10 @@ userid = "SET THIS IN PULSE_USERID ENV VARIABLE"
 password = "SET THIS IN PULSE_PASSWORD ENV VARIABLE"
 # The exchange is declared by the Producer.
 exchange = "exchange/landoprod/pushes"
-routing_key = "gitpushes"
+routing_key = "SET THIS IN PULSE_ROUTING_KEY ENV VARIABLE"
 # The Consumer declares the queue and binds it to the exchange.
 heartbeat = 30
-queue = "queue/githgsyncprod/pushes"
+queue = "SET THIS IN PULSE_QUEUE ENV VARIABLE"
 
 [sentry]
 sentry_dsn = ""
