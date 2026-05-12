@@ -84,9 +84,6 @@ class Config(BaseSettings):
 
     @staticmethod
     def from_file(file_path: pathlib.Path) -> "Config":
-        assert file_path.exists(), f"config file {file_path} doesn't exists"
-        if "config-suite.toml" in str(file_path):
-            pytest.skip("ignoring placeholder file created by suite")
         with file_path.open("rb") as config_file:
             config = tomllib.load(config_file)
         return Config(**config)

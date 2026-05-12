@@ -10,6 +10,8 @@ BASEDIR = Path(__file__).parent.parent
 
 @pytest.mark.parametrize("config_file", list(BASEDIR.glob("config-*.toml")))
 def test_config_files(config_file: Path) -> None:
+    if "config-suite.toml" in str(config_file):
+        pytest.skip("ignoring placeholder file created by suite")
     try:
         config = Config.from_file(config_file)
     except ValidationError as exc:
