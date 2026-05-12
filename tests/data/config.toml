@@ -2,9 +2,9 @@
 userid = "guest"
 host = "pulse"
 port = 5672
-exchange = "exchange/guest/test"
+exchange = "exchange/git-hg-sync/test"
 routing_key = "default"
-queue = "queue/guest/test"
+queue = "queue/git-hg-sync/test"
 password = "guest"
 heartbeat = 30
 ssl = false
