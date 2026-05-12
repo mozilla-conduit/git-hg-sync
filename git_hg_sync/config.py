@@ -1,18 +1,21 @@
-import os
 import pathlib
-from typing import Self
+from typing import Annotated, Self, override
 
-import pydantic
-import pytest
 import tomllib
 from mozlog import get_proxy_logger
+from pydantic import AliasChoices, Field, model_validator
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 from git_hg_sync.mapping import BranchMapping, TagMapping
 
 logger = get_proxy_logger(__name__)
 
 
-class PulseConfig(pydantic.BaseModel):
+class PulseConfig(BaseSettings):
     userid: str
     host: str
     port: int
@@ -24,41 +27,37 @@ class PulseConfig(pydantic.BaseModel):
     ssl: bool
 
 
-class TrackedRepository(pydantic.BaseModel):
+class TrackedRepository(BaseSettings):
     name: str
     url: str
 
 
-class ClonesConfig(pydantic.BaseModel):
+class ClonesConfig(BaseSettings):
     directory: pathlib.Path
 
 
-class SentryConfig(pydantic.BaseModel):
-    sentry_dsn: str | None = None
+class SentryConfig(BaseSettings):
+    sentry_dsn: Annotated[str, Field(alias=AliasChoices("sentry_dsn", "dsn"))] = ""
 
 
-class Config(pydantic.BaseModel):
+class Config(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_nested_delimiter="_",
+        env_nested_max_split=1,
+        nested_model_default_partial_update=True,
+    )
+
     pulse: PulseConfig
-    sentry: SentryConfig = SentryConfig(sentry_dsn="")
+    sentry: SentryConfig | None = None
     clones: ClonesConfig
     tracked_repositories: list[TrackedRepository]
     branch_mappings: list[BranchMapping]
     tag_mappings: list[TagMapping] = []
 
-    @pydantic.model_validator(mode="after")
+    @model_validator(mode="after")
     def verify_all_mappings_reference_tracked_repositories(
         self,
     ) -> Self:
-        for config_field in PulseConfig.model_fields:
-            env_var = f"PULSE_{config_field}".upper()
-            self._update_config_from_env(
-                f"Pulse {config_field}", self.pulse, config_field, env_var
-            )
-
-        self._update_config_from_env(
-            "Sentry DSN", self.sentry, "sentry_dsn", "SENTRY_DSN"
-        )
-
         tracked_urls = [tracked_repo.url for tracked_repo in self.tracked_repositories]
         for mapping in self.branch_mappings:
             if mapping.source_url not in tracked_urls:
@@ -67,20 +66,21 @@ class Config(pydantic.BaseModel):
                 )
         return self
 
-    @staticmethod
-    def _update_config_from_env(
-        name: str,
-        config_entry: pydantic.BaseModel | None,
-        config_field: str,
-        env_var: str,
-    ) -> None:
-        """Update a specific field in a model based on the environment."""
-        if not config_entry:
-            return
-
-        if value := os.getenv(env_var):
-            logger.info(f"Setting {name} option from {env_var}")
-            setattr(config_entry, config_field, value)
+    @override
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Settings sources so the environment takes precedence over init options."""
+        return (
+            env_settings,
+            init_settings,
+        )
 
     @staticmethod
     def from_file(file_path: pathlib.Path) -> "Config":

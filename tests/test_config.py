@@ -21,11 +21,12 @@ def test_load_config_env_override(monkeypatch: pytest.MonkeyPatch) -> None:
             "exchange": "overridden exchange",
             "host": "overridden host",
             "password": "overridden password",
-            "port": "overridden port",
+            "port": "1337",
             "queue": "overridden queue",
             "routing_key": "overridden routing_key",
-            "ssl": "false",
+            "ssl": "True",
             "userid": "overridden userid",
+            "heartbeat": "42",
         },
         "sentry": {
             "sentry_dsn": "overridden sentry_dsn",
@@ -46,7 +47,9 @@ def test_load_config_env_override(monkeypatch: pytest.MonkeyPatch) -> None:
     for section, env in overrides.items():
         for var, value in env.items():
             section_config = getattr(config, section)
-            assert getattr(section_config, var) == value, (
+            # The original override value is an int, so we cast the config value back,
+            # for equality check.
+            assert str(getattr(section_config, var)) == value, (
                 f"Configuration not overridden for {section}.{var}"
             )
 
