@@ -1,8 +1,9 @@
 from pathlib import Path
 
 import pytest
+import tomllib
 
-from git_hg_sync.config import Config
+from git_hg_sync.config import Config, PulseConfig
 from git_hg_sync.events import Push
 
 HERE = Path(__file__).parent
@@ -154,3 +155,25 @@ def test_tag_mapping(
     assert destination_tags == expected_branches
 
     # tags_mappings = config.tag_mappings
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    (
+        "host",
+        "exchange",
+        "userid",
+        "password",
+        "routing_key",
+        "queue",
+    ),
+)
+def test_pulse_not_empty(field_name: str) -> None:
+    test_config_file = HERE / "data" / "config.toml"
+    with test_config_file.open("rb") as config_file:
+        config = tomllib.load(config_file)
+    pulse_config = config["pulse"]
+    pulse_config[field_name] = ""
+
+    with pytest.raises(ValueError, match=f"{field_name} cannot be empty"):
+        PulseConfig(**pulse_config)
