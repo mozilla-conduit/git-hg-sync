@@ -190,11 +190,11 @@ url = "https://github.com/thunderbird/infra-testing.git"
 # We don't sync to this repository, but we put it here first to fetch all
 # references early, with the benefit of bundles.
 #
-[[branch_mappings]]
-source_url = "https://github.com/thunderbird/infra-testing.git"
-branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
-destination_url = "https://hg.mozilla.org/comm-unified/"
-destination_branch = "NOT_A_VALID_BRANCH"
+# [[branch_mappings]]
+# source_url = "https://github.com/thunderbird/infra-testing.git"
+# branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
+# destination_url = "https://hg.mozilla.org/comm-unified/"
+# destination_branch = "NOT_A_VALID_BRANCH"
 
 [[branch_mappings]]
 source_url = "https://github.com/thunderbird/infra-testing.git"
