@@ -41,12 +41,16 @@ class RepoSynchronizer:
         if self._clone_directory.exists():
             repo = Repo(self._clone_directory)
         else:
-            repo = Repo.init(self._clone_directory)
+            repo = Repo.clone_from(
+                self._src_remote,
+                self._clone_directory,
+                multi_options=[
+                    '--config cinnabar.experiments="branch,tag,git_commit,merge"',
+                ],
+                allow_unsafe_options=True,
+                bare=True,
+            )
 
-        # Ensure that the clone repository is well configured
-        with repo.config_writer() as config:
-            config.add_section("cinnabar")
-            config.set("cinnabar", "experiments", "branch,tag,git_commit,merge")
         return repo
 
     def _commit_has_mercurial_metadata(self, repo: Repo, git_commit: str) -> bool:
