@@ -27,7 +27,7 @@ $ docker compose up -d
 The logs from the syncer can be displayed with
 
 ```console
-$ docker compose logs -f sync
+$ docker compose logs -f git-hg-sync
 ```
 
 Repositories can be seen on the host in the `clones` subdirectory. Remember to delete if you want to start fresh.
@@ -50,10 +50,10 @@ The `send` container can be used by piping messages to send via the exchange, in
 To create, then synchronise a new commit to the `beta` and `esr115` branches, do the following. A tag can also be created, and synced.
 
 ```console
-$ docker compose exec sync git --git-dir /clones/test-repo-git/.git commit --allow-empty -m 'test commit'
-$ REV=$(docker compose exec sync git --git-dir /clones/test-repo-git/.git show -q --pretty=format:%H)
+$ docker compose exec git-hg-sync git --git-dir /clones/test-repo-git/.git commit --allow-empty -m 'test commit'
+$ REV=$(docker compose exec git-hg-sync git --git-dir /clones/test-repo-git/.git show -q --pretty=format:%H)
 $ TAG=FIREFOX_BETA_42_END
-$ docker compose exec sync git --git-dir /clones/test-repo-git/.git tag $TAG $REV
+$ docker compose exec git-hg-sync git --git-dir /clones/test-repo-git/.git tag $TAG $REV
 $ echo '{"payload": {"type": "push", "repo_url": "/clones/test-repo-git", "branches": { "beta": "'$REV'", "esr115": "'$REV'" }, "tags": { "'$TAG'": "'$REV'" }, "time": "'`date +%s`'", "user": "'$USER'", "push_json_url": "blu", "push_id": 2 }}' \
   | docker compose run --rm -T  send
 ```
@@ -68,7 +68,7 @@ $ hg --cwd clones/mozilla-esr115 log | head -n 6
 changeset:   219:3acba9603e31
 tag:         tip
 parent:      217:19243c838e62
-user:        root <docker@sync>
+user:        root <docker@git-hg-sync>
 date:        Tue Mar 18 04:18:41 2025 +0000
 summary:     test commit
 $ cd ../mozilla-beta
@@ -88,8 +88,8 @@ It contains 6 main sections:
 - `sentry` contains the `sentry_dsn` for monitoring
 - `clones` allows to set the `directory` in which local work clones will be created
 - `tracked_repositories` provides `name` and source `url` for Git repos to track
-- `branch_mappings` describes which Git repo and branches should be sync to which Hg repo
-- `tag_mappings` describes which Git tags should be sync to which Hg repo
+- `branch_mappings` describes which Git repo and branches should be synced to which Hg repo
+- `tag_mappings` describes which Git tags should be synced to which Hg repo
 
 By default, `config-docker.toml` will be used, both by the Docker image itself,
 as well as the compose stack. It is however possible to instruct the container
