@@ -3,7 +3,13 @@ from typing import Annotated, Self, override
 
 import tomllib
 from mozlog import get_proxy_logger
-from pydantic import AliasChoices, Field, model_validator
+from pydantic import (
+    AfterValidator,
+    AliasChoices,
+    Field,
+    ValidationInfo,
+    model_validator,
+)
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -15,16 +21,25 @@ from git_hg_sync.mapping import BranchMapping, TagMapping
 logger = get_proxy_logger(__name__)
 
 
+def not_empty(value: str | int | None, validation_info: ValidationInfo) -> str | int:
+    if not value:
+        raise ValueError(f"{validation_info.field_name} cannot be empty")
+    return value
+
+
 class PulseConfig(BaseSettings):
-    userid: str
-    host: str
+    host: Annotated[str, AfterValidator(not_empty)]
     port: int
-    exchange: str
-    routing_key: str
-    queue: str
-    password: str
-    heartbeat: int
     ssl: bool
+
+    exchange: Annotated[str, AfterValidator(not_empty)]
+    heartbeat: int
+
+    userid: Annotated[str, AfterValidator(not_empty)]
+    password: Annotated[str, AfterValidator(not_empty)]
+
+    routing_key: Annotated[str, AfterValidator(not_empty)]
+    queue: Annotated[str, AfterValidator(not_empty)]
 
 
 class TrackedRepository(BaseSettings):
