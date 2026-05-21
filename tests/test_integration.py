@@ -1,6 +1,7 @@
 import os
 import subprocess
 from collections.abc import Callable
+from configparser import ConfigParser
 from pathlib import Path
 from time import sleep
 from typing import Any
@@ -109,7 +110,8 @@ def test_full_app(
     subprocess.run(["hg", "init"], cwd=hg_remote_repo_path, check=True)
 
     # Create a remote git repository
-    git_remote_repo_path = tmp_path / "git-remotes" / "firefox-releases"
+    git_repo_name = "firefox-releases"
+    git_remote_repo_path = tmp_path / "git-remotes" / git_repo_name
     # Create an initial commit on git
     repo = Repo.init(git_remote_repo_path, b="esr128")
     foo_path = git_remote_repo_path / "foo.txt"
@@ -152,6 +154,22 @@ def test_full_app(
 
     # execute app
     start_app(config, get_proxy_logger("test"), one_shot=True)
+
+    # test that the working repository is a bare repo
+    git_clone_config_path = config.clones.directory / git_repo_name / "config"
+    assert not (git_clone_config_path / ".git").exists(), (
+        "Found .git in {git_clone_config_path}, it should be a bare repo"
+    )
+    assert git_clone_config_path.exists(), (
+        "Cannot find git clone config at {git_clone_config_path}, is it a bare repo?"
+    )
+    git_clone_config = ConfigParser()
+    with git_clone_config_path.open("r") as fp:
+        git_clone_config.read_file(fp)
+    assert git_clone_config["core"]["bare"], "Working copy clone is not a bare repo"
+    assert (
+        git_clone_config["cinnabar"]["experiments"] == "branch,tag,git_commit,merge"
+    ), "Incorrect git cinnabar.experiments configuration set"
 
     # test
     assert "BAR CONTENT" in hg_cat(hg_remote_repo_path, "bar.txt", destination_branch)
