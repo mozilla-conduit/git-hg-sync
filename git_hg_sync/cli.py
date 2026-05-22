@@ -14,8 +14,8 @@ from mozlog import commandline
 from pydantic import ValidationError
 
 from git_hg_sync.__main__ import get_connection
+from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
-from git_hg_sync.consts import PID_FILEPATH
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
@@ -265,7 +265,7 @@ def pause(
     args: argparse.Namespace,  # noqa: ARG001
 ) -> None:
     """Pause the worker by sending it the TSTP signal."""
-    pid = int(PID_FILEPATH.read_text().strip())
+    pid = Application.get_pid()
     logger.info(f"Sending SIGTSTP to {pid} ...")
     os.kill(pid, signal.SIGTSTP)
 
@@ -275,7 +275,8 @@ def resume(
     logger: commandline.StructuredLogger,
     args: argparse.Namespace,  # noqa: ARG001
 ) -> None:
-    pid = int(PID_FILEPATH.read_text().strip())
+    """Pause the paused worker by sending it the CONT signal."""
+    pid = Application.get_pid()
     logger.info(f"Sending SIGCONT to {pid} ...")
     os.kill(pid, signal.SIGCONT)
 

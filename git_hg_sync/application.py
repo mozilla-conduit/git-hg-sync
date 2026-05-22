@@ -44,6 +44,10 @@ class Application:
         PID_FILEPATH.write_text(f"{os.getpid()}\n")
         self._worker.run()
 
+    @classmethod
+    def get_pid(cls) -> int:
+        return int(PID_FILEPATH.read_text().strip())
+
     def _handle_push_event(self, push_event: Push) -> None:
         logger.debug(f"Handling event {push_event}")
         synchronizer = self._repo_synchronizers[push_event.repo_url]
