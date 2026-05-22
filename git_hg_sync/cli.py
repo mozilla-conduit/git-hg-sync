@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import signal
 import sys
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,7 @@ from mozlog import commandline
 from pydantic import ValidationError
 
 from git_hg_sync.__main__ import get_connection
+from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
@@ -236,6 +238,49 @@ def fetchrepo(
             syncer.fetch_all_from_remote(repo_clone, cinnabar_remote, args.verbose)
 
 
+###
+# pause/resume
+###
+
+
+def set_subparser_pause_resume(
+    subparsers: Any,
+) -> None:
+    subparser = subparsers.add_parser(
+        "pause",
+        help="Pause the worker",
+    )
+    subparser.set_defaults(func=pause)
+
+    subparser = subparsers.add_parser(
+        "resume",
+        help="Resume the paused worker",
+    )
+    subparser.set_defaults(func=resume)
+
+
+def pause(
+    config: Config,  # noqa: ARG001
+    logger: commandline.StructuredLogger,
+    args: argparse.Namespace,  # noqa: ARG001
+) -> None:
+    """Pause the worker by sending it the TSTP signal."""
+    pid = Application.get_pid()
+    logger.info(f"Sending SIGTSTP to {pid} ...")
+    os.kill(pid, signal.SIGTSTP)
+
+
+def resume(
+    config: Config,  # noqa: ARG001
+    logger: commandline.StructuredLogger,
+    args: argparse.Namespace,  # noqa: ARG001
+) -> None:
+    """Pause the paused worker by sending it the CONT signal."""
+    pid = Application.get_pid()
+    logger.info(f"Sending SIGCONT to {pid} ...")
+    os.kill(pid, signal.SIGCONT)
+
+
 def main() -> None:
     parser = get_parser()
     commandline.add_logging_group(parser)
@@ -244,6 +289,7 @@ def main() -> None:
     set_subparser_config(subparsers)
     set_subparser_dequeue(subparsers)
     set_subparser_fetchrepo(subparsers)
+    set_subparser_pause_resume(subparsers)
 
     args = parser.parse_args()
     logger = commandline.setup_logging("service", args)

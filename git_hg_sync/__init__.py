@@ -1,3 +1,3 @@
-from pathlib import Path
+from .consts import PID_FILEPATH
 
-PID_FILEPATH = Path("/tmp/git-hg-sync.pid")
+__all__ = ["PID_FILEPATH"]

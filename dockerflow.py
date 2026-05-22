@@ -3,7 +3,7 @@ import os
 
 import flask
 
-from git_hg_sync import PID_FILEPATH
+from git_hg_sync.application import Application
 
 app = flask.Flask(__name__)
 
@@ -16,7 +16,7 @@ def lb_heartbeat() -> flask.Response:
 @app.route("/__heartbeat__")
 def heartbeat() -> flask.Response:
     try:
-        pid = int(PID_FILEPATH.read_text().strip())
+        pid = Application.get_pid()
     except (OSError, ValueError):
         return flask.Response("failed to read pidfile", status=503)
 
