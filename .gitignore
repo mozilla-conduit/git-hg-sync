@@ -1,6 +1,5 @@
 **/__pycache__/
 /.coverage
-/.tox
 /clones
 /config.toml
 /pidfile
