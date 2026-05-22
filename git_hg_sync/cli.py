@@ -235,6 +235,8 @@ def fetchrepo(
             cinnabar_remote = f"hg::{remote}"
             syncer.fetch_all_from_remote(repo_clone, cinnabar_remote, args.verbose)
 
+        logger.info(f"Fetched data from {len(remote_set) + 1} remotes.")
+
 
 def main() -> None:
     parser = get_parser()
