@@ -60,11 +60,14 @@ services:
       - pulse_network
 
   pip-compile:
-    <<: *sync_config
-    command: ["--verbose", "--all-build-deps", "--allow-unsafe", "--extra=dev", "--generate-hashes", "--output-file=requirements.txt", "pyproject.toml"]
+    user: "${UID}:${GID}"
+    image: git-hg-sync-requirements
+    build:
+      context: .
+      args:
+        - DEP_UPDATE=yes
+    command: ["--verbose", "--all-build-deps", "--allow-unsafe", "--extra=dev", "--generate-hashes", "--output-file=./new-requirements/requirements.txt", "pyproject.toml"]
     entrypoint: pip-compile
-    volumes:
-      - .:/app
     profiles:
       - pip-compile
 

@@ -6,3 +6,4 @@
 /pidfile
 /tests_output
 config-suite.toml
+new-requirements/

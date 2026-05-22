@@ -1,5 +1,9 @@
 FROM python:3.12-slim
 
+# If DEP_UPDATE is 'yes', don't install the requirements.txt to let pip install the most recent dependencies.
+ARG DEP_UPDATE
+ENV DEP_UPDATE=$DEP_UPDATE
+
 ENV ENVIRONMENT=docker
 ENV SSH_USERNAME=app
 
@@ -22,8 +26,8 @@ COPY install_git-cinnabar.sh .
 RUN ./install_git-cinnabar.sh \
     && mv git-cinnabar git-remote-hg /usr/bin/
 
-COPY --chown=app:app requirements.txt .
-RUN pip install -r requirements.txt
+RUN --mount=source=./requirements.txt,dst=/app/requirements.txt test "$DEP_UPDATE" = "yes" \
+    || pip install -r requirements.txt
 
 RUN mkdir -p /clones \
   && chown app:app /clones
@@ -31,10 +35,12 @@ RUN mkdir -p /clones \
 # copy app and install
 COPY docker/hgrc /etc/mercurial/hgrc
 COPY docker/entrypoint.sh /entrypoint.sh
+
 COPY --chown=app:app . /app
+RUN test "$DEP_UPDATE" != "yes" || rm /app/requirements.txt
 
 # Make the install editable so we can mount the local source into a container based on this image.
-RUN pip install -e /app
+RUN pip install -e /app[dev]
 USER app
 
 HEALTHCHECK CMD curl -sfk http://localhost:$PORT -o/dev/null
