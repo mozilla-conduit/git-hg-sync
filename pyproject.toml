@@ -12,7 +12,6 @@ dependencies = [
     "GitPython",
     "gunicorn",
     "kombu",
-    "mozillapulse",
     "mozlog",
     "pydantic-settings",
     "sentry_sdk",
@@ -21,11 +20,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    # Pin due to https://github.com/jazzband/pip-tools/issues/2319, 
-    # otherwise pip-compile doesn't work in the container.
-    "pip<27.0",
-
-    "pip-tools",
+    "pip",
+    "pip-tools>=7.5.3",
     "pytest>=8.3.4",
     "pytest-cov",
     "pytest-mock",

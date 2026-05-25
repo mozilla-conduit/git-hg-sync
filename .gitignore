@@ -1,8 +1,8 @@
 **/__pycache__/
 /.coverage
-/.tox
 /clones
 /config.toml
 /pidfile
 /tests_output
 config-suite.toml
+new-requirements/

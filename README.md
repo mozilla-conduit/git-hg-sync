@@ -162,20 +162,19 @@ following commands:
 Format and test/lint code:
 
 ```console
-$ tox -e format,lint
+$ make format
 ```
 
 Run tests:
 
 ```console
-$ docker compose run --rm test
-$ docker compose down
+$ make test
 ```
 
 ## Update requirements
 
 ```console
-$ docker compose run --rm pip-compile
+$ make requirements
 ```
 
 ## Known limitations
