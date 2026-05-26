@@ -158,23 +158,6 @@ class RepoSynchronizer:
         os.environ["GIT_AUTHOR_NAME"] = userinfo
         logger.debug(f"{REQUEST_USER_ENV_VAR} and GIT_AUTHOR_* set to {request_user}")
 
-        # Add mercurial metadata to new commits from synced branches
-        # Some of these commits could be tagged in the same synchronization and
-        # tagging can only be done on a commit that already have mercurial
-        # metadata
-        if branch_ops:
-            retry(
-                "adding mercurial metadata to git commits",
-                lambda: repo.git.execute(
-                    ["git"]
-                    + ["-c", "cinnabar.data=force"]
-                    + ["push"]
-                    + ["--dry-run"]
-                    + [destination_remote]
-                    + refs_to_push,
-                ),
-            )
-
         # Handle tag operations
         tag_ops: list[SyncTagOperation] = [
             op for op in operations if isinstance(op, SyncTagOperation)
@@ -214,12 +197,42 @@ class RepoSynchronizer:
                 )
 
         # Create tags
+
+        # In bug 2012575, we ran into an issue where cinnabar's common-commit detection
+        # logic hit an octopus merge that it didn't like once Hg metadata was populated.
+        # We therefore need to rollback the metadata prior to pushing the new commits
+        # for real, to avoid this issue, and we need to know where to roll it back to.
+        rollback_candidate = None
+
         tag_branches_to_push = set()
         for tag_operation in tag_ops:
+
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
-                raise MercurialMetadataNotFoundError(tag_operation)
+                rollback_candidate = self._get_current_cinnabar_state(repo)
+
+                # Tagging can only be done on a commit that already has mercurial
+                # metadata.
+                #
+                # Add mercurial metadata to new commits from synced branches.
+                retry(
+                        "adding mercurial metadata to new git commits for tagging",
+                        lambda: repo.git.execute(
+                            ["git"]
+                            + ["-c", "cinnabar.data=force"]
+                            + ["push"]
+                            + ["--dry-run"]
+                            + [destination_remote]
+                            + refs_to_push,
+                            ),
+                        )
+
+                # Make sure it worked.
+                if not self._commit_has_mercurial_metadata(
+                    repo, tag_operation.source_commit
+                ):
+                    raise MercurialMetadataNotFoundError(tag_operation)
 
             hg_sha = self._git2hg(repo, tag_operation.source_commit)
             tag_message = f"No bug - Tagging {hg_sha} with {tag_operation.tag} {tag_operation.tag_message_suffix}"
@@ -247,6 +260,10 @@ class RepoSynchronizer:
                 raise RepoSyncError(tag_operation, exc) from exc
 
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
+
+        if rollback_candidate:
+            logger.debug("rolling back cinnabar metadata update for new commits before push")
+            self._rollback_cinnabar_state(repo, rollback_candidate)
 
         for tag_branch in tag_branches_to_push:
             refs_to_push.append(f"{tag_branch}:{self._cinnabar_branch(tag_branch)}")
@@ -301,6 +318,13 @@ class RepoSynchronizer:
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:
         return repo.git.cinnabar(["git2hg", git_commit]).strip()
+
+    def _get_current_cinnabar_state(self, repo: Repo) -> str:
+        candidates: str = repo.git.cinnabar(["rollback", "--candidates"]).strip()
+        return candidates.split(maxsplit=1)[0]
+
+    def _rollback_cinnabar_state(self, repo: Repo, rollback_candidate: str) -> None:
+        repo.git.cinnabar(["rollback", rollback_candidate])
 
     def _cinnabar_branch(self, branch: str) -> str:
         return f"refs/heads/branches/{branch}/tip"
