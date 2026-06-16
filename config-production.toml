@@ -43,6 +43,7 @@ branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
 destination_url = "https://hg.mozilla.org/mozilla-unified/"
 destination_branch = "NOT_A_VALID_BRANCH"
 
+
 #
 # AUTOLAND
 #
@@ -54,7 +55,7 @@ destination_branch = "default"
 
 
 #
-# BETA
+# MOZILLA-BETA
 #
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
@@ -72,7 +73,7 @@ tags_destination_branch = "tags-unified"
 
 
 #
-# ESRs
+# MOZILLA-ESR\d+
 #
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
@@ -94,7 +95,7 @@ tags_destination_branch = "tags-unified"
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 
 #
-# ESR relbranches
+# MOZILLA-ESR relbranches
 #
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
@@ -123,7 +124,7 @@ tags_destination_branch = "tags-unified"
 
 
 #
-# RELEASE
+# MOZILLA-RELEASE
 #
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
@@ -139,8 +140,9 @@ tags_destination_branch = "tags-unified"
 # # Default
 # #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 
+
 #
-# RELEASE relbranches
+# MOZILLA-RELEASE relbranches
 #
 [[branch_mappings]]
 source_url = "https://github.com/mozilla-firefox/firefox.git"
@@ -180,6 +182,100 @@ tags_destination_branch = "tags-testing"
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 
 
+###############
+# THUNDERBIRD #
+###############
+
+[[tracked_repositories]]
+name = "thunderbird-desktop"
+url = "https://github.com/thunderbird/thunderbird-desktop.git"
+
+#
+# COMM-UNIFIED
+#
+# We don't sync to this repository, but we put it here first to fetch all
+# references early, with the benefit of bundles.
+#
+[[branch_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
+destination_url = "https://hg.mozilla.org/comm-unified/"
+destination_branch = "NOT_A_VALID_BRANCH"
+
+
+#
+# COMM-BETA
+#
+[[branch_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+branch_pattern = "beta"
+destination_url = "ssh://hg.mozilla.org/releases/comm-beta/"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+tag_pattern = "(^THUNDERBIRD|NIGHTLY|BETA|RELEASE)_.*$"
+destination_url = "ssh://hg.mozilla.org/releases/comm-beta/"
+tags_destination_branch = "tags-unified"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+
+#
+# COMM-CENTRAL
+#
+[[branch_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+branch_pattern = "main"
+destination_url = "ssh://hg.mozilla.org/comm-central/"
+destination_branch = "default"
+
+
+[[tag_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+tag_pattern = ".+"
+destination_url = "ssh://hg.mozilla.org/comm-central/"
+tags_destination_branch = "tags-unified"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+
+#
+# COMM-ESR\d+
+#
+[[branch_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+# esr<M> branches to comm-esr<M>
+branch_pattern = "^esr(\\d+)$"
+destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\1/"
+destination_branch = "default"
+
+
+[[tag_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+tag_pattern = "^ESR_(\\d+)_BASE$"
+destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\1/"
+tags_destination_branch = "tags-unified"
+
+
+#
+# COMM-RELEASE
+#
+[[branch_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+branch_pattern = "release"
+destination_url = "ssh://hg.mozilla.org/releases/comm-release/"
+destination_branch = "default"
+
+[[tag_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+tag_pattern = "(^THUNDERBIRD|NIGHTLY|RELEASE|RELEASE)_.*$"
+destination_url = "ssh://hg.mozilla.org/releases/comm-release/"
+tags_destination_branch = "tags-unified"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+
 #############################
 # THUNDERBIRD-INFRA-TESTING #
 #############################
@@ -208,31 +304,6 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/thunderbird/infra-testing.git"
-
-# comm-central:
-# tag_pattern = ".+"
-# destination_url = "ssh://hg.mozilla.org/comm-central"
-# tags_destination_branch = "tags-testing"
-
-# comm-beta:
-# tag_pattern = "(^THUNDERBIRD|NIGHTLY|BETA|RELEASE)_.*$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-beta/"
-# tags_destination_branch = "tags-unified"
-
-# comm-release:
-# tag_pattern = "(^THUNDERBIRD|NIGHTLY|BETA|RELEASE)_.*$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-release/"
-# tags_destination_branch = "tags-unified"
-
-# comm-esrXXX
-# tag_pattern = "^(THUNDERBIRD)_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\2/"
-# tags_destination_branch = "tags-unified"
-# ...
-# tag_pattern = "^ESR_(\\d+)_BASE$"
-# destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\1/"
-# tags_destination_branch = "tags-unified"
-
 tag_pattern = ".+"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/comm-infra-testing/"
 tags_destination_branch = "tags-testing"
