@@ -253,7 +253,8 @@ destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
-tag_pattern = ".+"
+# <M>_<m>(_<p>...)esr BUILD and RELEASE tags to comm-esr<M>
+tag_pattern = "^THUNDERBIRD_(\\d+)(_\\d+)+esr_(BUILD\\d+|RELEASE)$"
 destination_url = "ssh://hg.mozilla.org/releases/comm-esr\\1/"
 tags_destination_branch = "tags-unified"
 
