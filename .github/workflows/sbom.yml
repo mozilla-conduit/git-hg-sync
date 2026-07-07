@@ -3,9 +3,6 @@ name: ssdlc-sbom
 on:
   release:
     types: [published]
-  push:
-    branches:
-      - '*'
 
 permissions: {} #See guidance on how to set appropriate actions at workflow or job level
 
