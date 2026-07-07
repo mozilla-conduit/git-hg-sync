@@ -278,6 +278,36 @@ tags_destination_branch = "tags-unified"
 
 
 #############################
+# NSS-INFRA-TESTING #
+#############################
+
+[[tracked_repositories]]
+name = "firefox"
+url = "https://github.com/mozilla/nss-infra-testing.git"
+
+[[branch_mappings]]
+source_url = "https://github.com/mozilla/nss-infra-testing.git"
+branch_pattern = "main"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/nss-infra-testing/"
+destination_branch = "default"
+
+# NSS_<M>_<m>_BRANCH
+[[branch_mappings]]
+source_url = "https://github.com/mozilla/nss-infra-testing.git"
+branch_pattern = "^(NSS_(\\d+_\\d+)_BRANCH)$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/nss-infra-testing/"
+destination_branch = "\\1"
+
+[[tag_mappings]]
+source_url = "https://github.com/mozilla/nss-infra-testing.git"
+tag_pattern = ".+"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/nss-infra-testing/"
+tags_destination_branch = "tags-testing"
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
+
+
+#############################
 # THUNDERBIRD-INFRA-TESTING #
 #############################
 
