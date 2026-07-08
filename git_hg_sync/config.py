@@ -1,4 +1,5 @@
 import pathlib
+from collections import Counter
 from typing import Annotated, Self, override
 
 import tomllib
@@ -79,6 +80,18 @@ class Config(BaseSettings):
                 raise ValueError(
                     f"Found mapping for untracked repository: {mapping.source_url}"
                 )
+        return self
+
+    @model_validator(mode="after")
+    def verify_unique_tracked_repositories_name(self) -> Self:
+        tracked_names = Counter(
+            tracked_repo.name for tracked_repo in self.tracked_repositories
+        )
+        non_unique = [name for name in tracked_names if tracked_names[name] > 1]
+        if non_unique:
+            raise ValueError(
+                f"Found non-unique names in tracked_repositories: {', '.join(non_unique)}"
+            )
         return self
 
     @override
