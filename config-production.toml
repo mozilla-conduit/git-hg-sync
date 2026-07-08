@@ -282,7 +282,7 @@ tags_destination_branch = "tags-unified"
 #############################
 
 [[tracked_repositories]]
-name = "firefox"
+name = "nss-infra-testing"
 url = "https://github.com/mozilla/nss-infra-testing.git"
 
 [[branch_mappings]]
