@@ -55,6 +55,18 @@ def test_load_config_env_override(monkeypatch: pytest.MonkeyPatch) -> None:
             )
 
 
+def test_unique_tracked_repository_name() -> None:
+    config = tomllib.loads((HERE / "data" / "config.toml").read_text())
+
+    # Ensure this doesn't fail without duplicates.
+    _ = Config(**config)
+
+    config["tracked_repositories"].append(config["tracked_repositories"][0])
+
+    with pytest.raises(ValueError, match="non-unique names"):
+        _ = Config(**config)
+
+
 @pytest.mark.parametrize(
     "source_url,source_branch,expected_urls,expected_branches",
     [
