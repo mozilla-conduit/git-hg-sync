@@ -16,9 +16,9 @@ asttokens==2.4.1 \
     --hash=sha256:051ed49c3dcae8913ea7cd08e46a606dba30b79993209636c4875bc1d637bc24 \
     --hash=sha256:b03869718ba9a6eb027e134bfdf69f38a236d681c83c160d510768af11254ba0
     # via devtools
-blessed==1.46.0 \
-    --hash=sha256:171ee6775a9be86bb000f2e22034c08f76851feb60934a2922feeaff43d0fa60 \
-    --hash=sha256:558334e2456300332cff9f2b211656cd3eecd3f56a5b1ee5f6110ed83c28e25d
+blessed==1.47.0 \
+    --hash=sha256:ea13e06ae40f24710325411c5fa9b689d215cf170276cf1fda41feddaec8d3e0 \
+    --hash=sha256:f4df54a32289b6a3eaca49387b4f6823ba7e04ddb5ffa18f5e1fde44e8b79681
     # via mozlog
 blinker==1.9.0 \
     --hash=sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf \
