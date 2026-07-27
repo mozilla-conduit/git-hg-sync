@@ -340,26 +340,3 @@ destination_url = "ssh://hg.mozilla.org/conduit-testing/comm-infra-testing/"
 tags_destination_branch = "tags-testing"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
-
-
-#####################
-# REVIEW (MOZ-PHAB) #
-#####################
-
-[[tracked_repositories]]
-name = "review"
-url = "https://github.com/mozilla-conduit/review.git"
-
-[[branch_mappings]]
-source_url = "https://github.com/mozilla-conduit/review.git"
-branch_pattern = ".+"
-destination_url = "ssh://hg.mozilla.org/conduit-testing/review/"
-destination_branch = "default"
-
-[[tag_mappings]]
-source_url = "https://github.com/mozilla-conduit/review.git"
-tag_pattern = ".+"
-destination_url = "ssh://hg.mozilla.org/conduit-testing/review/"
-tags_destination_branch = "tags"
-# Default
-#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
