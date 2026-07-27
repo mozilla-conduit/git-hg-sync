@@ -24,7 +24,7 @@ def test_config_files(monkeypatch: pytest.MonkeyPatch, config_file: Path) -> Non
     try:
         config = Config.from_file(config_file)
     except ValidationError as exc:
-        raise AssertionError(f"Syntax error in {config_file}") from exc
+        raise AssertionError(f"Syntax error in {config_file}: {exc}") from exc
 
     # We just do a shallow verification. What we really care is that the file could be
     # loaded correctly.
