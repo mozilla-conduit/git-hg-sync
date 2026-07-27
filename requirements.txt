@@ -527,9 +527,9 @@ ruff==0.15.20 \
     --hash=sha256:ed65ef510e43a137207e0f01cfcf998aeddb1aeeda5c9d35023e910284d7cf21 \
     --hash=sha256:f701305e66b38ea6c91882490eb73459796808e4c6362a1b765255e0cdcd4053
     # via pytest-ruff
-sentry-sdk==2.64.0 \
-    --hash=sha256:68be2c29e14ae310f8a39e1a79916b6d85c6cb41dcce789d14ff05fe293e4c55 \
-    --hash=sha256:715ea91ca860a819e8d8a50a7bde3a80d0df3b4ed7b6660a20fb9a2d084188f1
+sentry-sdk==2.66.0 \
+    --hash=sha256:096136c214c602be2b323524d30755dc5b30ec5a218a206207f33b12c05c6f11 \
+    --hash=sha256:9727d35aa83c56cd53294676fe65b96296a334c9ce107fa2142bd70f47acb265
     # via git-hg-sync (pyproject.toml)
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
