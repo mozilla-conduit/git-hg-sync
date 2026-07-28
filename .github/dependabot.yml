@@ -12,6 +12,10 @@ updates:
   allow:
     - dependency-type: all
 - package-ecosystem: "github-actions"
+  commit-message:
+    prefix: Bug 2041558 - workflows
+  cooldown:
+    default-days: 7
   directory: "/"
   schedule:
     interval: monthly
