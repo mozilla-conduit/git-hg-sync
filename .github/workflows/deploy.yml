@@ -44,7 +44,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: mozilla/deploy-actions/.github/workflows/build-and-push.yml@47edfe10709f2978fdcb5fd3037599d72aa10661 #v6.2.3
+    uses: mozilla/deploy-actions/.github/workflows/build-and-push.yml@ef0f037316873ff408a598f1cd98876dd7851e53 #v6.7.0
     with:
       image_name: "git-hg-sync"
       gar_name: "git-hg-sync-prod"
