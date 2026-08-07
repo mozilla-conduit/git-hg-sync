@@ -18,7 +18,7 @@ jobs:
           chmod a+w tests_output
 
       - name: Setup docker-compose
-        uses: docker/setup-compose-action@v1
+        uses: docker/setup-compose-action@v2
 
       - name: Build containers
         run: docker compose build
