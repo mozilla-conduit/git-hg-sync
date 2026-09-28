@@ -37,7 +37,7 @@ COPY docker/hgrc /etc/mercurial/hgrc
 COPY docker/entrypoint.sh /entrypoint.sh
 
 COPY --chown=app:app . /app
-RUN test "$DEP_UPDATE" != "yes" || rm /app/requirements.txt
+RUN test "$DEP_UPDATE" != "yes" || (rm /app/requirements.txt; pip install --upgrade pip)
 
 # Make the install editable so we can mount the local source into a container based on this image.
 RUN pip install -e /app[dev]
