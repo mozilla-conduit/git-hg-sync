@@ -1,8 +1,8 @@
 import pathlib
+import tomllib
 from collections import Counter
 from typing import Annotated, Self, override
 
-import tomllib
 from mozlog import get_proxy_logger
 from pydantic import (
     AfterValidator,
@@ -111,7 +111,7 @@ class Config(BaseSettings):
         )
 
     @staticmethod
-    def from_file(file_path: pathlib.Path) -> "Config":
+    def from_file(file_path: pathlib.Path) -> Config:
         with file_path.open("rb") as config_file:
             config = tomllib.load(config_file)
         return Config(**config)

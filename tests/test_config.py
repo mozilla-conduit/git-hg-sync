@@ -1,7 +1,7 @@
+import tomllib
 from pathlib import Path
 
 import pytest
-import tomllib
 
 from git_hg_sync.config import Config, PulseConfig
 from git_hg_sync.events import Push
