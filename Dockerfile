@@ -1,4 +1,5 @@
-FROM python:3.12-slim
+# NOTE: When bumping this, also update pyproject.toml to match.
+FROM python:3.14-slim
 
 # If DEP_UPDATE is 'yes', don't install the requirements.txt to let pip install the most recent dependencies.
 ARG DEP_UPDATE
