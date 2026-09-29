@@ -1,6 +1,9 @@
+# Pydantic requires the types to be available at runtime.
+# Replace with lazy import when migration from Python 3.14 to 3.15+
+import pathlib  # noqa: TC003
 import tomllib
 from collections import Counter
-from typing import TYPE_CHECKING, Annotated, Self, override
+from typing import Annotated, Self, override
 
 from mozlog import get_proxy_logger
 from pydantic import (
@@ -16,10 +19,9 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-if TYPE_CHECKING:
-    import pathlib
-
-    from git_hg_sync.mapping import BranchMapping, TagMapping
+# Pydantic requires the types to be available at runtime.
+# Replace with lazy import when migration from Python 3.14 to 3.15+
+from git_hg_sync.mapping import BranchMapping, TagMapping  # noqa: TC001
 
 logger = get_proxy_logger(__name__)
 
