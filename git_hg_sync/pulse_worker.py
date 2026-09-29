@@ -1,12 +1,14 @@
 import json
-from typing import Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
-import kombu
 from kombu.mixins import ConsumerMixin
 from mozlog import get_proxy_logger
 from pydantic import ValidationError
 
 from git_hg_sync.events import Event, Push
+
+if TYPE_CHECKING:
+    import kombu
 
 logger = get_proxy_logger("pulse_consumer")
 

@@ -1,12 +1,14 @@
 import re
-from collections.abc import Sequence
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TypeAlias
+from typing import TYPE_CHECKING
 
 import pydantic
 
-from git_hg_sync.events import Push
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from git_hg_sync.events import Push
 
 DEFAULT_TAG_MESSAGE_SUFFIX = "a=tagging CLOSED TREE DONTBUILD"
 
@@ -31,7 +33,7 @@ class SyncTagOperation:
     tag_message_suffix: str
 
 
-SyncOperation: TypeAlias = SyncBranchOperation | SyncTagOperation
+type SyncOperation = SyncBranchOperation | SyncTagOperation
 
 
 @dataclass

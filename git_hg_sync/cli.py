@@ -5,11 +5,10 @@ import os
 import signal
 import sys
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 from devtools import pprint
-from kombu.simple import SimpleQueue
 from mozlog import commandline
 from pydantic import ValidationError
 
@@ -18,6 +17,9 @@ from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
+
+if TYPE_CHECKING:
+    from kombu.simple import SimpleQueue
 
 
 def get_parser() -> argparse.ArgumentParser:

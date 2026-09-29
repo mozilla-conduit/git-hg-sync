@@ -1,7 +1,6 @@
-import pathlib
 import tomllib
 from collections import Counter
-from typing import Annotated, Self, override
+from typing import TYPE_CHECKING, Annotated, Self, override
 
 from mozlog import get_proxy_logger
 from pydantic import (
@@ -17,7 +16,10 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-from git_hg_sync.mapping import BranchMapping, TagMapping
+if TYPE_CHECKING:
+    import pathlib
+
+    from git_hg_sync.mapping import BranchMapping, TagMapping
 
 logger = get_proxy_logger(__name__)
 

@@ -1,13 +1,11 @@
 import os
 import subprocess
-from collections.abc import Callable
 from configparser import ConfigParser
 from pathlib import Path
 from time import sleep
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 
-import kombu
 import pulse_utils
 import pytest
 from git import Repo
@@ -16,8 +14,14 @@ from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
 from git_hg_sync.config import Config, PulseConfig
-from git_hg_sync.events import Event
 from git_hg_sync.pulse_worker import PulseWorker
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    import kombu
+
+    from git_hg_sync.events import Event
 
 NO_RABBITMQ = os.getenv("RABBITMQ") != "true"
 HERE = Path(__file__).parent

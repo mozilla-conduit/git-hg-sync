@@ -1,9 +1,11 @@
 import time
-from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 from mozlog import get_proxy_logger
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 logger = get_proxy_logger("retry")
 
