@@ -1,4 +1,5 @@
-FROM python:3.12-slim
+# NOTE: When bumping this, also update pyproject.toml to match.
+FROM python:3.14-slim
 
 # If DEP_UPDATE is 'yes', don't install the requirements.txt to let pip install the most recent dependencies.
 ARG DEP_UPDATE
@@ -37,7 +38,7 @@ COPY docker/hgrc /etc/mercurial/hgrc
 COPY docker/entrypoint.sh /entrypoint.sh
 
 COPY --chown=app:app . /app
-RUN test "$DEP_UPDATE" != "yes" || rm /app/requirements.txt
+RUN test "$DEP_UPDATE" != "yes" || (rm /app/requirements.txt; pip install --upgrade pip)
 
 # Make the install editable so we can mount the local source into a container based on this image.
 RUN pip install -e /app[dev]

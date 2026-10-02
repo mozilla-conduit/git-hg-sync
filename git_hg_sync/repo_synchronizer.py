@@ -1,9 +1,8 @@
-import io
 import os
 import re
 import threading
 from functools import partial
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import sentry_sdk
 from git import Repo
@@ -12,6 +11,10 @@ from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
 from git_hg_sync.retry import retry
+
+if TYPE_CHECKING:
+    import io
+    from pathlib import Path
 
 logger = get_proxy_logger("sync_repo")
 
@@ -206,7 +209,6 @@ class RepoSynchronizer:
 
         tag_branches_to_push = set()
         for tag_operation in tag_ops:
-
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
@@ -217,16 +219,16 @@ class RepoSynchronizer:
                 #
                 # Add mercurial metadata to new commits from synced branches.
                 retry(
-                        "adding mercurial metadata to new git commits for tagging",
-                        lambda: repo.git.execute(
-                            ["git"]
-                            + ["-c", "cinnabar.data=force"]
-                            + ["push"]
-                            + ["--dry-run"]
-                            + [destination_remote]
-                            + refs_to_push,
-                            ),
-                        )
+                    "adding mercurial metadata to new git commits for tagging",
+                    lambda: repo.git.execute(
+                        ["git"]
+                        + ["-c", "cinnabar.data=force"]
+                        + ["push"]
+                        + ["--dry-run"]
+                        + [destination_remote]
+                        + refs_to_push,
+                    ),
+                )
 
                 # Make sure it worked.
                 if not self._commit_has_mercurial_metadata(
@@ -262,7 +264,9 @@ class RepoSynchronizer:
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
 
         if rollback_candidate:
-            logger.debug("rolling back cinnabar metadata update for new commits before push")
+            logger.debug(
+                "rolling back cinnabar metadata update for new commits before push"
+            )
             self._rollback_cinnabar_state(repo, rollback_candidate)
 
         for tag_branch in tag_branches_to_push:

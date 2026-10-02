@@ -1,6 +1,6 @@
 import subprocess
-from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
@@ -13,6 +13,9 @@ from git_hg_sync.__main__ import get_connection, get_queue
 from git_hg_sync.config import PulseConfig, TrackedRepository
 from git_hg_sync.mapping import SyncBranchOperation, SyncTagOperation
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 import sys
-from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import mozlog
 import mozlog.formatters
@@ -9,6 +9,9 @@ import pytest
 
 from git_hg_sync.config import ClonesConfig, Config, PulseConfig, TrackedRepository
 from git_hg_sync.mapping import BranchMapping
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 @pytest.fixture(autouse=True, scope="session")

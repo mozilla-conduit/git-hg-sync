@@ -17,7 +17,7 @@ def lb_heartbeat() -> flask.Response:
 def heartbeat() -> flask.Response:
     try:
         pid = Application.get_pid()
-    except (OSError, ValueError):
+    except OSError, ValueError:
         return flask.Response("failed to read pidfile", status=503)
 
     try:

@@ -3,17 +3,21 @@ import json
 import os
 import signal
 import sys
-from collections.abc import Sequence
-from types import FrameType
+from typing import TYPE_CHECKING
 
 import sentry_sdk
 from mozlog import get_proxy_logger
 
 from git_hg_sync import PID_FILEPATH
 from git_hg_sync.events import Event, Push
-from git_hg_sync.mapping import Mapping, SyncOperation
-from git_hg_sync.pulse_worker import PulseWorker
-from git_hg_sync.repo_synchronizer import RepoSynchronizer
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+    from types import FrameType
+
+    from git_hg_sync.mapping import Mapping, SyncOperation
+    from git_hg_sync.pulse_worker import PulseWorker
+    from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 logger = get_proxy_logger(__name__)
 

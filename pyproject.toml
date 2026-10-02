@@ -5,7 +5,8 @@ build-backend = "hatchling.build"
 [project]
 name = "git-hg-sync"
 readme = "README.md"
-requires-python = ">=3.10"
+# NOTE: When bumping this, also update Dockerfile to match.
+requires-python = ">=3.14"
 version = "0.1"
 dependencies = [
     "flask",
