@@ -202,6 +202,14 @@ branch_pattern = "THIS_SHOULD_MATCH_NOTHING"
 destination_url = "https://hg.mozilla.org/comm-unified/"
 destination_branch = "NOT_A_VALID_BRANCH"
 
+#
+# COMM-AUTOLAND
+#
+[[branch_mappings]]
+source_url = "https://github.com/thunderbird/thunderbird-desktop.git"
+branch_pattern = "autoland"
+destination_url = "ssh://hg.mozilla.org/integration/comm-autoland/"
+destination_branch = "default"
 
 #
 # COMM-BETA
