@@ -174,7 +174,6 @@ def set_subparser_fetchrepo(
     subparser.add_argument(
         "-a",
         "--fetch-all",
-        type=bool,
         action=argparse.BooleanOptionalAction,
         required=False,
         default=False,
@@ -183,7 +182,6 @@ def set_subparser_fetchrepo(
     subparser.add_argument(
         "-v",
         "--verbose",
-        type=bool,
         action=argparse.BooleanOptionalAction,
         required=False,
         default=False,
