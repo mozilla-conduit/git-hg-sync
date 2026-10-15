@@ -16,10 +16,6 @@ asttokens==2.4.1 \
     --hash=sha256:051ed49c3dcae8913ea7cd08e46a606dba30b79993209636c4875bc1d637bc24 \
     --hash=sha256:b03869718ba9a6eb027e134bfdf69f38a236d681c83c160d510768af11254ba0
     # via devtools
-blessed==1.50.0 \
-    --hash=sha256:046c9b2a5283a9c5bc340ed23b7d1c1f10ef2d7fb30b14bae13ef7ffc1f3ba56 \
-    --hash=sha256:6a693d524f7c21129dd61c4d10f11bda89911c05dc7df91219854c9ccf394cbf
-    # via mozlog
 blinker==1.9.0 \
     --hash=sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf \
     --hash=sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc
@@ -205,10 +201,6 @@ jinja2==3.1.6 \
     --hash=sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d \
     --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67
     # via flask
-jinxed==2.1.0 \
-    --hash=sha256:43b802d18b70e405d410fb66eb2837d1101e7e5ea922e666507bb43f34d11d09 \
-    --hash=sha256:7e755b831faa2443d44fb4ce7c0202eb9c3ed39bd5bf1193365888f4f6092b54
-    # via blessed
 kombu==5.6.2 \
     --hash=sha256:8060497058066c6f5aed7c26d7cd0d3b574990b09de842a8c5aaed0b92cc5a55 \
     --hash=sha256:efcfc559da324d41d61ca311b0c64965ea35b4c55cc04ee36e55386145dace93
@@ -307,22 +299,6 @@ markupsafe==3.0.3 \
     #   flask
     #   jinja2
     #   werkzeug
-mozfile==3.0.0 \
-    --hash=sha256:3b0afcda2fa8b802ef657df80a56f21619008f61fcc14b756124028d7b7adf5c \
-    --hash=sha256:92ca1a786abbdf5e6a7aada62d3a4e28f441ef069c7623223add45268e53c789
-    # via mozlog
-mozlog==8.1.0 \
-    --hash=sha256:89a2a9b3b54d71ab3572b7fb3b3af13100bd447ac3d980eb173d2da56498bac4 \
-    --hash=sha256:bc4a715e03896ebdb727d4df133d188cb53bcce18a1bbb90baa6bba6b83b007a
-    # via git-hg-sync (pyproject.toml)
-mozsystemmonitor==1.0.1 \
-    --hash=sha256:7610ee209f4284d16780d5de2945de8e0fb528dba71682434fee44cd33c8ae24 \
-    --hash=sha256:ab30a7587fdfee6041287f7b953911b07d0441d22bfa04bb4d82541c48bdcb02
-    # via mozlog
-mozterm==1.0.0 \
-    --hash=sha256:b1e91acec188de07c704dbb7b0100a7be5c1e06567b3beb67f6ea11d00a483a4 \
-    --hash=sha256:f5eafa25c23d391e2a2bb1dd45ee928fc9e3c811977a3856b5a5a0778011053c
-    # via mozlog
 packaging==26.3 \
     --hash=sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79 \
     --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
@@ -347,29 +323,6 @@ pluggy==1.6.0 \
     #   hatchling
     #   pytest
     #   pytest-cov
-psutil==7.2.2 \
-    --hash=sha256:0746f5f8d406af344fd547f1c8daa5f5c33dbc293bb8d6a16d80b4bb88f59372 \
-    --hash=sha256:076a2d2f923fd4821644f5ba89f059523da90dc9014e85f8e45a5774ca5bc6f9 \
-    --hash=sha256:11fe5a4f613759764e79c65cf11ebdf26e33d6dd34336f8a337aa2996d71c841 \
-    --hash=sha256:1a571f2330c966c62aeda00dd24620425d4b0cc86881c89861fbc04549e5dc63 \
-    --hash=sha256:1a7b04c10f32cc88ab39cbf606e117fd74721c831c98a27dc04578deb0c16979 \
-    --hash=sha256:1fa4ecf83bcdf6e6c8f4449aff98eefb5d0604bf88cb883d7da3d8d2d909546a \
-    --hash=sha256:2edccc433cbfa046b980b0df0171cd25bcaeb3a68fe9022db0979e7aa74a826b \
-    --hash=sha256:7b6d09433a10592ce39b13d7be5a54fbac1d1228ed29abc880fb23df7cb694c9 \
-    --hash=sha256:8c233660f575a5a89e6d4cb65d9f938126312bca76d8fe087b947b3a1aaac9ee \
-    --hash=sha256:917e891983ca3c1887b4ef36447b1e0873e70c933afc831c6b6da078ba474312 \
-    --hash=sha256:ab486563df44c17f5173621c7b198955bd6b613fb87c71c161f827d3fb149a9b \
-    --hash=sha256:ae0aefdd8796a7737eccea863f80f81e468a1e4cf14d926bd9b6f5f2d5f90ca9 \
-    --hash=sha256:b0726cecd84f9474419d67252add4ac0cd9811b04d61123054b9fb6f57df6e9e \
-    --hash=sha256:b58fabe35e80b264a4e3bb23e6b96f9e45a3df7fb7eed419ac0e5947c61e47cc \
-    --hash=sha256:c7663d4e37f13e884d13994247449e9f8f574bc4655d509c3b95e9ec9e2b9dc1 \
-    --hash=sha256:e452c464a02e7dc7822a05d25db4cde564444a67e58539a00f929c51eddda0cf \
-    --hash=sha256:e78c8603dcd9a04c7364f1a3e670cea95d51ee865e4efb3556a3a63adef958ea \
-    --hash=sha256:eb7e81434c8d223ec4a219b5fc1c47d0417b12be7ea866e24fb5ad6e84b3d988 \
-    --hash=sha256:ed0cace939114f62738d808fdcecd4c869222507e266e574799e9c0faa17d486 \
-    --hash=sha256:eed63d3b4d62449571547b60578c5b2c4bcccc5387148db46e0c2313dad0ee00 \
-    --hash=sha256:fd04ef36b4a6d599bbdb225dd1d3f51e00105f6d48a28f006da7f9822f2606d8
-    # via mozsystemmonitor
 pydantic==2.13.5 \
     --hash=sha256:346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73 \
     --hash=sha256:51a9c5f7b2f8e636f04c6cada605d9b6a3bf1348fdf945a3d8869b19bba0ee08
@@ -563,10 +516,7 @@ sentry-sdk==2.69.2 \
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
-    # via
-    #   asttokens
-    #   mozfile
-    #   mozterm
+    # via asttokens
 smmap==5.0.3 \
     --hash=sha256:4d9debb8b99007ae47165abc08670bd74cb74b5227dda7f643eccc4e9eb5642c \
     --hash=sha256:c106e05d5a61449cf6ba9a1e650227ecfb141590d2a98412103ff35d89fc7b2f
@@ -606,10 +556,6 @@ vine==5.1.0 \
     # via
     #   amqp
     #   kombu
-wcwidth==0.8.4 \
-    --hash=sha256:2097bb1d28a0ba8fe177c2eb607317f9b1627b03f33ebebfd3da670b337a65ba \
-    --hash=sha256:2dae09efa25253ae2874188e86d6861af3b1652aef4118cdf3f0bda288a957fb
-    # via blessed
 werkzeug==3.1.8 \
     --hash=sha256:63a77fb8892bf28ebc3178683445222aa500e48ebad5ec77b0ad80f8726b1f50 \
     --hash=sha256:9bad61a4268dac112f1c5cd4630a56ede601b6ed420300677a869083d70a4c44

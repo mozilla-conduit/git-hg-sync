@@ -1,13 +1,11 @@
+import logging
 import time
 from typing import TYPE_CHECKING, Any
-
-import sentry_sdk
-from mozlog import get_proxy_logger
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-logger = get_proxy_logger("retry")
+logger = logging.getLogger(__name__)
 
 
 def retry(
@@ -47,7 +45,6 @@ def retry(
         try:
             return callback()
         except Exception as exc:
-            sentry_sdk.capture_exception(exc)
             action_text = f" {action}" if action else ""
             if attempt < tries:
                 logger.warning(
@@ -56,7 +53,9 @@ def retry(
                 if delay > 0:
                     time.sleep(delay)
             else:
-                logger.error(
+                # Not an error: the caller decides whether this is fatal, and
+                # reports it if so.
+                logger.warning(
                     f"Final attempt{action_text} [{attempt}/{tries}] failed with error: {type(exc).__name__}: {exc}. Aborting.",
                     exc_info=True,
                 )
