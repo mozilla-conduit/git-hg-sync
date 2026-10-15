@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import logging
 import os
 import signal
 import sys
@@ -9,12 +10,12 @@ from typing import TYPE_CHECKING, Any
 
 import sentry_sdk
 from devtools import pprint
-from mozlog import commandline
 from pydantic import ValidationError
 
 from git_hg_sync.__main__ import get_connection
 from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
+from git_hg_sync.log import add_logging_argument, setup_logging
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
@@ -61,7 +62,7 @@ def set_subparser_config(subparsers: Any) -> None:
 
 def config(
     config: Config,
-    logger: commandline.StructuredLogger,
+    logger: logging.Logger,
     args: argparse.Namespace,  # noqa: ARG001
 ) -> None:
     """Output the currently selected configuration, with environment-overrides."""
@@ -91,9 +92,7 @@ def set_subparser_dequeue(
     subparser.set_defaults(func=dequeue)
 
 
-def dequeue(
-    config: Config, logger: commandline.StructuredLogger, args: argparse.Namespace
-) -> None:
+def dequeue(config: Config, logger: logging.Logger, args: argparse.Namespace) -> None:
     """Remove a message matching the parameters from the Pulse queue."""
     queue = _queue(config.pulse)
 
@@ -121,7 +120,7 @@ def _queue(pulse_config: PulseConfig) -> SimpleQueue:
 
 def _remove_push_message(
     queue: SimpleQueue,
-    logger: commandline.StructuredLogger,
+    logger: logging.Logger,
     repository_url: str,
     push_id: int,
 ) -> int:
@@ -190,9 +189,7 @@ def set_subparser_fetchrepo(
     subparser.set_defaults(func=fetchrepo)
 
 
-def fetchrepo(
-    config: Config, logger: commandline.StructuredLogger, args: argparse.Namespace
-) -> None:
+def fetchrepo(config: Config, logger: logging.Logger, args: argparse.Namespace) -> None:
     """Fetch repository data ahead of time."""
     repo = None
     for repo in config.tracked_repositories:
@@ -263,7 +260,7 @@ def set_subparser_pause_resume(
 
 def pause(
     config: Config,  # noqa: ARG001
-    logger: commandline.StructuredLogger,
+    logger: logging.Logger,
     args: argparse.Namespace,  # noqa: ARG001
 ) -> None:
     """Pause the worker by sending it the TSTP signal."""
@@ -274,7 +271,7 @@ def pause(
 
 def resume(
     config: Config,  # noqa: ARG001
-    logger: commandline.StructuredLogger,
+    logger: logging.Logger,
     args: argparse.Namespace,  # noqa: ARG001
 ) -> None:
     """Pause the paused worker by sending it the CONT signal."""
@@ -285,7 +282,7 @@ def resume(
 
 def main() -> None:
     parser = get_parser()
-    commandline.add_logging_group(parser)
+    add_logging_argument(parser)
     subparsers = parser.add_subparsers(required=True)
 
     set_subparser_config(subparsers)
@@ -294,7 +291,8 @@ def main() -> None:
     set_subparser_pause_resume(subparsers)
 
     args = parser.parse_args()
-    logger = commandline.setup_logging("service", args)
+    setup_logging(args.log_level)
+    logger = logging.getLogger(__name__)
 
     logger.info(f"Using configuration file {args.config}")
     try:

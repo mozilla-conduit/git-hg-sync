@@ -1,12 +1,12 @@
 import dataclasses
 import json
+import logging
 import os
 import signal
 import sys
 from typing import TYPE_CHECKING
 
 import sentry_sdk
-from mozlog import get_proxy_logger
 
 from git_hg_sync import PID_FILEPATH
 from git_hg_sync.events import Event, Push
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from git_hg_sync.pulse_worker import PulseWorker
     from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
-logger = get_proxy_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Application:

@@ -1,0 +1,135 @@
+import json
+import logging
+import socket
+import sys
+import traceback
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import argparse
+
+# Adapted from Lando's lando/main/logging.py.
+
+
+class MozLogFormatter(logging.Formatter):
+    """A mozlog logging formatter.
+
+    https://mzl.la/2NhT1E6
+    """
+
+    MOZLOG_ENVVERSION = "2.0"
+
+    # Syslog severity levels.
+    SL_EMERG = 0  # system is unusable
+    SL_ALERT = 1  # action must be taken immediately
+    SL_CRIT = 2  # critical conditions
+    SL_ERR = 3  # error conditions
+    SL_WARNING = 4  # warning conditions
+    SL_NOTICE = 5  # normal but significant condition
+    SL_INFO = 6  # informational
+    SL_DEBUG = 7  # debug-level messages
+
+    # Mapping from python logging priority to Syslog severity level.
+    PRIORITY = {
+        "DEBUG": SL_DEBUG,
+        "INFO": SL_INFO,
+        "WARNING": SL_WARNING,
+        "ERROR": SL_ERR,
+        "CRITICAL": SL_CRIT,
+    }
+
+    BUILTIN_LOGRECORD_ATTRIBUTES = {
+        "args",
+        "asctime",
+        "created",
+        "exc_info",
+        "exc_text",
+        "filename",
+        "funcName",
+        "levelname",
+        "levelno",
+        "lineno",
+        "module",
+        "msecs",
+        "message",
+        "msg",
+        "name",
+        "pathname",
+        "process",
+        "processName",
+        "relativeCreated",
+        "stack_info",
+        "thread",
+        "threadName",
+        "taskName",
+    }
+
+    def __init__(
+        self, *args: object, mozlog_logger: str | None = None, **kwargs: object
+    ) -> None:
+        self.mozlog_logger = mozlog_logger or "git-hg-sync"
+        self.hostname = socket.gethostname()
+        super().__init__(*args, **kwargs)
+
+    def format(self, record: logging.LogRecord) -> str:
+        """Formats a log record and serializes to mozlog json"""
+
+        mozlog_record = {
+            # MozLog https://firefox-source-docs.mozilla.org/mozbase/mozlog.html#data-format
+            "action": "log",
+            "time": int(record.created * 1e3),
+            "thread": self.hostname,
+            "pid": record.process,
+            "source": record.name,
+            # log action
+            "level": record.levelname,
+            "message": record.getMessage(),
+            # Old format
+            "EnvVersion": self.MOZLOG_ENVVERSION,
+            "Hostname": self.hostname,
+            "Logger": self.mozlog_logger,
+            "Type": record.name,
+            "Timestamp": int(record.created * 1e9),
+            "Severity": self.PRIORITY.get(record.levelname, self.SL_WARNING),
+            "Pid": record.process,
+            "Fields": {
+                k: str(v)
+                for k, v in record.__dict__.items()
+                if k not in self.BUILTIN_LOGRECORD_ATTRIBUTES
+            },
+        }
+
+        msg = record.getMessage()
+        if msg and "msg" not in mozlog_record["Fields"]:
+            mozlog_record["Fields"]["msg"] = msg
+
+        if record.exc_info is not None:
+            mozlog_record["Fields"]["exc"] = {
+                "error": repr(record.exc_info[1]),  # Instance
+                "traceback": "".join(traceback.format_tb(record.exc_info[2])),
+            }
+
+        return self.serialize(mozlog_record)
+
+    def serialize(self, mozlog_record: dict) -> str:
+        """Serialize a mozlog record."""
+        return json.dumps(mozlog_record, sort_keys=True)
+
+
+def setup_logging(level: str = "INFO") -> None:
+    """Send all log records at `level` or above to stdout, formatted as mozlog JSON."""
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(MozLogFormatter())
+    root = logging.getLogger()
+    root.handlers = [handler]
+    root.setLevel(level.upper())
+
+
+def add_logging_argument(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        type=str.upper,
+        help="Minimum level of log messages to output (default: %(default)s).",
+    )
