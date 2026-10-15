@@ -5,7 +5,6 @@ import threading
 from functools import partial
 from typing import TYPE_CHECKING
 
-import sentry_sdk
 from git import Repo
 from git.exc import GitCommandError
 
@@ -148,7 +147,6 @@ class RepoSynchronizer:
                     f"{branch_operation.source_commit}:{self._cinnabar_branch(branch_operation.destination_branch)}"
                 )
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
                 raise RepoSyncError(branch_operation, exc) from exc
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
@@ -258,7 +256,6 @@ class RepoSynchronizer:
                 else:
                     raise RepoSyncError(tag_operation, exc) from exc
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
                 raise RepoSyncError(tag_operation, exc) from exc
 
             tag_branches_to_push.add(tag_operation.tags_destination_branch)

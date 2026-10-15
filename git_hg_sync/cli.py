@@ -8,7 +8,6 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import sentry_sdk
 from devtools import pprint
 from pydantic import ValidationError
 
@@ -102,7 +101,6 @@ def dequeue(config: Config, logger: logging.Logger, args: argparse.Namespace) ->
     try:
         count = _remove_push_message(queue, logger, args.repository_url, args.push_id)
     except Exception as exc:  # noqa: BLE001
-        sentry_sdk.capture_exception(exc)
         logger.error(f"Error removing message from queue: {exc.__class__}, {exc}")
         sys.exit(1)
     else:
