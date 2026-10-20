@@ -5,6 +5,7 @@ import threading
 from functools import partial
 from typing import TYPE_CHECKING
 
+import sentry_sdk
 from git import Repo
 from git.exc import GitCommandError
 

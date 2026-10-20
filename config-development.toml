@@ -29,6 +29,14 @@ branch_pattern = "dev"
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 destination_branch = "default"
 
+[[tag_mappings]]
+source_url = "https://github.com/mozilla-conduit/ff-test.git"
+tag_pattern = "^.+$"
+destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
+tags_destination_branch = "tags-unified-1973880"
+
+# Default
+#tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 #
 # relbranches
 #
@@ -39,11 +47,6 @@ branch_pattern = "^((FIREFOX|DEVEDITION|FIREFOX-ANDROID)_ESR_(\\d+)(_\\d+_X)_REL
 destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
 destination_branch = "\\1"
 
-[[tag_mappings]]
-source_url = "https://github.com/mozilla-conduit/ff-test.git"
-tag_pattern = "^(FIREFOX|DEVEDITION|FIREFOX-ANDROID)_.*$"
-destination_url = "ssh://hg.mozilla.org/conduit-testing/ff-test-dev"
-tags_destination_branch = "tags-unified-1973880"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 
