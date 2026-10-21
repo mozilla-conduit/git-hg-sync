@@ -8,8 +8,6 @@ from typing import Annotated, Self, override
 from mozlog import get_proxy_logger
 from pydantic import (
     AfterValidator,
-    AliasChoices,
-    Field,
     ValidationInfo,
     model_validator,
 )
@@ -57,7 +55,7 @@ class ClonesConfig(BaseSettings):
 
 
 class SentryConfig(BaseSettings):
-    sentry_dsn: Annotated[str, Field(alias=AliasChoices("sentry_dsn", "dsn"))] = ""
+    dsn: str = ""
 
 
 class Config(BaseSettings):
