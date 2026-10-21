@@ -73,20 +73,20 @@ class RepoSynchronizer:
     def fetch_all_from_remote(
         self, repo: Repo, remote: str, verbose: bool = False
     ) -> None:
-        try:
-            retry(
-                f"fetching changes and tags from {remote}",
-                lambda: self._log_git_execute(
+        def fetch() -> None:
+            try:
+                self._log_git_execute(
                     repo,
                     ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote],
                     verbose,
-                ),
-            )
+                )
+            except GitCommandError as exc:
+                # can't fetch if repo is empty
+                if "fatal: couldn't find remote ref HEAD" not in exc.stderr:
+                    raise
+                logger.info(f"Remote {remote} is empty, nothing to fetch")
 
-        except GitCommandError as exc:
-            # can't fetch if repo is empty
-            if "fatal: couldn't find remote ref HEAD" in exc.stderr:
-                raise exc
+        retry(f"fetching changes and tags from {remote}", fetch)
 
         if remote.startswith("hg::"):
             retry(
@@ -106,25 +106,32 @@ class RepoSynchronizer:
         if verbose:
             logger.info(f"Running `{' '.join(command)}` as PID {proc.pid}")
 
+            stderr_lines: list[bytes] = []
             stdout_thread = threading.Thread(
                 target=RepoSynchronizer._stream_output,
                 args=(proc.stdout, f"{proc.pid}/STDOUT"),
             )
             stderr_thread = threading.Thread(
                 target=RepoSynchronizer._stream_output,
-                args=(proc.stderr, f"{proc.pid}/STDERR"),
+                args=(proc.stderr, f"{proc.pid}/STDERR", stderr_lines),
             )
             stdout_thread.start()
             stderr_thread.start()
             stdout_thread.join()
             stderr_thread.join()
 
-            proc.wait()
+            # The stream has been consumed, so pass it on to be included in any
+            # GitCommandError.
+            proc.wait(stderr=b"".join(stderr_lines))
 
     @staticmethod
-    def _stream_output(stream: io.BufferedReader, label: str) -> None:
+    def _stream_output(
+        stream: io.BufferedReader, label: str, lines: list[bytes] | None = None
+    ) -> None:
         for line in iter(stream.readline, b""):
             logger.info(f"{label}: {line.decode().strip()}")
+            if lines is not None:
+                lines.append(line)
 
     def sync(
         self, destination_url: str, operations: list[SyncOperation], request_user: str
@@ -330,10 +337,7 @@ class RepoSynchronizer:
             logger.debug("Cinnabar metadata already present, not updating")
             return
 
-        retry(
-            f"fetching commits from {destination_remote}",
-            lambda: self.fetch_all_from_remote(repo, destination_remote),
-        )
+        self.fetch_all_from_remote(repo, destination_remote)
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:
         return repo.git.cinnabar(["git2hg", git_commit]).strip()

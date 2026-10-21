@@ -405,3 +405,23 @@ def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
     assert connection.userid == pulse_config.userid
     assert connection.host == f"{pulse_config.host}:{pulse_config.port}"
     assert queue.name == pulse_config.queue
+
+
+@pytest.mark.parametrize("verbose", [False, True])
+def test_fetch_all_from_remote_empty(tmp_path: Path, verbose: bool) -> None:
+    empty_remote = Repo.init(tmp_path / "empty", bare=True)
+    clone = Repo.init(tmp_path / "clone", bare=True)
+    syncrepos = RepoSynchronizer(tmp_path / "clone", str(empty_remote.git_dir))
+
+    # Fetching from an empty repository is not an error.
+    syncrepos.fetch_all_from_remote(clone, str(empty_remote.git_dir), verbose)
+
+
+@pytest.mark.parametrize("verbose", [False, True])
+def test_fetch_all_from_remote_error(tmp_path: Path, verbose: bool) -> None:
+    clone = Repo.init(tmp_path / "clone", bare=True)
+    missing_remote = str(tmp_path / "missing")
+    syncrepos = RepoSynchronizer(tmp_path / "clone", missing_remote)
+
+    with pytest.raises(GitCommandError, match="does not appear to be a git repository"):
+        syncrepos.fetch_all_from_remote(clone, missing_remote, verbose)
