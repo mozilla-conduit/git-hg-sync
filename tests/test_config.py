@@ -30,18 +30,13 @@ def test_load_config_env_override(monkeypatch: pytest.MonkeyPatch) -> None:
             "heartbeat": "42",
         },
         "sentry": {
-            "sentry_dsn": "overridden sentry_dsn",
+            "dsn": "overridden sentry_dsn",
         },
     }
 
-    no_prefix_sections = ["sentry"]
-
     for section, env in overrides.items():
         for var, value in env.items():
-            if section in no_prefix_sections:
-                monkeypatch.setenv(f"{var}".upper(), value)
-            else:
-                monkeypatch.setenv(f"{section}_{var}".upper(), value)
+            monkeypatch.setenv(f"{section}_{var}".upper(), value)
 
     config = Config.from_file(HERE / "data" / "config.toml")
 
