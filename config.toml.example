@@ -23,12 +23,16 @@ url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
 source_url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
 branch_pattern = "^(esr\\d+)$"
 destination_url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-\\1"
+# List of intermediate commits to fetch in order. Repeat this for every destination_url containing those commits.
+#intermediate_fetch = []
 destination_branch = "default"
 
 [[tag_mappings]]
 source_url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
 tag_pattern = "^FIREFOX_BETA_(\\d+)_(BASE|END)$"
 destination_url = "/home/fbessou/dev/MOZI/fake-forge/hg/mozilla-beta"
+# List of intermediate commits to fetch in order. Repeat this for every destination_url containing those commits.
+#intermediate_fetch = []
 tags_destination_branch = "tags"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"

@@ -10,22 +10,13 @@ from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync import repo_synchronizer
 from git_hg_sync.__main__ import get_connection, get_queue
-from git_hg_sync.config import PulseConfig, TrackedRepository
-from git_hg_sync.mapping import SyncBranchOperation, SyncTagOperation
+from git_hg_sync.mapping import Mapping, SyncBranchOperation, SyncTagOperation
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-
-@pytest.fixture
-def tracked_repositories() -> list[TrackedRepository]:
-    return [
-        TrackedRepository(
-            name="myrepo",
-            url="https://gitforge.example/myrepo",
-        )
-    ]
+    from git_hg_sync.config import PulseConfig
 
 
 @pytest.fixture
@@ -112,6 +103,11 @@ def test_sync_process(
     # Sync new commit with mercurial repository.
     git_local_repo_path = tmp_path / "clones" / "myrepo"
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    mapping = Mapping(
+        source_url=str(git_source),
+        destination_url=str(hg_destination),
+        intermediate_fetch=[],
+    )
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncBranchOperation(source_commit=git_commit_sha, destination_branch=branch),
         SyncTagOperation(
@@ -124,7 +120,7 @@ def test_sync_process(
 
     request_user = "request_user@example.com"
     user_info = "request_user"  # The part before the @ in request_user.
-    syncrepos.sync(str(hg_destination), operations, request_user)
+    syncrepos.sync(str(hg_destination), operations, mapping, request_user)
 
     # test
     assert "BAR CONTENT" in hg_cat(hg_destination, "bar.txt", branch)
@@ -175,6 +171,11 @@ def test_sync_process_duplicate_tags(
     # Sync new commit with mercurial repository
     git_local_repo_path = tmp_path / "clones" / "myrepo"
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    mapping = Mapping(
+        source_url=str(git_source),
+        destination_url=str(hg_destination),
+        intermediate_fetch=[],
+    )
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncTagOperation(
             source_commit=git_commit_sha,
@@ -188,7 +189,7 @@ def test_sync_process_duplicate_tags(
 
     logger_mock = mock.MagicMock()
     monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
-    syncrepos.sync(str(hg_destination), operations, request_user)
+    syncrepos.sync(str(hg_destination), operations, mapping, request_user)
 
     # As we can't mock the GitPython logic, we inspect our debug logs instead.
     assert any(
@@ -199,7 +200,7 @@ def test_sync_process_duplicate_tags(
     # Re-run the operation
     second_logger_mock = mock.MagicMock()
     monkeypatch.setattr(repo_synchronizer, "logger", second_logger_mock)
-    syncrepos.sync(str(hg_destination), operations, request_user)
+    syncrepos.sync(str(hg_destination), operations, mapping, request_user)
 
     # The last warning should tell us about the duplicate tags.
     assert (
@@ -233,7 +234,11 @@ def test_sync_process_no_duplicate_tags_on_error(
 
     git_local_repo_path = tmp_path / "clones" / "myrepo"
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
-
+    mapping = Mapping(
+        source_url=str(git_source),
+        destination_url=str(hg_destination),
+        intermediate_fetch=[],
+    )
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncTagOperation(
             source_commit=git_commit_sha,
@@ -252,11 +257,11 @@ def test_sync_process_no_duplicate_tags_on_error(
         f.write(failhook)
 
     with pytest.raises(GitCommandError):
-        syncrepos.sync(str(hg_destination), operations, request_user)
+        syncrepos.sync(str(hg_destination), operations, mapping, request_user)
 
     # Re-run the operation without the blocking hook.
     hgrc.unlink()
-    syncrepos.sync(str(hg_destination), operations, request_user)
+    syncrepos.sync(str(hg_destination), operations, mapping, request_user)
 
     # Test the tag commit message.
     git_tag_log = Repo(str(git_local_repo_path)).git.execute(
@@ -294,6 +299,11 @@ def test_sync_process_multiple_destinations(
     # Sync new commit with mercurial repository
     git_local_repo_path = tmp_path / "clones" / "myrepo"
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    mapping = Mapping(
+        source_url=str(git_source),
+        destination_url=str(hg_destination),
+        intermediate_fetch=[],
+    )
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncTagOperation(
             source_commit=git_commit_sha,
@@ -305,16 +315,72 @@ def test_sync_process_multiple_destinations(
 
     request_user = "request_user@example.com"
 
-    syncrepos.sync(str(hg_destination), operations, request_user)
+    syncrepos.sync(str(hg_destination), operations, mapping, request_user)
 
     # Sync the tags to the second repo.
     logger_mock = mock.MagicMock()
     monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
-    syncrepos.sync(str(hg_destination2), operations, request_user)
+    syncrepos.sync(str(hg_destination2), operations, mapping, request_user)
 
     # Test the tag commit message.
     tag_log = hg_log(hg_destination2, tag_branch, ["-T", "{desc}"])
     assert tag in tag_log
+
+
+@mock.patch(
+    "git_hg_sync.repo_synchronizer.RepoSynchronizer._log_git_execute",
+    wraps=RepoSynchronizer._log_git_execute,  # noqa: SLF001
+)
+def test_sync_process_intermediate_fetch(
+    mock_log_git_execute: mock.Mock,
+    git_source: Path,
+    hg_destination: Path,
+    tmp_path: Path,
+) -> None:
+    branch = "bar"
+
+    repo = Repo(git_source)
+
+    # Create a new commit on git repo
+    bar_path = git_source / "bar.txt"
+    bar_path.write_text("BAR CONTENT")
+    repo.index.add([bar_path])
+    git_commit_sha = repo.index.commit("add bar.txt").hexsha
+
+    # Sync new commit with mercurial repository.
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    intermediate_hg_commit = hg_rev(hg_destination, "default")
+    mapping = Mapping(
+        source_url=str(git_source),
+        destination_url=str(hg_destination),
+        intermediate_fetch=[intermediate_hg_commit],
+    )
+
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncBranchOperation(source_commit=git_commit_sha, destination_branch=branch),
+    ]
+
+    request_user = "request_user@example.com"
+    syncrepos.sync(str(hg_destination), operations, mapping, request_user)
+
+    assert mock_log_git_execute.call_count == 3, (
+        "Should have called git 3 times: intermediate fetch, full fetch, tags"
+    )
+
+    assert mock_log_git_execute.call_args_list[0] == mock.call(
+        mock.ANY,
+        [
+            "git",
+            "-c",
+            "cinnabar.graft=true",
+            "cinnabar",
+            "fetch",
+            f"hg::{hg_destination}",
+            intermediate_hg_commit,
+        ],
+        mock.ANY,
+    ), "Intermediate fetch should be the first git call"
 
 
 def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:

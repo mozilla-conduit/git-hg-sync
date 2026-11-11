@@ -9,7 +9,12 @@ from git import Repo
 from git.exc import GitCommandError
 from mozlog import get_proxy_logger
 
-from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
+from git_hg_sync.mapping import (
+    Mapping,
+    SyncBranchOperation,
+    SyncOperation,
+    SyncTagOperation,
+)
 from git_hg_sync.retry import retry
 
 if TYPE_CHECKING:
@@ -60,8 +65,31 @@ class RepoSynchronizer:
         return not all(char == "0" for char in self._git2hg(repo, git_commit))
 
     def fetch_all_from_remote(
-        self, repo: Repo, remote: str, verbose: bool = False
+        self,
+        repo: Repo,
+        remote: str,
+        intermediate_fetch: list[str] | None = None,
+        verbose: bool = False,
     ) -> None:
+        for ref in intermediate_fetch or []:
+            retry(
+                f"fetching intermediate ref {ref} from {remote}",
+                partial(
+                    self._log_git_execute,
+                    repo,
+                    [
+                        "git",
+                        "-c",
+                        "cinnabar.graft=true",
+                        "cinnabar",
+                        "fetch",
+                        remote,
+                        ref,
+                    ],
+                    verbose,
+                ),
+            )
+
         try:
             retry(
                 f"fetching changes and tags from {remote}",
@@ -116,7 +144,11 @@ class RepoSynchronizer:
             logger.info(f"{label}: {line.decode().strip()}")
 
     def sync(
-        self, destination_url: str, operations: list[SyncOperation], request_user: str
+        self,
+        destination_url: str,
+        operations: list[SyncOperation],
+        mapping: Mapping,
+        request_user: str,
     ) -> None:
         logger.info(f"Syncing {operations} to {destination_url} ...")
         try:
@@ -128,7 +160,7 @@ class RepoSynchronizer:
 
         destination_remote = f"hg::{destination_url}"
 
-        self._ensure_cinnabar_metadata(repo, destination_remote)
+        self._ensure_cinnabar_metadata(repo, destination_remote, mapping)
 
         # Get commits we want to send to destination repository
         commits_to_fetch = [operation.source_commit for operation in operations]
@@ -300,7 +332,9 @@ class RepoSynchronizer:
                 partial(repo.git.push, push_args),
             )
 
-    def _ensure_cinnabar_metadata(self, repo: Repo, destination_remote: str) -> None:
+    def _ensure_cinnabar_metadata(
+        self, repo: Repo, destination_remote: str, mapping: Mapping
+    ) -> None:
         """Ensure we have all commits from destination repository.
 
         This sets up the correct cinnabar hg2git/git2hg mappings (including
@@ -317,7 +351,9 @@ class RepoSynchronizer:
 
         retry(
             f"fetching commits from {destination_remote}",
-            lambda: self.fetch_all_from_remote(repo, destination_remote),
+            lambda: self.fetch_all_from_remote(
+                repo, destination_remote, mapping.intermediate_fetch
+            ),
         )
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:
