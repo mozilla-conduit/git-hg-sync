@@ -21,4 +21,6 @@ requirements:
 	${MAKE} test
 
 test:
+	# Make sure we have a plain file before letting docker compose mount it.
+	test -f coverage.xml || rm -rf coverage.xml && touch coverage.xml
 	${DOCKER_COMPOSE} run --rm test ${ARGS_TESTS}

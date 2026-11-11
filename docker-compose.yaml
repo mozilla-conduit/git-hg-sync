@@ -46,11 +46,11 @@ services:
 
   test:
     <<: *sync_config
-    command: ["--junitxml=/tmp/tests_output/pytest.xml"]
     entrypoint: pytest
+    command: []
     volumes:
       - .:/app
-      - ./tests_output:/app/tests_output:z
+      - ./coverage.xml:/app/coverage.xml:z
     profiles:
       - test
     depends_on:
