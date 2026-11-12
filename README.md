@@ -113,6 +113,8 @@ url = "/clones/test-repo-git"
 source_url = "/clones/test-repo-git"
 branch_pattern = "^(esr\\d+)$"
 destination_url = "/clones/mozilla-\\1"
+# List of intermediate commits to fetch in order. Repeat this for every destination_url containing those commits.
+#intermediate_fetch = []
 destination_branch = "default"
 
 # ESR tags
@@ -120,10 +122,27 @@ destination_branch = "default"
 source_url = "/clones/test-repo-git"
 tag_pattern = "^FIREFOX_(\\d+)\\.\\d+\\.\\d+esr_(BUILD\\d+|RELEASE)$"
 destination_url = "/clones/mozilla-esr\\1"
+# List of intermediate commits to fetch in order. Repeat this for every destination_url containing those commits.
+#intermediate_fetch = []
 tags_destination_branch = "default"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 ```
+
+#### Intermediate reference fetch
+
+The `intermediate_fetch` attribute is optional. This is a work-around for bug
+2091638.
+
+It is used as hints for `git cinnabar`, by instructing it to fetch the
+specified _Mercurial_ references from the `destination_url` incrementally, in
+the provided order.
+
+It is most useful when used in combination with the `fetchrepo` CLI command.
+However, due to the way the syncer bootstraps a working directory on first sync
+operation if missing, it is recommended to set this value for all the mappings
+for a given repository. It is assumed that the intermediate commits to fetch
+would be old enough to be present in all the Mercurial repos.
 
 ### Pulse parameters
 

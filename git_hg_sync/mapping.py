@@ -14,19 +14,19 @@ DEFAULT_TAG_MESSAGE_SUFFIX = "a=tagging CLOSED TREE DONTBUILD"
 
 
 @dataclass
-class SyncBranchOperation:
+class SyncOperation:
     # Source (git)
     source_commit: str
 
+
+@dataclass
+class SyncBranchOperation(SyncOperation):
     # Destination (hg)
     destination_branch: str
 
 
 @dataclass
-class SyncTagOperation:
-    # Source (git)
-    source_commit: str
-
+class SyncTagOperation(SyncOperation):
     # Destination (hg)
     tag: str
     tags_destination_branch: str
@@ -44,6 +44,8 @@ class MappingMatch:
 
 class Mapping(pydantic.BaseModel):
     source_url: str
+    destination_url: str
+    intermediate_fetch: list[str] = pydantic.Field(default=[])
 
     def match(self, event: Push) -> Sequence[MappingMatch]:
         raise NotImplementedError()
@@ -54,7 +56,6 @@ class Mapping(pydantic.BaseModel):
 
 class BranchMapping(Mapping):
     branch_pattern: str
-    destination_url: str
     destination_branch: str
 
     @cached_property
@@ -91,7 +92,6 @@ class BranchMapping(Mapping):
 
 class TagMapping(Mapping):
     tag_pattern: str
-    destination_url: str
     tags_destination_branch: str
     tag_message_suffix: str = DEFAULT_TAG_MESSAGE_SUFFIX
 
@@ -114,8 +114,8 @@ class TagMapping(Mapping):
                 MappingMatch(
                     destination_url=destination_url,
                     operation=SyncTagOperation(
-                        tag=tag_name,
                         source_commit=commit,
+                        tag=tag_name,
                         tags_destination_branch=tags_destination_branch,
                         tag_message_suffix=self.tag_message_suffix,
                     ),

@@ -224,18 +224,20 @@ def fetchrepo(
                     f"Skipping remote {mapping.destination_url} due to dynamic replacements"
                 )
                 continue
-            if mapping.destination_url in remote_set:
+            if mapping in remote_set:
                 continue
 
-            remote_set.add(mapping.destination_url)
-            remotes.append(mapping.destination_url)
+            remote_set.add(mapping)
+            remotes.append(mapping)
 
         logger.debug(f"Remotes to fetch: {remotes} ...")
 
-        for remote in remotes:
-            logger.info(f"Fetching commits from remote {remote} ...")
-            cinnabar_remote = f"hg::{remote}"
-            syncer.fetch_all_from_remote(repo_clone, cinnabar_remote, args.verbose)
+        for mapping in remotes:
+            cinnabar_remote = f"hg::{mapping.destination_url}"
+            logger.info(f"Fetching commits from remote {cinnabar_remote} ...")
+            syncer.fetch_all_from_remote(
+                repo_clone, cinnabar_remote, mapping.intermediate_fetch, args.verbose
+            )
 
         logger.info(f"Fetched data from {len(remote_set) + 1} remotes.")
 
