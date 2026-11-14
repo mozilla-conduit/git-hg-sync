@@ -20,6 +20,8 @@ logger = get_proxy_logger("sync_repo")
 
 REQUEST_USER_ENV_VAR = "AUTOLAND_REQUEST_USER"
 
+MANUAL_TAG_PUSH_DOC_URL = "https://mozilla-hub.atlassian.net/wiki/spaces/EW/pages/1592754924/Git-Hg-Sync+-+Manually+pushing+a+missing+tag+to+HgMO"
+
 
 class RepoSyncError(Exception):
     """Base exception class for git to mercurial synchronization errors"""
@@ -27,6 +29,15 @@ class RepoSyncError(Exception):
 
 class MercurialMetadataNotFoundError(RepoSyncError):
     """Raised when a commit is not found"""
+
+    def __init__(self, operation: SyncTagOperation, destination_url: str) -> None:
+        super().__init__(
+            f"Commit {operation.source_commit} for tag {operation.tag} has no "
+            f"Mercurial metadata for {destination_url}; it is likely not on a branch "
+            "synced to that repository. Once it is, push the tag manually: "
+            f"{MANUAL_TAG_PUSH_DOC_URL}"
+        )
+        self.operation = operation
 
 
 class RepoSynchronizer:
@@ -212,29 +223,35 @@ class RepoSynchronizer:
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
-                rollback_candidate = self._get_current_cinnabar_state(repo)
-
                 # Tagging can only be done on a commit that already has mercurial
                 # metadata.
                 #
-                # Add mercurial metadata to new commits from synced branches.
-                retry(
-                    "adding mercurial metadata to new git commits for tagging",
-                    lambda: repo.git.execute(
-                        ["git"]
-                        + ["-c", "cinnabar.data=force"]
-                        + ["push"]
-                        + ["--dry-run"]
-                        + [destination_remote]
-                        + refs_to_push,
-                    ),
-                )
+                # Add mercurial metadata to new commits from synced branches. This
+                # only needs doing once, and only if there are branches to push.
+                if refs_to_push and rollback_candidate is None:
+                    rollback_candidate = self._get_current_cinnabar_state(repo)
+                    retry(
+                        "adding mercurial metadata to new git commits for tagging",
+                        lambda: repo.git.execute(
+                            ["git"]
+                            + ["-c", "cinnabar.data=force"]
+                            + ["push"]
+                            + ["--dry-run"]
+                            + [destination_remote]
+                            + refs_to_push,
+                        ),
+                    )
 
-                # Make sure it worked.
+                # If the commit still has no metadata, it is not on any branch synced
+                # to the destination, and retrying the message will never fix that.
+                # Skip this tag rather than failing (and requeuing) the whole message.
                 if not self._commit_has_mercurial_metadata(
                     repo, tag_operation.source_commit
                 ):
-                    raise MercurialMetadataNotFoundError(tag_operation)
+                    exc = MercurialMetadataNotFoundError(tag_operation, destination_url)
+                    sentry_sdk.capture_exception(exc)
+                    logger.error(f"Skipping tag: {exc}")
+                    continue
 
             hg_sha = self._git2hg(repo, tag_operation.source_commit)
             tag_message = f"No bug - Tagging {hg_sha} with {tag_operation.tag} {tag_operation.tag_message_suffix}"
