@@ -33,8 +33,11 @@ dev = [
 git-hg-sync = "git_hg_sync.__main__:main"
 git-hg-cli = "git_hg_sync.cli:main"
 
+[tool.coverage.html]
+show_contexts = true
+
 [tool.pytest.ini_options]
-addopts = "--ruff --cov --cov-report html"
+addopts = "--ruff --cov --cov-context=test --cov-report=html --cov-report=xml"
 
 [tool.ruff]
 lint.select = [
