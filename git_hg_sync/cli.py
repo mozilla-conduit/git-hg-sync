@@ -209,12 +209,12 @@ def fetchrepo(
     repo_clone = syncer.get_clone_repo()
 
     logger.info(f"Fetching commits from {repo.url} ...")
-    syncer.fetch_all_from_remote(repo_clone, repo.url, args.verbose)
+    syncer.fetch_all_from_remote(repo_clone, repo.url, verbose=args.verbose)
 
     if args.fetch_all:
         # We use a set for efficient lookup, but we want to keep the order from the
         # configuration file.
-        remote_set = set()
+        destinations_set = set()
         remotes = []
         for mapping in config.branch_mappings + config.tag_mappings:
             if mapping.source_url != repo.url:
@@ -224,10 +224,10 @@ def fetchrepo(
                     f"Skipping remote {mapping.destination_url} due to dynamic replacements"
                 )
                 continue
-            if mapping in remote_set:
+            if mapping.destination_url in destinations_set:
                 continue
 
-            remote_set.add(mapping)
+            destinations_set.add(mapping.destination_url)
             remotes.append(mapping)
 
         logger.debug(f"Remotes to fetch: {remotes} ...")
@@ -236,10 +236,13 @@ def fetchrepo(
             cinnabar_remote = f"hg::{mapping.destination_url}"
             logger.info(f"Fetching commits from remote {cinnabar_remote} ...")
             syncer.fetch_all_from_remote(
-                repo_clone, cinnabar_remote, mapping.intermediate_fetch, args.verbose
+                repo_clone,
+                cinnabar_remote,
+                intermediate_fetch=mapping.intermediate_fetch,
+                verbose=args.verbose,
             )
 
-        logger.info(f"Fetched data from {len(remote_set) + 1} remotes.")
+        logger.info(f"Fetched data from {len(destinations_set) + 1} remotes.")
 
 
 ###

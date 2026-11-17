@@ -33,9 +33,6 @@ class SyncTagOperation(SyncOperation):
     tag_message_suffix: str
 
 
-type SyncOperation = SyncBranchOperation | SyncTagOperation
-
-
 @dataclass
 class MappingMatch:
     destination_url: str

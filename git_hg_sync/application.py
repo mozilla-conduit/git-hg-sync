@@ -55,14 +55,14 @@ class Application:
     def _handle_push_event(self, push_event: Push) -> None:
         logger.debug(f"Handling event {push_event}")
         synchronizer = self._repo_synchronizers[push_event.repo_url]
-        operations_by_destination: dict[str, tuple[list[SyncOperation]], Mapping] = {}
+        operations_by_destination: dict[str, tuple[list[SyncOperation], Mapping]] = {}
 
         for mapping in self._mappings:
             if matches := mapping.match(push_event):
                 for match in matches:
                     # We arbitrarily pass the first mapping found. The mapping is only
                     # used once, to initialise a cinnabar repo if it's missing metadata,
-                    # and provide intermediate_fetch points, to bring in commits in order,
+                    # and provide intermediate_fetch points to bring in commits in order,
                     # in case cinnabar resolution is known not to make the right choice
                     # (see bug 2091638 and bug 2091580).
                     # As a result, every potential mapping for a given set of branches
@@ -82,8 +82,8 @@ class Application:
                 synchronizer.sync(
                     destination,
                     operations,
-                    mapping,
                     push_event.user,
+                    mapping.intermediate_fetch,
                 )
             except Exception as exc:
                 sentry_sdk.capture_exception(exc)
