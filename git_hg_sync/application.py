@@ -69,7 +69,7 @@ class Application:
                     # and tags should have the same intermediate_fetch, so we can pass
                     # any one to the syncer.
                     operations_by_destination.setdefault(
-                        match.destination_url, ([], mapping)
+                        match.destination_url, ([], mapping.intermediate_fetch)
                     )[0].append(match.operation)
 
         if not operations_by_destination:
