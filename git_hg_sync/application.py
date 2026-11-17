@@ -83,7 +83,7 @@ class Application:
                     destination,
                     operations,
                     push_event.user,
-                    mapping.intermediate_fetch,
+                    intermediate_fetch,
                 )
             except Exception as exc:
                 sentry_sdk.capture_exception(exc)
