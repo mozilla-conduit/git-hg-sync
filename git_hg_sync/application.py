@@ -68,8 +68,7 @@ class Application:
                     # As a result, every potential mapping for a given set of branches
                     # and tags should have the same intermediate_fetch, so we can pass
                     # any one to the syncer.
-                    operations_by_destination.setdefault(
-                        match.destination_url, ([], mapping.intermediate_fetch)
+        for destination, operations in operations_by_destination.items():
                     )[0].append(match.operation)
 
         if not operations_by_destination:
@@ -77,7 +76,7 @@ class Application:
             return
 
         for destination, operations_mapping in operations_by_destination.items():
-            operations, mapping = operations_mapping
+            operations, intermediate_fetch = operations_mapping
             try:
                 synchronizer.sync(
                     destination,
