@@ -60,11 +60,11 @@ class Application:
         for mapping in self._mappings:
             if matches := mapping.match(push_event):
                 for match in matches:
-                    # We arbitrarily pass the first mapping found. The mapping is only
-                    # used once, to initialise a cinnabar repo if it's missing metadata,
-                    # and provide intermediate_fetch points to bring in commits in order,
-                    # in case cinnabar resolution is known not to make the right choice
-                    # (see bug 2091638 and bug 2091580).
+                    # We arbitrarily use the first mapping found. Its intermediate_fetch
+                    # is only used once, to initialise a cinnabar repo if it's missing
+                    # metadata, and provide intermediate_fetch points to bring in commits
+                    # in order, in case cinnabar resolution is known not to make the
+                    # right choice (see bug 2091638 and bug 2091580).
                     # As a result, every potential mapping for a given set of branches
                     # and tags should have the same intermediate_fetch, so we can pass
                     # any one to the syncer.
