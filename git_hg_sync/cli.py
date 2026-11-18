@@ -224,7 +224,7 @@ def fetchrepo(
                     f"Skipping remote {mapping.destination_url} due to dynamic replacements"
                 )
                 continue
-            if mapping.destination_url in destinations_set:
+            if mapping.destination_url in remote_set:
                 continue
 
             destinations_set.add(mapping.destination_url)
