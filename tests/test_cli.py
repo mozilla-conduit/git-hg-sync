@@ -54,15 +54,45 @@ def test_cli_fetchrepo(
 
     mock_log_git_execute.assert_has_calls(
         [
-            "git",
-            "-c",
-            "cinnabar.graft=true",
-            "cinnabar",
-            "fetch",
-            f"hg::{test_config.branch_mappings[0].destination_url}",
-            test_config.tracked_repositories[0].hg_intermediate_fetch[0],
-        ],
-        mock.ANY,
+            mock.call(
+                mock.ANY,
+                [
+                    "git",
+                    "-c",
+                    "cinnabar.graft=true",
+                    "fetch",
+                    "--tags",
+                    test_config.tracked_repositories[0].url,
+                ],
+                False,
+            ),
+            mock.call(
+                mock.ANY,
+                [
+                    "git",
+                    "-c",
+                    "cinnabar.graft=true",
+                    "cinnabar",
+                    "fetch",
+                    f"hg::{test_config.branch_mappings[0].destination_url}",
+                    test_config.tracked_repositories[0].hg_intermediate_fetch[0],
+                ],
+                False,
+            ),
+            mock.call(
+                mock.ANY,
+                [
+                    "git",
+                    "-c",
+                    "cinnabar.graft=true",
+                    "fetch",
+                    "--tags",
+                    f"hg::{test_config.branch_mappings[0].destination_url}",
+                ],
+                False,
+            ),
+            mock.call(mock.ANY, ["git", "cinnabar", "fetch", "--tags"], False),
+        ]
     )
 
 
