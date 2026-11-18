@@ -49,7 +49,7 @@ def test_cli_fetchrepo(
 
     assert mock_get_clone_repo.call_count == 1, "Should have cloned the source repo"
     assert mock_log_git_execute.call_count == 4, (
-        "Should have called git 5 times: tags, intermediate fetch, full fetch, cinnabar tags"
+        "Should have called git 4 times: tags, intermediate fetch, full fetch, cinnabar tags"
     )
 
     mock_log_git_execute.assert_any_call(
