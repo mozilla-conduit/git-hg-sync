@@ -61,8 +61,8 @@ class Application:
             if matches := mapping.match(push_event):
                 for match in matches:
                     # We arbitrarily use the first mapping found. Its intermediate_fetch
-                    # is only used once, to initialise a cinnabar repo if it's missing
-                    # metadata, and provide intermediate_fetch points to bring in commits
+                        match.destination_url, []
+                    ).append(match.operation)
                     # in order, in case cinnabar resolution is known not to make the
                     # right choice (see bug 2091638 and bug 2091580).
                     # As a result, every potential mapping for a given set of branches
