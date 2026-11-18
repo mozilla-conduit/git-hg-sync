@@ -140,6 +140,7 @@ the provided order. It is most useful when used in combination with the
 It is assumed that the intermediate commits to fetch would be old enough to be
 present in any of the Mercurial repos listed in the branch and tag mapping
 configuration.
+
 ### Pulse parameters
 
 In addition, Pulse parameters can be overridden via the following environment
