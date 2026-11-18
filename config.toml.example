@@ -18,6 +18,8 @@ directory = "../git_hg_sync_repos/"
 [[tracked_repositories]]
 name = "firefox-releases"
 url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"
+# List of intermediate commits to fetch from the Mercurial destinations, in order.
+#hg_intermediate_fetch = []
 
 [[branch_mappings]]
 source_url = "/home/fbessou/dev/MOZI/fake-forge/git/firefox-releases"

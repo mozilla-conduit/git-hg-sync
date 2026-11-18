@@ -70,7 +70,11 @@ class Application:
 
         for destination, operations in operations_by_destination.items():
             try:
-                synchronizer.sync(destination, operations, push_event.user)
+                synchronizer.sync(
+                    destination,
+                    operations,
+                    push_event.user,
+                )
             except Exception as exc:
                 sentry_sdk.capture_exception(exc)
                 error_data = json.dumps(

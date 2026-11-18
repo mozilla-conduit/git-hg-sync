@@ -60,7 +60,9 @@ def start_app(
 
     synchronizers = {
         tracked_repo.url: RepoSynchronizer(
-            config.clones.directory / tracked_repo.name, tracked_repo.url
+            config.clones.directory / tracked_repo.name,
+            tracked_repo.url,
+            tracked_repo.hg_intermediate_fetch,
         )
         for tracked_repo in config.tracked_repositories
     }

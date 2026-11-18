@@ -9,7 +9,11 @@ from git import Repo
 from git.exc import GitCommandError
 from mozlog import get_proxy_logger
 
-from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
+from git_hg_sync.mapping import (
+    SyncBranchOperation,
+    SyncOperation,
+    SyncTagOperation,
+)
 from git_hg_sync.retry import retry
 
 if TYPE_CHECKING:
@@ -31,12 +35,11 @@ class MercurialMetadataNotFoundError(RepoSyncError):
 
 class RepoSynchronizer:
     def __init__(
-        self,
-        clone_directory: Path,
-        url: str,
+        self, clone_directory: Path, url: str, hg_intermediate_fetch: list[str]
     ) -> None:
         self._clone_directory = clone_directory
         self._src_remote = url
+        self._hg_intermediate_fetch = hg_intermediate_fetch or []
 
     def get_clone_repo(self) -> Repo:
         """Get a GitPython Repo object pointing to a git clone of the source
@@ -60,8 +63,32 @@ class RepoSynchronizer:
         return not all(char == "0" for char in self._git2hg(repo, git_commit))
 
     def fetch_all_from_remote(
-        self, repo: Repo, remote: str, verbose: bool = False
+        self,
+        repo: Repo,
+        remote: str,
+        *,
+        verbose: bool = False,
     ) -> None:
+        if remote.startswith("hg::"):
+            for ref in self._hg_intermediate_fetch:
+                retry(
+                    f"fetching intermediate ref {ref} from {remote}",
+                    partial(
+                        self._log_git_execute,
+                        repo,
+                        [
+                            "git",
+                            "-c",
+                            "cinnabar.graft=true",
+                            "cinnabar",
+                            "fetch",
+                            remote,
+                            ref,
+                        ],
+                        verbose,
+                    ),
+                )
+
         try:
             retry(
                 f"fetching changes and tags from {remote}",
@@ -116,7 +143,10 @@ class RepoSynchronizer:
             logger.info(f"{label}: {line.decode().strip()}")
 
     def sync(
-        self, destination_url: str, operations: list[SyncOperation], request_user: str
+        self,
+        destination_url: str,
+        operations: list[SyncOperation],
+        request_user: str,
     ) -> None:
         logger.info(f"Syncing {operations} to {destination_url} ...")
         try:

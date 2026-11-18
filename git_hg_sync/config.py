@@ -8,6 +8,7 @@ from typing import Annotated, Self, override
 from mozlog import get_proxy_logger
 from pydantic import (
     AfterValidator,
+    Field,
     ValidationInfo,
     model_validator,
 )
@@ -48,6 +49,7 @@ class PulseConfig(BaseSettings):
 class TrackedRepository(BaseSettings):
     name: str
     url: str
+    hg_intermediate_fetch: list[str] = Field(default_factory=list)
 
 
 class ClonesConfig(BaseSettings):
