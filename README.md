@@ -137,9 +137,9 @@ specified _Mercurial_ references from the `destination_url` incrementally, in
 the provided order.
 
 It is most useful when used in combination with the `fetchrepo` CLI command. It
-is assumed that the intermediate commits to fetch would be old enough to be
-present in all the Mercurial repos.
-
+It is assumed that the intermediate commits to fetch would be old enough to be
+present in any of the Mercurial repos listed in the branch and tag mapping
+configuration.
 ### Pulse parameters
 
 In addition, Pulse parameters can be overridden via the following environment
