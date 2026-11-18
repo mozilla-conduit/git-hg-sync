@@ -241,7 +241,7 @@ def fetchrepo(
                 verbose=args.verbose,
             )
 
-        logger.info(f"Fetched data from {len(destinations_set) + 1} remotes.")
+        logger.info(f"Fetched data from {len(remote_set) + 1} remotes.")
 
 
 ###
