@@ -60,8 +60,9 @@ class Application:
         for mapping in self._mappings:
             if matches := mapping.match(push_event):
                 for match in matches:
-        for destination, operations in operations_by_destination.items():
-                    )[0].append(match.operation)
+                    operations_by_destination.setdefault(
+                        match.destination_url, []
+                    ).append(match.operation)
 
         if not operations_by_destination:
             logger.warning(f"No operation for event {push_event}")
