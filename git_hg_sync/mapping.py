@@ -42,7 +42,6 @@ class MappingMatch:
 class Mapping(pydantic.BaseModel):
     source_url: str
     destination_url: str
-    intermediate_fetch: list[str] = pydantic.Field(default=[])
 
     def match(self, event: Push) -> Sequence[MappingMatch]:
         raise NotImplementedError()

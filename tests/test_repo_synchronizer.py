@@ -10,7 +10,7 @@ from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync import repo_synchronizer
 from git_hg_sync.__main__ import get_connection, get_queue
-from git_hg_sync.mapping import Mapping, SyncBranchOperation, SyncTagOperation
+from git_hg_sync.mapping import SyncBranchOperation, SyncTagOperation
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
 if TYPE_CHECKING:
@@ -102,12 +102,7 @@ def test_sync_process(
 
     # Sync new commit with mercurial repository.
     git_local_repo_path = tmp_path / "clones" / "myrepo"
-    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
-    mapping = Mapping(
-        source_url=str(git_source),
-        destination_url=str(hg_destination),
-        intermediate_fetch=[],
-    )
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source), [])
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncBranchOperation(source_commit=git_commit_sha, destination_branch=branch),
         SyncTagOperation(
@@ -170,12 +165,7 @@ def test_sync_process_duplicate_tags(
 
     # Sync new commit with mercurial repository
     git_local_repo_path = tmp_path / "clones" / "myrepo"
-    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
-    mapping = Mapping(
-        source_url=str(git_source),
-        destination_url=str(hg_destination),
-        intermediate_fetch=[],
-    )
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source), [])
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncTagOperation(
             source_commit=git_commit_sha,
@@ -233,12 +223,7 @@ def test_sync_process_no_duplicate_tags_on_error(
     git_commit_sha = repo.rev_parse("HEAD")
 
     git_local_repo_path = tmp_path / "clones" / "myrepo"
-    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
-    mapping = Mapping(
-        source_url=str(git_source),
-        destination_url=str(hg_destination),
-        intermediate_fetch=[],
-    )
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source), [])
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncTagOperation(
             source_commit=git_commit_sha,
@@ -298,12 +283,7 @@ def test_sync_process_multiple_destinations(
 
     # Sync new commit with mercurial repository
     git_local_repo_path = tmp_path / "clones" / "myrepo"
-    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
-    mapping = Mapping(
-    syncrepos.sync(str(hg_destination2), operations, request_user)
-        destination_url=str(hg_destination),
-        intermediate_fetch=[],
-    )
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source), [])
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncTagOperation(
             source_commit=git_commit_sha,
@@ -349,12 +329,12 @@ def test_sync_process_intermediate_fetch(
 
     # Sync new commit with mercurial repository.
     git_local_repo_path = tmp_path / "clones" / "myrepo"
-    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+
     intermediate_hg_commit = hg_rev(hg_destination, "default")
-    mapping = Mapping(
-        source_url=str(git_source),
-        destination_url=str(hg_destination),
-        intermediate_fetch=[intermediate_hg_commit],
+    syncrepos = RepoSynchronizer(
+        git_local_repo_path,
+        str(git_source),
+        [intermediate_hg_commit],
     )
 
     operations: list[SyncBranchOperation | SyncTagOperation] = [

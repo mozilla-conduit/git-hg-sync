@@ -27,27 +27,6 @@ def test_config_files(monkeypatch: pytest.MonkeyPatch, config_file: Path) -> Non
     assert config.tag_mappings, f"`tag_mappings` section missing in {config_file}"
 
 
-@pytest.mark.parametrize("config_file", list(BASEDIR.glob("config-*.toml")))
-def test_config_files_intermediate_fetch(
-    monkeypatch: pytest.MonkeyPatch, config_file: Path
-) -> None:
-    """Ensure that intermediate_fetches are the same in all Mappings for a given source_url."""
-    _prepare_test_for_config(monkeypatch, config_file)
-
-    config = Config.from_file(config_file)
-
-    intermediate_fetches = {}
-
-    for mapping in config.branch_mappings + config.tag_mappings:
-        if mapping.source_url not in intermediate_fetches:
-            intermediate_fetches[mapping.source_url] = mapping.intermediate_fetch
-            continue
-
-        assert mapping.intermediate_fetch == intermediate_fetches[mapping.source_url], (
-            f"Inconsistent intermediate_fetch for {mapping.source_url} in {config_file}: {mapping}"
-        )
-
-
 def _prepare_test_for_config(
     monkeypatch: pytest.MonkeyPatch, config_file: Path
 ) -> None:

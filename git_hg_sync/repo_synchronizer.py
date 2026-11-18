@@ -70,24 +70,25 @@ class RepoSynchronizer:
         *,
         verbose: bool = False,
     ) -> None:
-        for ref in intermediate_fetch or []:
-            retry(
-                f"fetching intermediate ref {ref} from {remote}",
-                partial(
-                    self._log_git_execute,
-                    repo,
-                    [
-                        "git",
-                        "-c",
-                        "cinnabar.graft=true",
-                        "cinnabar",
-                        "fetch",
-                        remote,
-                        ref,
-                    ],
-                    verbose,
-                ),
-            )
+        if remote.startswith("hg::"):
+            for ref in self._hg_intermediate_fetch:
+                retry(
+                    f"fetching intermediate ref {ref} from {remote}",
+                    partial(
+                        self._log_git_execute,
+                        repo,
+                        [
+                            "git",
+                            "-c",
+                            "cinnabar.graft=true",
+                            "cinnabar",
+                            "fetch",
+                            remote,
+                            ref,
+                        ],
+                        verbose,
+                    ),
+                )
 
         try:
             retry(
