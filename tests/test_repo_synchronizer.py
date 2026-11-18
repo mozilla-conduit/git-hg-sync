@@ -350,16 +350,34 @@ def test_sync_process_intermediate_fetch(
 
     mock_log_git_execute.assert_has_calls(
         [
-            "git",
-            "-c",
-            "cinnabar.graft=true",
-            "cinnabar",
-            "fetch",
-            f"hg::{hg_destination}",
-            intermediate_hg_commit,
-        ],
-        mock.ANY,
-    ), "Intermediate fetch should be the first git call"
+            mock.call(
+                mock.ANY,
+                [
+                    "git",
+                    "-c",
+                    "cinnabar.graft=true",
+                    "cinnabar",
+                    "fetch",
+                    f"hg::{hg_destination}",
+                    intermediate_hg_commit,
+                ],
+                False,
+            ),
+            mock.call(
+                mock.ANY,
+                [
+                    "git",
+                    "-c",
+                    "cinnabar.graft=true",
+                    "fetch",
+                    "--tags",
+                    f"hg::{hg_destination}",
+                ],
+                False,
+            ),
+            mock.call(mock.ANY, ["git", "cinnabar", "fetch", "--tags"], False),
+        ]
+    )
 
 
 def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
