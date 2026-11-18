@@ -20,16 +20,18 @@ def test_cli_help(monkeypatch: pytest.MonkeyPatch, command: list[str]) -> None:
 
 @mock.patch("git_hg_sync.cli.Config.from_file")
 @mock.patch("git_hg_sync.cli.RepoSynchronizer.get_clone_repo")
-@mock.patch("git_hg_sync.cli.RepoSynchronizer.fetch_all_from_remote")
+@mock.patch(
+    "git_hg_sync.repo_synchronizer.RepoSynchronizer._log_git_execute",
+)
 def test_cli_fetchrepo(
-    mock_fetch_all_from_remote: mock.Mock,
+    mock_log_git_execute: mock.Mock,
     mock_get_clone_repo: mock.Mock,
     mock_config_from_file: mock.Mock,
     test_config: Config,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
 
-    test_config.branch_mappings[0].intermediate_fetch = ["aaa"]
+    test_config.tracked_repositories[0].hg_intermediate_fetch = ["aaa"]
     mock_config_from_file.return_value = test_config
 
     repo = mock.MagicMock()
@@ -45,15 +47,23 @@ def test_cli_fetchrepo(
         ],
     )
 
-    assert mock_get_clone_repo.call_count == 1, "Should have clone the source repo"
-    assert mock_fetch_all_from_remote.call_count == 2, (
-        "Should have fetched from all remotes"
+    assert mock_get_clone_repo.call_count == 1, "Should have cloned the source repo"
+    assert mock_log_git_execute.call_count == 4, (
+        "Should have called git 5 times: tags, intermediate fetch, full fetch, cinnabar tags"
     )
-    mock_fetch_all_from_remote.assert_any_call(
-        repo,
-        f"hg::{test_config.branch_mappings[0].destination_url}",
-        intermediate_fetch=test_config.branch_mappings[0].intermediate_fetch,
-        verbose=False,
+
+    mock_log_git_execute.assert_any_call(
+        mock.ANY,
+        [
+            "git",
+            "-c",
+            "cinnabar.graft=true",
+            "cinnabar",
+            "fetch",
+            f"hg::{test_config.branch_mappings[0].destination_url}",
+            test_config.tracked_repositories[0].hg_intermediate_fetch[0],
+        ],
+        mock.ANY,
     )
 
 
