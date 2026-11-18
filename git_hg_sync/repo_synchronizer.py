@@ -35,12 +35,11 @@ class MercurialMetadataNotFoundError(RepoSyncError):
 
 class RepoSynchronizer:
     def __init__(
-        self,
-        clone_directory: Path,
-        url: str,
+        self, clone_directory: Path, url: str, hg_intermediate_fetch: list[str]
     ) -> None:
         self._clone_directory = clone_directory
         self._src_remote = url
+        self._hg_intermediate_fetch = hg_intermediate_fetch or []
 
     def get_clone_repo(self) -> Repo:
         """Get a GitPython Repo object pointing to a git clone of the source

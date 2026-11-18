@@ -107,6 +107,8 @@ Note: The tags on the Mercurial side should be created on a dedicated branch. As
 [[tracked_repositories]]
 name = "firefox-releases"
 url = "/clones/test-repo-git"
+# List of intermediate commits to fetch from the Mercurial destinations, in order.
+#hg_intermediate_fetch = []
 
 # ESR branches
 [[branch_mappings]]

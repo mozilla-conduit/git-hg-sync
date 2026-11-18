@@ -203,7 +203,7 @@ def fetchrepo(
         sys.exit(1)
 
     clone_path = config.clones.directory / repo.name
-    syncer = RepoSynchronizer(clone_path, repo.url)
+    syncer = RepoSynchronizer(clone_path, repo.url, repo.hg_intermediate_fetch)
 
     logger.info(f"Setting up local clone for {repo.url} in {clone_path} ...")
     repo_clone = syncer.get_clone_repo()
