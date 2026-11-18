@@ -22,7 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pip",
-    "pip-tools>=7.5.3",
+    "pip-tools>=7.6.2",
     "pytest>=8.3.4",
     "pytest-cov",
     "pytest-mock",
