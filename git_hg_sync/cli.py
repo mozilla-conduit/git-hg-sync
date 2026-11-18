@@ -232,8 +232,8 @@ def fetchrepo(
 
         logger.debug(f"Remotes to fetch: {remotes} ...")
 
-        for mapping in remotes:
-            cinnabar_remote = f"hg::{mapping.destination_url}"
+        for remote in remotes:
+            cinnabar_remote = f"hg::{remote}"
             logger.info(f"Fetching commits from remote {cinnabar_remote} ...")
             syncer.fetch_all_from_remote(
                 repo_clone,
