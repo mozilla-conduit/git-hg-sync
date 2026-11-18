@@ -238,7 +238,6 @@ def fetchrepo(
             syncer.fetch_all_from_remote(
                 repo_clone,
                 cinnabar_remote,
-                intermediate_fetch=mapping.intermediate_fetch,
                 verbose=args.verbose,
             )
 

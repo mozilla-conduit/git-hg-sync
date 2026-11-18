@@ -120,7 +120,7 @@ def test_sync_process(
 
     request_user = "request_user@example.com"
     user_info = "request_user"  # The part before the @ in request_user.
-    syncrepos.sync(str(hg_destination), operations, request_user, mapping.intermediate_fetch)
+    syncrepos.sync(str(hg_destination), operations, request_user)
 
     # test
     assert "BAR CONTENT" in hg_cat(hg_destination, "bar.txt", branch)
@@ -189,7 +189,7 @@ def test_sync_process_duplicate_tags(
 
     logger_mock = mock.MagicMock()
     monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
-    syncrepos.sync(str(hg_destination), operations, request_user, mapping.intermediate_fetch)
+    syncrepos.sync(str(hg_destination), operations, request_user)
 
     # As we can't mock the GitPython logic, we inspect our debug logs instead.
     assert any(
@@ -200,7 +200,7 @@ def test_sync_process_duplicate_tags(
     # Re-run the operation
     second_logger_mock = mock.MagicMock()
     monkeypatch.setattr(repo_synchronizer, "logger", second_logger_mock)
-    syncrepos.sync(str(hg_destination), operations, request_user, mapping.intermediate_fetch)
+    syncrepos.sync(str(hg_destination), operations, request_user)
 
     # The last warning should tell us about the duplicate tags.
     assert (
@@ -257,11 +257,11 @@ def test_sync_process_no_duplicate_tags_on_error(
         f.write(failhook)
 
     with pytest.raises(GitCommandError):
-        syncrepos.sync(str(hg_destination), operations, request_user, mapping.intermediate_fetch)
+        syncrepos.sync(str(hg_destination), operations, request_user)
 
     # Re-run the operation without the blocking hook.
     hgrc.unlink()
-    syncrepos.sync(str(hg_destination), operations, request_user, mapping.intermediate_fetch)
+    syncrepos.sync(str(hg_destination), operations, request_user)
 
     # Test the tag commit message.
     git_tag_log = Repo(str(git_local_repo_path)).git.execute(
@@ -300,7 +300,7 @@ def test_sync_process_multiple_destinations(
     git_local_repo_path = tmp_path / "clones" / "myrepo"
     syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
     mapping = Mapping(
-        source_url=str(git_source),
+    syncrepos.sync(str(hg_destination2), operations, request_user)
         destination_url=str(hg_destination),
         intermediate_fetch=[],
     )
@@ -315,12 +315,12 @@ def test_sync_process_multiple_destinations(
 
     request_user = "request_user@example.com"
 
-    syncrepos.sync(str(hg_destination), operations, request_user, mapping.intermediate_fetch)
+    syncrepos.sync(str(hg_destination), operations, request_user)
 
     # Sync the tags to the second repo.
     logger_mock = mock.MagicMock()
     monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
-    syncrepos.sync(str(hg_destination2), operations, request_user, mapping.intermediate_fetch)
+    syncrepos.sync(str(hg_destination2), operations, request_user)
 
     # Test the tag commit message.
     tag_log = hg_log(hg_destination2, tag_branch, ["-T", "{desc}"])
@@ -362,7 +362,7 @@ def test_sync_process_intermediate_fetch(
     ]
 
     request_user = "request_user@example.com"
-    syncrepos.sync(str(hg_destination), operations, request_user, mapping.intermediate_fetch)
+    syncrepos.sync(str(hg_destination), operations, request_user)
 
     assert mock_log_git_execute.call_count == 3, (
         "Should have called git 3 times: intermediate fetch, full fetch, tags"
