@@ -52,8 +52,7 @@ def test_cli_fetchrepo(
         "Should have called git 4 times: tags, intermediate fetch, full fetch, cinnabar tags"
     )
 
-    mock_log_git_execute.assert_any_call(
-        mock.ANY,
+    mock_log_git_execute.assert_has_calls(
         [
             "git",
             "-c",
