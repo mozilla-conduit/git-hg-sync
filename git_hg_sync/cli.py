@@ -214,7 +214,7 @@ def fetchrepo(
     if args.fetch_all:
         # We use a set for efficient lookup, but we want to keep the order from the
         # configuration file.
-        destinations_set = set()
+        remote_set = set()
         remotes = []
         for mapping in config.branch_mappings + config.tag_mappings:
             if mapping.source_url != repo.url:
