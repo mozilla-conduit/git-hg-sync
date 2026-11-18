@@ -134,7 +134,8 @@ The `hg_intermediate_fetch` attribute is optional. This is a work-around for bug
 
 It is used as hints for `git cinnabar`, by instructing it to fetch the
 specified _Mercurial_ references from the `destination_url` incrementally, in
-the provided order.
+the provided order. It is most useful when used in combination with the
+`fetchrepo` CLI command.
 
 It is most useful when used in combination with the `fetchrepo` CLI command. It
 It is assumed that the intermediate commits to fetch would be old enough to be
