@@ -227,8 +227,8 @@ def fetchrepo(
             if mapping.destination_url in remote_set:
                 continue
 
-            destinations_set.add(mapping.destination_url)
-            remotes.append(mapping)
+            remote_set.add(mapping.destination_url)
+            remotes.append(mapping.destination_url)
 
         logger.debug(f"Remotes to fetch: {remotes} ...")
 
