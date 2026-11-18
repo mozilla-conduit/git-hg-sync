@@ -137,7 +137,6 @@ specified _Mercurial_ references from the `destination_url` incrementally, in
 the provided order. It is most useful when used in combination with the
 `fetchrepo` CLI command.
 
-It is most useful when used in combination with the `fetchrepo` CLI command. It
 It is assumed that the intermediate commits to fetch would be old enough to be
 present in any of the Mercurial repos listed in the branch and tag mapping
 configuration.
