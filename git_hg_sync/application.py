@@ -67,8 +67,8 @@ class Application:
         if not operations_by_destination:
             logger.warning(f"No operation for event {push_event}")
             return
-        for destination, operations_mapping in operations_by_destination.items():
-            operations, intermediate_fetch = operations_mapping
+
+        for destination, operations in operations_by_destination.items():
             try:
                 synchronizer.sync(
                     destination,
