@@ -60,14 +60,6 @@ class Application:
         for mapping in self._mappings:
             if matches := mapping.match(push_event):
                 for match in matches:
-                    # We arbitrarily use the first mapping found. Its intermediate_fetch
-                        match.destination_url, []
-                    ).append(match.operation)
-                    # in order, in case cinnabar resolution is known not to make the
-                    # right choice (see bug 2091638 and bug 2091580).
-                    # As a result, every potential mapping for a given set of branches
-                    # and tags should have the same intermediate_fetch, so we can pass
-                    # any one to the syncer.
         for destination, operations in operations_by_destination.items():
                     )[0].append(match.operation)
 
