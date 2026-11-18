@@ -348,8 +348,7 @@ def test_sync_process_intermediate_fetch(
         "Should have called git 3 times: intermediate fetch, full fetch, tags"
     )
 
-    assert mock_log_git_execute.call_args_list[0] == mock.call(
-        mock.ANY,
+    mock_log_git_execute.assert_has_calls(
         [
             "git",
             "-c",
