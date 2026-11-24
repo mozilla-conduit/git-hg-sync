@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import argparse
 
-# Adapted from Lando's lando/main/logging.py.
+# Adapted from Lando's lando/main/logging.py (12f266555acb2b90eb0a6cd4d3ba50947596cd6e).
 
 
 class MozLogFormatter(logging.Formatter):
