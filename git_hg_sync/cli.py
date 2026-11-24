@@ -289,7 +289,7 @@ def main() -> None:
     set_subparser_pause_resume(subparsers)
 
     args = parser.parse_args()
-    setup_logging(args.log_level)
+    logging.basicConfig(args.log_level.upper())
     logger = logging.getLogger(__name__)
 
     logger.info(f"Using configuration file {args.config}")
