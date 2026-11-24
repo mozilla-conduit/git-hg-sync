@@ -1,12 +1,10 @@
 import dataclasses
 import json
+import logging
 import os
 import signal
 import sys
 from typing import TYPE_CHECKING
-
-import sentry_sdk
-from mozlog import get_proxy_logger
 
 from git_hg_sync import PID_FILEPATH
 from git_hg_sync.events import Event, Push
@@ -19,7 +17,7 @@ if TYPE_CHECKING:
     from git_hg_sync.pulse_worker import PulseWorker
     from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
-logger = get_proxy_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Application:
@@ -72,7 +70,6 @@ class Application:
             try:
                 synchronizer.sync(destination, operations, push_event.user)
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
                 error_data = json.dumps(
                     {
                         "destination_url": destination,
@@ -81,9 +78,8 @@ class Application:
                         ],
                     }
                 )
-                logger.warning(
-                    f"An error prevented completion of the following sync operations from event {push_event}. {error_data}",
-                    exc_info=True,
+                logger.exception(
+                    f"An error prevented completion of the following sync operations from event {push_event}. {error_data}"
                 )
                 raise exc
         logger.info(f"Successfully handled event {push_event}")

@@ -17,7 +17,7 @@ routing_key = ""
 queue = ""
 
 [sentry]
-sentry_dsn = ""
+dsn = ""
 
 [clones]
 directory = "/clones"

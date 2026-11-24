@@ -10,7 +10,7 @@ heartbeat = 30
 ssl = false
 
 [sentry]
-sentry_dsn = ""
+dsn = ""
 
 [clones]
 directory = "/clones"

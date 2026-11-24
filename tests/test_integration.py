@@ -1,3 +1,4 @@
+import logging
 import os
 import subprocess
 from configparser import ConfigParser
@@ -9,7 +10,6 @@ from unittest import mock
 import pulse_utils
 import pytest
 from git import Repo
-from mozlog import get_proxy_logger
 from utils import hg_cat, hg_log, hg_rev
 
 from git_hg_sync.__main__ import get_connection, get_queue, start_app
@@ -157,7 +157,7 @@ def test_full_app(
     pulse_utils.send_pulse_message(config.pulse, payload, purge=True)
 
     # execute app
-    start_app(config, get_proxy_logger("test"), one_shot=True)
+    start_app(config, logging.getLogger("test"), one_shot=True)
 
     # test that the working repository is a bare repo
     git_clone_config_path = config.clones.directory / git_repo_name / "config"

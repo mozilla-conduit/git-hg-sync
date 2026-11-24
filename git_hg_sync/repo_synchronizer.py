@@ -1,13 +1,12 @@
+import logging
 import os
 import re
 import threading
 from functools import partial
 from typing import TYPE_CHECKING
 
-import sentry_sdk
 from git import Repo
 from git.exc import GitCommandError
-from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import SyncBranchOperation, SyncOperation, SyncTagOperation
 from git_hg_sync.retry import retry
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
     import io
     from pathlib import Path
 
-logger = get_proxy_logger("sync_repo")
+logger = logging.getLogger(__name__)
 
 REQUEST_USER_ENV_VAR = "AUTOLAND_REQUEST_USER"
 
@@ -73,20 +72,20 @@ class RepoSynchronizer:
     def fetch_all_from_remote(
         self, repo: Repo, remote: str, verbose: bool = False
     ) -> None:
-        try:
-            retry(
-                f"fetching changes and tags from {remote}",
-                lambda: self._log_git_execute(
+        def fetch() -> None:
+            try:
+                self._log_git_execute(
                     repo,
                     ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote],
                     verbose,
-                ),
-            )
+                )
+            except GitCommandError as exc:
+                # can't fetch if repo is empty
+                if "fatal: couldn't find remote ref HEAD" not in exc.stderr:
+                    raise
+                logger.info(f"Remote {remote} is empty, nothing to fetch")
 
-        except GitCommandError as exc:
-            # can't fetch if repo is empty
-            if "fatal: couldn't find remote ref HEAD" in exc.stderr:
-                raise exc
+        retry(f"fetching changes and tags from {remote}", fetch)
 
         if remote.startswith("hg::"):
             retry(
@@ -106,25 +105,32 @@ class RepoSynchronizer:
         if verbose:
             logger.info(f"Running `{' '.join(command)}` as PID {proc.pid}")
 
+            stderr_lines: list[bytes] = []
             stdout_thread = threading.Thread(
                 target=RepoSynchronizer._stream_output,
                 args=(proc.stdout, f"{proc.pid}/STDOUT"),
             )
             stderr_thread = threading.Thread(
                 target=RepoSynchronizer._stream_output,
-                args=(proc.stderr, f"{proc.pid}/STDERR"),
+                args=(proc.stderr, f"{proc.pid}/STDERR", stderr_lines),
             )
             stdout_thread.start()
             stderr_thread.start()
             stdout_thread.join()
             stderr_thread.join()
 
-            proc.wait()
+            # The stream has been consumed, so pass it on to be included in any
+            # GitCommandError.
+            proc.wait(stderr=b"".join(stderr_lines))
 
     @staticmethod
-    def _stream_output(stream: io.BufferedReader, label: str) -> None:
+    def _stream_output(
+        stream: io.BufferedReader, label: str, lines: list[bytes] | None = None
+    ) -> None:
         for line in iter(stream.readline, b""):
             logger.info(f"{label}: {line.decode().strip()}")
+            if lines is not None:
+                lines.append(line)
 
     def sync(
         self, destination_url: str, operations: list[SyncOperation], request_user: str
@@ -159,7 +165,6 @@ class RepoSynchronizer:
                     f"{branch_operation.source_commit}:{self._cinnabar_branch(branch_operation.destination_branch)}"
                 )
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
                 raise RepoSyncError(branch_operation, exc) from exc
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
@@ -275,7 +280,6 @@ class RepoSynchronizer:
                 else:
                     raise RepoSyncError(tag_operation, exc) from exc
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
                 raise RepoSyncError(tag_operation, exc) from exc
 
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
@@ -332,10 +336,7 @@ class RepoSynchronizer:
             logger.debug("Cinnabar metadata already present, not updating")
             return
 
-        retry(
-            f"fetching commits from {destination_remote}",
-            lambda: self.fetch_all_from_remote(repo, destination_remote),
-        )
+        self.fetch_all_from_remote(repo, destination_remote)
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:
         return repo.git.cinnabar(["git2hg", git_commit]).strip()

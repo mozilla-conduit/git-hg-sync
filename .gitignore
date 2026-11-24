@@ -6,3 +6,5 @@
 /tests_output
 config-suite.toml
 new-requirements/
+htmlcov/**
+coverage.xml

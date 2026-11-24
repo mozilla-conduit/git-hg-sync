@@ -1,10 +1,6 @@
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import mozlog
-import mozlog.formatters
-import mozlog.handlers
 import pytest
 
 from git_hg_sync.config import ClonesConfig, Config, PulseConfig, TrackedRepository
@@ -12,15 +8,6 @@ from git_hg_sync.mapping import BranchMapping
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-
-@pytest.fixture(autouse=True, scope="session")
-def mozlog_logging() -> None:
-    logger = mozlog.structuredlog.StructuredLogger("tests")
-    logger.add_handler(
-        mozlog.handlers.StreamHandler(sys.stdout, mozlog.formatters.JSONFormatter())
-    )
-    mozlog.structuredlog.set_default_logger(logger)
 
 
 @pytest.fixture

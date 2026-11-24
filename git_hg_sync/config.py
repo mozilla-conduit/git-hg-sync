@@ -1,15 +1,13 @@
 # Pydantic requires the types to be available at runtime.
 # Replace with lazy import when migration from Python 3.14 to 3.15+
+import logging
 import pathlib  # noqa: TC003
 import tomllib
 from collections import Counter
 from typing import Annotated, Self, override
 
-from mozlog import get_proxy_logger
 from pydantic import (
     AfterValidator,
-    AliasChoices,
-    Field,
     ValidationInfo,
     model_validator,
 )
@@ -23,7 +21,7 @@ from pydantic_settings import (
 # Replace with lazy import when migration from Python 3.14 to 3.15+
 from git_hg_sync.mapping import BranchMapping, TagMapping  # noqa: TC001
 
-logger = get_proxy_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def not_empty(value: str | int | None, validation_info: ValidationInfo) -> str | int:
@@ -57,7 +55,7 @@ class ClonesConfig(BaseSettings):
 
 
 class SentryConfig(BaseSettings):
-    sentry_dsn: Annotated[str, Field(alias=AliasChoices("sentry_dsn", "dsn"))] = ""
+    dsn: str = ""
 
 
 class Config(BaseSettings):
