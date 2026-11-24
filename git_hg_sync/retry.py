@@ -47,7 +47,7 @@ def retry(
         except Exception as exc:
             action_text = f" {action}" if action else ""
             if attempt < tries:
-                logger.warning(
+                logger.info(
                     f"Failed attempt{action_text} [{attempt}/{tries}] failed with error: {type(exc).__name__}: {exc}. Retrying..."
                 )
                 if delay > 0:
