@@ -367,22 +367,6 @@ markupsafe==3.0.4 \
     #   flask
     #   jinja2
     #   werkzeug
-mozfile==3.0.0 \
-    --hash=sha256:3b0afcda2fa8b802ef657df80a56f21619008f61fcc14b756124028d7b7adf5c \
-    --hash=sha256:92ca1a786abbdf5e6a7aada62d3a4e28f441ef069c7623223add45268e53c789
-    # via mozlog
-mozlog==8.1.0 \
-    --hash=sha256:89a2a9b3b54d71ab3572b7fb3b3af13100bd447ac3d980eb173d2da56498bac4 \
-    --hash=sha256:bc4a715e03896ebdb727d4df133d188cb53bcce18a1bbb90baa6bba6b83b007a
-    # via git-hg-sync (pyproject.toml)
-mozsystemmonitor==1.0.1 \
-    --hash=sha256:7610ee209f4284d16780d5de2945de8e0fb528dba71682434fee44cd33c8ae24 \
-    --hash=sha256:ab30a7587fdfee6041287f7b953911b07d0441d22bfa04bb4d82541c48bdcb02
-    # via mozlog
-mozterm==1.0.0 \
-    --hash=sha256:b1e91acec188de07c704dbb7b0100a7be5c1e06567b3beb67f6ea11d00a483a4 \
-    --hash=sha256:f5eafa25c23d391e2a2bb1dd45ee928fc9e3c811977a3856b5a5a0778011053c
-    # via mozlog
 packaging==26.3 \
     --hash=sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79 \
     --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
@@ -640,10 +624,7 @@ sentry-sdk==2.73.0 \
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
-    # via
-    #   asttokens
-    #   mozfile
-    #   mozterm
+    # via asttokens
 smmap==5.0.3 \
     --hash=sha256:4d9debb8b99007ae47165abc08670bd74cb74b5227dda7f643eccc4e9eb5642c \
     --hash=sha256:c106e05d5a61449cf6ba9a1e650227ecfb141590d2a98412103ff35d89fc7b2f

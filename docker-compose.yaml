@@ -13,7 +13,7 @@ services:
     user: "${UID}:${GID}"
     image: git-hg-sync
     build: .
-    command: ["--config", "config-docker.toml", "--log-raw-level", "debug"]
+    command: ["--config", "config-docker.toml", "--log-level", "debug"]
     volumes:
       - .:/app
       - ./clones:/clones:z

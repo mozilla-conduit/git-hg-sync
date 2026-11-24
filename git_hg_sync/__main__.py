@@ -1,14 +1,15 @@
 import argparse
+import logging
 import sys
 from pathlib import Path
 
 import sentry_sdk
 from kombu import Connection, Exchange, Queue
-from mozlog import commandline
 from pydantic import ValidationError
 
 from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
+from git_hg_sync.log import add_logging_argument, setup_logging
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
@@ -47,7 +48,7 @@ def get_queue(config: PulseConfig) -> Queue:
 
 
 def start_app(
-    config: Config, logger: commandline.StructuredLogger, *, one_shot: bool = False
+    config: Config, logger: logging.Logger, *, one_shot: bool = False
 ) -> None:
     pulse_config = config.pulse
     connection = get_connection(pulse_config)
@@ -76,9 +77,10 @@ def start_app(
 
 def main() -> None:
     parser = get_parser()
-    commandline.add_logging_group(parser)
+    add_logging_argument(parser)
     args = parser.parse_args()
-    logger = commandline.setup_logging("service", args)
+    setup_logging(args.log_level)
+    logger = logging.getLogger(__name__)
     try:
         config = Config.from_file(args.config)
     except ValidationError as e:
