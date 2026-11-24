@@ -9,6 +9,9 @@ password = "guest"
 heartbeat = 30
 ssl = false
 
+[sentry]
+dsn = ""
+
 [clones]
 directory = "{directory}/clones"
 

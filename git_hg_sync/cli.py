@@ -14,7 +14,7 @@ from pydantic import ValidationError
 from git_hg_sync.__main__ import get_connection
 from git_hg_sync.application import Application
 from git_hg_sync.config import Config, PulseConfig
-from git_hg_sync.log import add_logging_argument, setup_logging
+from git_hg_sync.log import add_logging_argument
 from git_hg_sync.pulse_worker import PulseWorker
 from git_hg_sync.repo_synchronizer import RepoSynchronizer
 
