@@ -32,6 +32,9 @@ def test_cli_fetchrepo(
 ) -> None:
 
     test_config.tracked_repositories[0].hg_intermediate_fetch = ["aaa"]
+    new_branch_mapping = test_config.branch_mappings[0].copy()
+    new_branch_mapping.destination_url = "other_destination_url"
+    test_config.branch_mappings.append(new_branch_mapping)
     mock_config_from_file.return_value = test_config
 
     repo = mock.MagicMock()
@@ -48,13 +51,13 @@ def test_cli_fetchrepo(
     )
 
     assert mock_get_clone_repo.call_count == 1, "Should have cloned the source repo"
-    assert mock_log_git_execute.call_count == 4, (
-        "Should have called git 4 times: tags, intermediate fetch, full fetch, cinnabar tags"
-    )
     # We don't actually need to do the intermediate fetches more than once, but it
     # should be fast enough to re-do for other remotes, so not worth special-casing.
     assert mock_log_git_execute.call_count == 7, (
         "Should have called git 7 times: tags, + 2 * (intermediate fetch, full fetch, cinnabar tags)"
+    )
+
+    mock_log_git_execute.assert_has_calls(
         [
             mock.call(
                 mock.ANY,
