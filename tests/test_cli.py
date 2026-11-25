@@ -51,8 +51,10 @@ def test_cli_fetchrepo(
     assert mock_log_git_execute.call_count == 4, (
         "Should have called git 4 times: tags, intermediate fetch, full fetch, cinnabar tags"
     )
-
-    mock_log_git_execute.assert_has_calls(
+    # We don't actually need to do the intermediate fetches more than once, but it
+    # should be fast enough to re-do for other remotes, so not worth special-casing.
+    assert mock_log_git_execute.call_count == 7, (
+        "Should have called git 7 times: tags, + 2 * (intermediate fetch, full fetch, cinnabar tags)"
         [
             mock.call(
                 mock.ANY,
