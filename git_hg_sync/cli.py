@@ -198,13 +198,13 @@ def fetchrepo(config: Config, logger: logging.Logger, args: argparse.Namespace) 
         sys.exit(1)
 
     clone_path = config.clones.directory / repo.name
-    syncer = RepoSynchronizer(clone_path, repo.url)
+    syncer = RepoSynchronizer(clone_path, repo.url, repo.hg_intermediate_fetch)
 
     logger.info(f"Setting up local clone for {repo.url} in {clone_path} ...")
     repo_clone = syncer.get_clone_repo()
 
     logger.info(f"Fetching commits from {repo.url} ...")
-    syncer.fetch_all_from_remote(repo_clone, repo.url, args.verbose)
+    syncer.fetch_all_from_remote(repo_clone, repo.url, verbose=args.verbose)
 
     if args.fetch_all:
         # We use a set for efficient lookup, but we want to keep the order from the
@@ -228,9 +228,13 @@ def fetchrepo(config: Config, logger: logging.Logger, args: argparse.Namespace) 
         logger.debug(f"Remotes to fetch: {remotes} ...")
 
         for remote in remotes:
-            logger.info(f"Fetching commits from remote {remote} ...")
             cinnabar_remote = f"hg::{remote}"
-            syncer.fetch_all_from_remote(repo_clone, cinnabar_remote, args.verbose)
+            logger.info(f"Fetching commits from remote {cinnabar_remote} ...")
+            syncer.fetch_all_from_remote(
+                repo_clone,
+                cinnabar_remote,
+                verbose=args.verbose,
+            )
 
         logger.info(f"Fetched data from {len(remote_set) + 1} remotes.")
 

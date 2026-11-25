@@ -8,6 +8,7 @@ from git_hg_sync.mapping import BranchMapping
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
 
 
 @pytest.fixture
@@ -26,10 +27,10 @@ def pulse_config() -> PulseConfig:
 
 
 @pytest.fixture
-def test_config(pulse_config: PulseConfig) -> Config:
+def test_config(pulse_config: PulseConfig, tmp_path: Path) -> Config:
     return Config(
         pulse=pulse_config,
-        clones=ClonesConfig(directory=Path("clones")),
+        clones=ClonesConfig(directory=tmp_path / "clones"),
         tracked_repositories=[
             TrackedRepository(
                 name="mozilla-central",

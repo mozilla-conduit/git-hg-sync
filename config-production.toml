@@ -189,6 +189,7 @@ tags_destination_branch = "tags-testing"
 [[tracked_repositories]]
 name = "thunderbird-desktop"
 url = "https://github.com/thunderbird/thunderbird-desktop.git"
+hg_intermediate_fetch = [ "a44c609f7f027bfa905b8e7a6d2cd8cbb2fc2031" ]
 
 #
 # COMM-UNIFIED

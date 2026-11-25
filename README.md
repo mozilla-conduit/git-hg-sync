@@ -107,6 +107,8 @@ Note: The tags on the Mercurial side should be created on a dedicated branch. As
 [[tracked_repositories]]
 name = "firefox-releases"
 url = "/clones/test-repo-git"
+# List of intermediate commits to fetch from the Mercurial destinations, in order.
+#hg_intermediate_fetch = []
 
 # ESR branches
 [[branch_mappings]]
@@ -124,6 +126,20 @@ tags_destination_branch = "default"
 # Default
 #tag_message_suffix = "a=tagging CLOSED TREE DONTBUILD"
 ```
+
+#### Intermediate reference fetch
+
+The `hg_intermediate_fetch` attribute is optional. This is a work-around for bug
+2091638.
+
+It is used as hints for `git cinnabar`, by instructing it to fetch the
+specified _Mercurial_ references from the `destination_url` incrementally, in
+the provided order. It is most useful when used in combination with the
+`fetchrepo` CLI command.
+
+It is assumed that the intermediate commits to fetch would be old enough to be
+present in any of the Mercurial repos listed in the branch and tag mapping
+configuration.
 
 ### Pulse parameters
 
