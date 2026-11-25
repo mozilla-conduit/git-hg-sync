@@ -297,7 +297,7 @@ def test_sync_process_tag_unsynced_commit(
     unsynced_commit_sha = repo.index.commit("add baz.txt").hexsha
 
     git_local_repo_path = tmp_path / "clones" / "myrepo"
-    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source), [])
     operations: list[SyncBranchOperation | SyncTagOperation] = [
         SyncTagOperation(
             source_commit=unsynced_commit_sha,
@@ -474,17 +474,17 @@ def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
 def test_fetch_all_from_remote_empty(tmp_path: Path, verbose: bool) -> None:
     empty_remote = Repo.init(tmp_path / "empty", bare=True)
     clone = Repo.init(tmp_path / "clone", bare=True)
-    syncrepos = RepoSynchronizer(tmp_path / "clone", str(empty_remote.git_dir))
+    syncrepos = RepoSynchronizer(tmp_path / "clone", str(empty_remote.git_dir), [])
 
     # Fetching from an empty repository is not an error.
-    syncrepos.fetch_all_from_remote(clone, str(empty_remote.git_dir), verbose)
+    syncrepos.fetch_all_from_remote(clone, str(empty_remote.git_dir), verbose=verbose)
 
 
 @pytest.mark.parametrize("verbose", [False, True])
 def test_fetch_all_from_remote_error(tmp_path: Path, verbose: bool) -> None:
     clone = Repo.init(tmp_path / "clone", bare=True)
     missing_remote = str(tmp_path / "missing")
-    syncrepos = RepoSynchronizer(tmp_path / "clone", missing_remote)
+    syncrepos = RepoSynchronizer(tmp_path / "clone", missing_remote, [])
 
     with pytest.raises(GitCommandError, match="does not appear to be a git repository"):
-        syncrepos.fetch_all_from_remote(clone, missing_remote, verbose)
+        syncrepos.fetch_all_from_remote(clone, missing_remote, verbose=verbose)
