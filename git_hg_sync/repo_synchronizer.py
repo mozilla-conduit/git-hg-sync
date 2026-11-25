@@ -39,7 +39,7 @@ class RepoSynchronizer:
     ) -> None:
         self._clone_directory = clone_directory
         self._src_remote = url
-        self._hg_intermediate_fetch = hg_intermediate_fetch or []
+        self._hg_intermediate_fetch = hg_intermediate_fetch
 
     def get_clone_repo(self) -> Repo:
         """Get a GitPython Repo object pointing to a git clone of the source
