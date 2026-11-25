@@ -6,7 +6,7 @@ from unittest import mock
 import pytest
 from git import Repo
 from git.exc import GitCommandError
-from utils import hg_cat, hg_log, hg_rev
+from utils import hg_cat, hg_log, hg_rev, hg_run
 
 from git_hg_sync import repo_synchronizer
 from git_hg_sync.__main__ import get_connection, get_queue
@@ -263,6 +263,88 @@ def test_sync_process_no_duplicate_tags_on_error(
     )
 
 
+@pytest.mark.parametrize("with_branch_operation", [False, True])
+def test_sync_process_tag_unsynced_commit(
+    git_source: Path,
+    hg_destination: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    with_branch_operation: bool,
+) -> None:
+    """Tagging a commit that isn't synced to the destination should skip that tag,
+    and still process the rest of the operations."""
+    branch = "bar"
+    tag_branch = "tags"
+    good_tag = "goodtag"
+    bad_tag = "badtag"
+    tag_suffix = "some suffix"
+
+    repo = Repo(git_source)
+
+    # A commit that will be synced to Mercurial (or already is).
+    if with_branch_operation:
+        bar_path = git_source / "bar.txt"
+        bar_path.write_text("BAR CONTENT")
+        repo.index.add([bar_path])
+        synced_commit_sha = repo.index.commit("add bar.txt").hexsha
+    else:
+        synced_commit_sha = repo.rev_parse("HEAD").hexsha
+
+    # A commit that will never be synced to Mercurial.
+    baz_path = git_source / "baz.txt"
+    baz_path.write_text("BAZ CONTENT")
+    repo.index.add([baz_path])
+    unsynced_commit_sha = repo.index.commit("add baz.txt").hexsha
+
+    git_local_repo_path = tmp_path / "clones" / "myrepo"
+    syncrepos = RepoSynchronizer(git_local_repo_path, str(git_source))
+    operations: list[SyncBranchOperation | SyncTagOperation] = [
+        SyncTagOperation(
+            source_commit=unsynced_commit_sha,
+            tag=bad_tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
+        ),
+        SyncTagOperation(
+            source_commit=synced_commit_sha,
+            tag=good_tag,
+            tags_destination_branch=tag_branch,
+            tag_message_suffix=tag_suffix,
+        ),
+    ]
+    if with_branch_operation:
+        operations.insert(
+            0,
+            SyncBranchOperation(
+                source_commit=synced_commit_sha, destination_branch=branch
+            ),
+        )
+
+    request_user = "request_user@example.com"
+
+    logger_mock = mock.MagicMock()
+    monkeypatch.setattr(repo_synchronizer, "logger", logger_mock)
+    syncrepos.sync(str(hg_destination), operations, request_user)
+
+    assert any(
+        unsynced_commit_sha in error.args[0] and bad_tag in error.args[0]
+        for error in logger_mock.error.call_args_list
+    ), "Expected an error about the tag on the unsynced commit."
+
+    if with_branch_operation:
+        assert "BAR CONTENT" in hg_cat(hg_destination, "bar.txt", branch)
+
+    tags = hg_run(hg_destination, ["hg", "tags", "-T", "{tag}\n"]).split()
+    assert good_tag in tags
+    assert bad_tag not in tags
+    assert hg_rev(hg_destination, good_tag) == Repo(git_local_repo_path).git.cinnabar(
+        ["git2hg", synced_commit_sha]
+    )
+
+    # The unsynced commit must not have leaked into Mercurial.
+    assert not hg_log(hg_destination, "file('path:baz.txt')")
+
+
 def test_sync_process_multiple_destinations(
     make_hg_repo: Callable,
     git_source: Path,
@@ -386,3 +468,23 @@ def test_get_connection_and_queue(pulse_config: PulseConfig) -> None:
     assert connection.userid == pulse_config.userid
     assert connection.host == f"{pulse_config.host}:{pulse_config.port}"
     assert queue.name == pulse_config.queue
+
+
+@pytest.mark.parametrize("verbose", [False, True])
+def test_fetch_all_from_remote_empty(tmp_path: Path, verbose: bool) -> None:
+    empty_remote = Repo.init(tmp_path / "empty", bare=True)
+    clone = Repo.init(tmp_path / "clone", bare=True)
+    syncrepos = RepoSynchronizer(tmp_path / "clone", str(empty_remote.git_dir))
+
+    # Fetching from an empty repository is not an error.
+    syncrepos.fetch_all_from_remote(clone, str(empty_remote.git_dir), verbose)
+
+
+@pytest.mark.parametrize("verbose", [False, True])
+def test_fetch_all_from_remote_error(tmp_path: Path, verbose: bool) -> None:
+    clone = Repo.init(tmp_path / "clone", bare=True)
+    missing_remote = str(tmp_path / "missing")
+    syncrepos = RepoSynchronizer(tmp_path / "clone", missing_remote)
+
+    with pytest.raises(GitCommandError, match="does not appear to be a git repository"):
+        syncrepos.fetch_all_from_remote(clone, missing_remote, verbose)

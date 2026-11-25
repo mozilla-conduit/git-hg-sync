@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import threading
@@ -7,7 +8,6 @@ from typing import TYPE_CHECKING
 import sentry_sdk
 from git import Repo
 from git.exc import GitCommandError
-from mozlog import get_proxy_logger
 
 from git_hg_sync.mapping import (
     SyncBranchOperation,
@@ -20,9 +20,11 @@ if TYPE_CHECKING:
     import io
     from pathlib import Path
 
-logger = get_proxy_logger("sync_repo")
+logger = logging.getLogger(__name__)
 
 REQUEST_USER_ENV_VAR = "AUTOLAND_REQUEST_USER"
+
+MANUAL_TAG_PUSH_DOC_URL = "https://mozilla-hub.atlassian.net/wiki/spaces/EW/pages/1592754924/Git-Hg-Sync+-+Manually+pushing+a+missing+tag+to+HgMO"
 
 
 class RepoSyncError(Exception):
@@ -31,6 +33,15 @@ class RepoSyncError(Exception):
 
 class MercurialMetadataNotFoundError(RepoSyncError):
     """Raised when a commit is not found"""
+
+    def __init__(self, operation: SyncTagOperation, destination_url: str) -> None:
+        super().__init__(
+            f"Commit {operation.source_commit} for tag {operation.tag} has no "
+            f"Mercurial metadata for {destination_url}; it is likely not on a branch "
+            "synced to that repository. Once it is, push the tag manually: "
+            f"{MANUAL_TAG_PUSH_DOC_URL}"
+        )
+        self.operation = operation
 
 
 class RepoSynchronizer:
@@ -89,20 +100,20 @@ class RepoSynchronizer:
                     ),
                 )
 
-        try:
-            retry(
-                f"fetching changes and tags from {remote}",
-                lambda: self._log_git_execute(
+        def fetch() -> None:
+            try:
+                self._log_git_execute(
                     repo,
                     ["git", "-c", "cinnabar.graft=true", "fetch", "--tags", remote],
                     verbose,
-                ),
-            )
+                )
+            except GitCommandError as exc:
+                # can't fetch if repo is empty
+                if "fatal: couldn't find remote ref HEAD" not in exc.stderr:
+                    raise
+                logger.info(f"Remote {remote} is empty, nothing to fetch")
 
-        except GitCommandError as exc:
-            # can't fetch if repo is empty
-            if "fatal: couldn't find remote ref HEAD" in exc.stderr:
-                raise exc
+        retry(f"fetching changes and tags from {remote}", fetch)
 
         if remote.startswith("hg::"):
             retry(
@@ -122,25 +133,32 @@ class RepoSynchronizer:
         if verbose:
             logger.info(f"Running `{' '.join(command)}` as PID {proc.pid}")
 
+            stderr_lines: list[bytes] = []
             stdout_thread = threading.Thread(
                 target=RepoSynchronizer._stream_output,
                 args=(proc.stdout, f"{proc.pid}/STDOUT"),
             )
             stderr_thread = threading.Thread(
                 target=RepoSynchronizer._stream_output,
-                args=(proc.stderr, f"{proc.pid}/STDERR"),
+                args=(proc.stderr, f"{proc.pid}/STDERR", stderr_lines),
             )
             stdout_thread.start()
             stderr_thread.start()
             stdout_thread.join()
             stderr_thread.join()
 
-            proc.wait()
+            # The stream has been consumed, so pass it on to be included in any
+            # GitCommandError.
+            proc.wait(stderr=b"".join(stderr_lines))
 
     @staticmethod
-    def _stream_output(stream: io.BufferedReader, label: str) -> None:
+    def _stream_output(
+        stream: io.BufferedReader, label: str, lines: list[bytes] | None = None
+    ) -> None:
         for line in iter(stream.readline, b""):
             logger.info(f"{label}: {line.decode().strip()}")
+            if lines is not None:
+                lines.append(line)
 
     def sync(
         self,
@@ -178,7 +196,6 @@ class RepoSynchronizer:
                     f"{branch_operation.source_commit}:{self._cinnabar_branch(branch_operation.destination_branch)}"
                 )
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
                 raise RepoSyncError(branch_operation, exc) from exc
 
         os.environ[REQUEST_USER_ENV_VAR] = request_user
@@ -242,29 +259,35 @@ class RepoSynchronizer:
             if not self._commit_has_mercurial_metadata(
                 repo, tag_operation.source_commit
             ):
-                rollback_candidate = self._get_current_cinnabar_state(repo)
-
                 # Tagging can only be done on a commit that already has mercurial
                 # metadata.
                 #
-                # Add mercurial metadata to new commits from synced branches.
-                retry(
-                    "adding mercurial metadata to new git commits for tagging",
-                    lambda: repo.git.execute(
-                        ["git"]
-                        + ["-c", "cinnabar.data=force"]
-                        + ["push"]
-                        + ["--dry-run"]
-                        + [destination_remote]
-                        + refs_to_push,
-                    ),
-                )
+                # Add mercurial metadata to new commits from synced branches. This
+                # only needs doing once, and only if there are branches to push.
+                if refs_to_push and rollback_candidate is None:
+                    rollback_candidate = self._get_current_cinnabar_state(repo)
+                    retry(
+                        "adding mercurial metadata to new git commits for tagging",
+                        lambda: repo.git.execute(
+                            ["git"]
+                            + ["-c", "cinnabar.data=force"]
+                            + ["push"]
+                            + ["--dry-run"]
+                            + [destination_remote]
+                            + refs_to_push,
+                        ),
+                    )
 
-                # Make sure it worked.
+                # If the commit still has no metadata, it is not on any branch synced
+                # to the destination, and retrying the message will never fix that.
+                # Skip this tag rather than failing (and requeuing) the whole message.
                 if not self._commit_has_mercurial_metadata(
                     repo, tag_operation.source_commit
                 ):
-                    raise MercurialMetadataNotFoundError(tag_operation)
+                    exc = MercurialMetadataNotFoundError(tag_operation, destination_url)
+                    sentry_sdk.capture_exception(exc)
+                    logger.error(f"Skipping tag: {exc}")
+                    continue
 
             hg_sha = self._git2hg(repo, tag_operation.source_commit)
             tag_message = f"No bug - Tagging {hg_sha} with {tag_operation.tag} {tag_operation.tag_message_suffix}"
@@ -288,7 +311,6 @@ class RepoSynchronizer:
                 else:
                     raise RepoSyncError(tag_operation, exc) from exc
             except Exception as exc:
-                sentry_sdk.capture_exception(exc)
                 raise RepoSyncError(tag_operation, exc) from exc
 
             tag_branches_to_push.add(tag_operation.tags_destination_branch)
@@ -345,10 +367,7 @@ class RepoSynchronizer:
             logger.debug("Cinnabar metadata already present, not updating")
             return
 
-        retry(
-            f"fetching commits from {destination_remote}",
-            lambda: self.fetch_all_from_remote(repo, destination_remote),
-        )
+        self.fetch_all_from_remote(repo, destination_remote)
 
     def _git2hg(self, repo: Repo, git_commit: str) -> str:
         return repo.git.cinnabar(["git2hg", git_commit]).strip()
